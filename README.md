@@ -89,6 +89,34 @@ pnpm dev
 
 `1785861000_enable_member_registration.js` 会精确移除旧的五个本地种子账号，让成员可以首次自助注册。本地联调已使用杨振康验证注册流程，具体测试账号见当轮交付说明。
 
+## 本轮已实现能力
+
+- 顶部全局搜索：300ms debounce，按达人、商品、视频、客户分组，每组最多 5 条，并按当前角色隐藏无权访问的数据。
+- 工作台搜索基础设施：`SearchBar`、`FilterBar`、`GlobalSearch` 和 `useSearch`；达人、设计素材已支持搜索、筛选、排序及 URL query 同步，市场和剪辑已接入关键词 URL 状态。
+- 实时数据：达人、设计素材、通知及关联视频通过 PocketBase realtime 使 TanStack Query 缓存失效，在线客户端无需手动刷新。
+- 达人 CRUD：新增、详情、预填编辑、删除、搜索、分页、批量改状态、批量删除及最近更新时间。
+- 设计审批：设计师上传素材并提交审核；boss 可通过或驳回，驳回理由由前端 zod、API Rule 和 PocketBase hook 共同校验。
+- 消息通知：顶部铃铛、未读数、单条/全部已读；已接通设计审批结果、GMV 达标和评论三种通知。
+- 数据关联：达人详情底部展示关联视频；全局搜索中的商品和视频详情已预留并展示现有关系数据。
+- 团队日历：`/overview/calendar` 提供 boss 可见的月视图占位页。
+- 外部数据源：`apps/web/src/lib/data-sources/types.ts` 定义统一 `ExternalDataSource` 扩展接口。
+
+当前仍为骨架或占位的业务包括：客户/供应商完整 CRUD、选品库完整 CRUD、竞品监测、投放图表真实数据、活动排期、设计任务看板、视频任务 CRUD、成片上传预览和发布排期。
+
+## 本地测试账号
+
+以下账号由协作层 migration 创建，只用于本机联调，不占用真实成员的姓名注册名额：
+
+| 角色 | 邮箱 | 密码 |
+|---|---|---|
+| boss | `test.boss@tkobserver.local` | `TkTestBoss@2026!` |
+| business | `test.business@tkobserver.local` | `TkTestBusiness@2026!` |
+| market | `test.market@tkobserver.local` | `TkTestMarket@2026!` |
+| design | `test.design@tkobserver.local` | `TkTestDesign@2026!` |
+| editing | `test.editing@tkobserver.local` | `TkTestEditing@2026!` |
+
+生产部署前必须删除或禁用这些测试账号，并替换本地示例通知与搜索数据。
+
 ## 开发
 
 提交前必须全部通过：
@@ -110,6 +138,23 @@ pnpm build
 - 不打印 token、密码或用户对象。认证状态只存在内存 AuthStore。
 - Collection API Rules 是安全边界。新增页面守卫时必须同步新增或修改 migration。
 - 已发布 migration 不修改；后续结构变化创建新的时间戳 migration。
+- 通用搜索组件放在 `components/shared`，通用搜索状态放在 `hooks/use-search.ts`；feature 之间不互相 import。
+
+## 协作层数据流
+
+```text
+设计师上传素材 -> 提交审核 -> boss 审批 -> PocketBase hook 写入通知
+业务记录变化 -> PocketBase realtime -> Query cache 失效 -> 在线列表更新
+顶部输入关键词 -> 300ms debounce -> 按角色查询允许的 collection -> 分组结果/详情
+达人详情 -> creators.id -> videos.creator relation -> 关联视频列表
+```
+
+协作层结构由以下追加 migration 定义，已经执行过的文件不得回改：
+
+- `1785862000_add_collaboration_layer.js`：设计审批字段、通知、评论、视频达人关系和五角色测试账号。
+- `1785862060_require_design_rejection_reason.js`：审批驳回理由规则。
+- `1785862070_strict_design_rejection_reason.js`：收紧空白理由校验。
+- `pb_hooks/notifications.pb.js`：三种通知和审批请求的服务端校验。
 
 ## 达人 CRUD 模板
 
