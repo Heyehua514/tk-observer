@@ -5,20 +5,10 @@
 import { useMemo } from 'react'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
-export type SearchParams<TFilters extends Record<string, string>> = {
-  query: string
-  page: number
-  perPage: number
-  sort: string
-  filters: TFilters
-}
-
-export function useSearch<TFilters extends Record<string, string>>(
-  params: SearchParams<TFilters>
-) {
+export function useSearch<TParams extends { query: string }>(params: TParams) {
   const debouncedQuery = useDebouncedValue(params.query, 300)
   return useMemo(
-    () => ({ ...params, query: debouncedQuery }),
+    (): TParams => ({ ...params, query: debouncedQuery }),
     [debouncedQuery, params]
   )
 }

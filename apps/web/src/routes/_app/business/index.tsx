@@ -9,7 +9,12 @@ import { BusinessWorkbench } from '@/features/business'
 import { cooperationStatuses, regions } from '@/features/business/constants'
 import type { CreatorListParams } from '@/features/business/types'
 
-function parseSearch(search: Record<string, unknown>): CreatorListParams {
+type BusinessSearch = CreatorListParams & {
+  recordType?: 'creator' | 'company'
+  recordId?: string
+}
+
+function parseSearch(search: Record<string, unknown>): BusinessSearch {
   const region =
     typeof search.region === 'string' &&
     regions.some((value) => value === search.region)
@@ -40,6 +45,11 @@ function parseSearch(search: Record<string, unknown>): CreatorListParams {
     region,
     status,
     sort,
+    recordType:
+      search.recordType === 'creator' || search.recordType === 'company'
+        ? search.recordType
+        : undefined,
+    recordId: typeof search.recordId === 'string' ? search.recordId : undefined,
   }
 }
 

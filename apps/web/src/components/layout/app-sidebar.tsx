@@ -6,6 +6,7 @@ import { Link, useLocation } from '@tanstack/react-router'
 import type { UserRole } from '@/types/auth'
 import {
   BriefcaseBusiness,
+  CalendarDays,
   ChartNoAxesCombined,
   Clapperboard,
   Palette,
@@ -33,6 +34,12 @@ const navigation = [
     to: '/overview' as const,
     role: 'boss' as const,
     icon: ChartNoAxesCombined,
+  },
+  {
+    title: '团队日历',
+    to: '/overview/calendar' as const,
+    role: 'boss' as const,
+    icon: CalendarDays,
   },
   {
     title: '商务工作台',

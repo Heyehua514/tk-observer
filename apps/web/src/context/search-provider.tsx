@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { CommandMenu } from '@/components/command-menu'
+import { GlobalSearch } from '@/components/shared/global-search'
 
 type SearchContextType = {
   open: boolean
@@ -29,7 +29,7 @@ export function SearchProvider({ children }: SearchProviderProps) {
   return (
     <SearchContext.Provider value={{ open, setOpen }}>
       {children}
-      <CommandMenu />
+      <GlobalSearch />
     </SearchContext.Provider>
   )
 }

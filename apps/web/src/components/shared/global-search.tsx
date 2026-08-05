@@ -1,6 +1,6 @@
 /**
- * 全局搜索面板，保留 Command+K 交互。
- * 搜索结果按权限和业务类型分组，每组最多显示五条。
+ * 顶部栏全局搜索弹窗。
+ * @description 300ms 输入即搜，按权限跨工作台分组，每组最多五条。
  */
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -19,15 +19,17 @@ import {
   CommandList,
 } from '@/components/ui/command'
 
-type SearchKind = 'creator' | 'product' | 'video' | 'company'
+export type GlobalSearchKind = 'creator' | 'product' | 'video' | 'company'
+
 type SearchResult = {
   id: string
-  kind: SearchKind
+  kind: GlobalSearchKind
   label: string
   description: string
 }
+
 type SearchGroup = {
-  kind: SearchKind
+  kind: GlobalSearchKind
   title: string
   total: number
   items: SearchResult[]
@@ -49,12 +51,12 @@ async function runGlobalSearch(
           ),
         })
         .then((page) => ({
-          kind: 'creator',
+          kind: 'creator' as const,
           title: '达人',
           total: page.totalItems,
           items: page.items.map((item) => ({
             id: item.id,
-            kind: 'creator',
+            kind: 'creator' as const,
             label: String(item.nickname),
             description: `${String(item.region)} · ${Number(item.followers).toLocaleString()} 粉丝`,
           })),
@@ -67,12 +69,12 @@ async function runGlobalSearch(
           }),
         })
         .then((page) => ({
-          kind: 'company',
+          kind: 'company' as const,
           title: '客户 / 供应商',
           total: page.totalItems,
           items: page.items.map((item) => ({
             id: item.id,
-            kind: 'company',
+            kind: 'company' as const,
             label: String(item.company_name),
             description: String(item.contact_name || '暂无联系人'),
           })),
@@ -89,12 +91,12 @@ async function runGlobalSearch(
           }),
         })
         .then((page) => ({
-          kind: 'product',
+          kind: 'product' as const,
           title: '商品',
           total: page.totalItems,
           items: page.items.map((item) => ({
             id: item.id,
-            kind: 'product',
+            kind: 'product' as const,
             label: String(item.name),
             description: `${String(item.category)} · ${String(item.region)}`,
           })),
@@ -107,17 +109,17 @@ async function runGlobalSearch(
         .collection('videos')
         .getList(1, 5, {
           filter: pb.filter(
-            'title ~ {:q} || creator_name ~ {:q} || product_name ~ {:q}',
+            'title ~ {:q} || creator_name ~ {:q} || product_name ~ {:q} || creator.nickname ~ {:q}',
             { q: query }
           ),
         })
         .then((page) => ({
-          kind: 'video',
+          kind: 'video' as const,
           title: '视频',
           total: page.totalItems,
           items: page.items.map((item) => ({
             id: item.id,
-            kind: 'video',
+            kind: 'video' as const,
             label: String(item.title),
             description: `${String(item.creator_name || '未关联达人')} · ${String(item.product_name || '未关联商品')}`,
           })),
@@ -134,7 +136,7 @@ const resultIcons = {
   company: Store,
 }
 
-export function CommandMenu() {
+export function GlobalSearch() {
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query, 300)
   const { open, setOpen } = useSearch()
@@ -146,23 +148,38 @@ export function CommandMenu() {
     enabled: open && !!role && debouncedQuery.trim().length >= 2,
   })
 
-  const openResult = async (result: SearchResult) => {
+  const close = () => {
     setOpen(false)
     setQuery('')
-    if (result.kind === 'creator' || result.kind === 'company')
+  }
+
+  const openResult = async (result: SearchResult) => {
+    close()
+    if (result.kind === 'creator' || result.kind === 'company') {
       await navigate({
         to: '/business',
         search: {
           page: 1,
           perPage: 20,
-          query: result.label,
+          query: '',
           region: 'all',
           status: 'all',
           sort: '-updated',
+          recordType: result.kind,
+          recordId: result.id,
         },
       })
-    if (result.kind === 'product') await navigate({ to: '/market' })
-    if (result.kind === 'video') await navigate({ to: '/editing' })
+    } else if (result.kind === 'product') {
+      await navigate({
+        to: '/market',
+        search: { query: '', recordType: result.kind, recordId: result.id },
+      })
+    } else {
+      await navigate({
+        to: '/editing',
+        search: { query: '', recordType: result.kind, recordId: result.id },
+      })
+    }
   }
 
   return (
@@ -179,9 +196,7 @@ export function CommandMenu() {
           </div>
         ) : (
           <CommandEmpty>
-            {groups.isFetching
-              ? '正在搜索…'
-              : '未找到相关内容，请尝试昵称、地区或标题关键词'}
+            {groups.isFetching ? '正在搜索…' : '未找到相关内容'}
           </CommandEmpty>
         )}
         {groups.data?.map((group) => (
@@ -192,7 +207,7 @@ export function CommandMenu() {
                 <CommandItem
                   key={`${result.kind}-${result.id}`}
                   value={`${result.label}-${result.id}`}
-                  onSelect={() => openResult(result)}
+                  onSelect={() => void openResult(result)}
                 >
                   <Icon className='size-4' />
                   <div className='min-w-0 flex-1'>

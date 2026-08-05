@@ -1,0 +1,57 @@
+/** 设计素材列表查询，通过 PocketBase realtime 同步上传和审批状态。 */
+import { useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { pb } from '@/lib/pocketbase'
+import type { DesignAssetListParams } from '../types'
+import { mapDesignAsset } from './design-asset-mapper'
+
+export const designAssetKeys = {
+  all: ['design-assets'] as const,
+  list: () => [...designAssetKeys.all, 'list'] as const,
+}
+
+export function useDesignAssets(params: DesignAssetListParams) {
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined
+    let disposed = false
+    void pb
+      .collection('design_assets')
+      .subscribe('*', () => {
+        void queryClient.invalidateQueries({ queryKey: designAssetKeys.all })
+      })
+      .then((stop) => {
+        if (disposed) stop()
+        else unsubscribe = stop
+      })
+    return () => {
+      disposed = true
+      unsubscribe?.()
+    }
+  }, [queryClient])
+
+  return useQuery({
+    queryKey: [...designAssetKeys.list(), params],
+    queryFn: async () => {
+      const filters: string[] = []
+      const values: Record<string, string> = {}
+      if (params.query) {
+        filters.push('(file_name ~ {:query} || dimensions ~ {:query})')
+        values.query = params.query
+      }
+      if (params.status !== 'all') {
+        filters.push('status = {:status}')
+        values.status = params.status
+      }
+      if (params.region !== 'all') {
+        filters.push('region = {:region}')
+        values.region = params.region
+      }
+      const records = await pb.collection('design_assets').getFullList({
+        filter: filters.length ? pb.filter(filters.join(' && '), values) : '',
+        sort: params.sort,
+      })
+      return records.map(mapDesignAsset)
+    },
+  })
+}

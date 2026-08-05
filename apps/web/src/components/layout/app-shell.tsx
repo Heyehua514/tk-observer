@@ -10,6 +10,8 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
+import { GlobalRecordDetail } from '@/components/shared/global-record-detail'
+import { NotificationBell } from '@/components/shared/notification-bell'
 import { UserMenu } from '@/components/shared/user-menu'
 import { ThemeSwitch } from '@/components/theme-switch'
 
@@ -44,6 +46,7 @@ export function AppShell() {
               </div>
               <div className='ml-auto flex items-center gap-2'>
                 <Search placeholder='全局搜索' className='hidden md:flex' />
+                <NotificationBell />
                 <ThemeSwitch />
                 <UserMenu />
               </div>
@@ -51,6 +54,7 @@ export function AppShell() {
             <main className='min-w-0 flex-1 p-6'>
               <Outlet />
             </main>
+            <GlobalRecordDetail />
           </SidebarInset>
         </SidebarProvider>
       </LayoutProvider>

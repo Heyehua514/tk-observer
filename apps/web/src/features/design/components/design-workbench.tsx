@@ -2,10 +2,17 @@
 import { Download, Image, Palette, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import type { DesignAssetListParams } from '../types'
+import { DesignAssetGrid } from './design-asset-grid'
 
-export function DesignWorkbench() {
+export function DesignWorkbench({
+  params,
+  onParamsChange,
+}: {
+  params: DesignAssetListParams
+  onParamsChange: (patch: Partial<DesignAssetListParams>) => void
+}) {
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -28,11 +35,7 @@ export function DesignWorkbench() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value='assets' className='mt-5'>
-          <EmptyState
-            title='素材库还是空的'
-            description='后续上传的图片将存入 PocketBase design_assets 文件字段，并实时显示缩略图、尺寸与上传时间。'
-            action={<Button disabled>上传素材</Button>}
-          />
+          <DesignAssetGrid params={params} onParamsChange={onParamsChange} />
         </TabsContent>
         <TabsContent value='tasks' className='mt-5'>
           <div className='grid gap-4 md:grid-cols-4'>

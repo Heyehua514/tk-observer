@@ -1,16 +1,7 @@
 /** 商务工作台稳定枚举及界面映射。 */
-import type { CooperationStatus, Region } from './types'
+import type { CooperationStatus } from './types'
 
-export const regions: Region[] = [
-  'US',
-  'UK',
-  'ID',
-  'TH',
-  'VN',
-  'MY',
-  'PH',
-  'SG',
-]
+export { regions } from '@/types/commerce'
 export const cooperationStatuses: CooperationStatus[] = [
   'pending',
   'contacting',

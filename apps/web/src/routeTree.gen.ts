@@ -18,6 +18,7 @@ import { Route as AppDesignIndexRouteImport } from './routes/_app/design/index'
 import { Route as AppEditingIndexRouteImport } from './routes/_app/editing/index'
 import { Route as AppMarketIndexRouteImport } from './routes/_app/market/index'
 import { Route as AppOverviewIndexRouteImport } from './routes/_app/overview/index'
+import { Route as AppOverviewCalendarRouteImport } from './routes/_app/overview/calendar'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -63,6 +64,11 @@ const AppOverviewIndexRoute = AppOverviewIndexRouteImport.update({
   path: '/overview/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOverviewCalendarRoute = AppOverviewCalendarRouteImport.update({
+  id: '/overview/calendar',
+  path: '/overview/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -72,6 +78,7 @@ const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
+  '/overview/calendar': typeof AppOverviewCalendarRoute
   '/business/': typeof AppBusinessIndexRoute
   '/design/': typeof AppDesignIndexRoute
   '/editing/': typeof AppEditingIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
+  '/overview/calendar': typeof AppOverviewCalendarRoute
   '/business': typeof AppBusinessIndexRoute
   '/design': typeof AppDesignIndexRoute
   '/editing': typeof AppEditingIndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
+  '/_app/overview/calendar': typeof AppOverviewCalendarRoute
   '/_app/business/': typeof AppBusinessIndexRoute
   '/_app/design/': typeof AppDesignIndexRoute
   '/_app/editing/': typeof AppEditingIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/overview/calendar'
     | '/business/'
     | '/design/'
     | '/editing/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/overview/calendar'
     | '/business'
     | '/design'
     | '/editing'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/_auth/login'
+    | '/_app/overview/calendar'
     | '/_app/business/'
     | '/_app/design/'
     | '/_app/editing/'
@@ -208,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOverviewIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/overview/calendar': {
+      id: '/_app/overview/calendar'
+      path: '/overview/calendar'
+      fullPath: '/overview/calendar'
+      preLoaderRoute: typeof AppOverviewCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/settings'
@@ -219,6 +238,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppOverviewCalendarRoute: typeof AppOverviewCalendarRoute
   AppBusinessIndexRoute: typeof AppBusinessIndexRoute
   AppDesignIndexRoute: typeof AppDesignIndexRoute
   AppEditingIndexRoute: typeof AppEditingIndexRoute
@@ -228,6 +248,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppOverviewCalendarRoute: AppOverviewCalendarRoute,
   AppBusinessIndexRoute: AppBusinessIndexRoute,
   AppDesignIndexRoute: AppDesignIndexRoute,
   AppEditingIndexRoute: AppEditingIndexRoute,

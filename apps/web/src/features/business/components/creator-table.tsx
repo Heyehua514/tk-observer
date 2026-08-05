@@ -19,6 +19,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { formatBeijingTime } from '@/lib/format'
+import { useSearch } from '@/hooks/use-search'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,7 +76,8 @@ export function CreatorTable({
   params: CreatorListParams
   onParamsChange: (patch: Partial<CreatorListParams>) => void
 }) {
-  const creators = useCreators(params)
+  const queryParams = useSearch(params)
+  const creators = useCreators(queryParams)
   const deleteCreator = useDeleteCreator()
   const bulkUpdate = useBulkUpdateCreators()
   const [selection, setSelection] = useState<Record<string, boolean>>({})

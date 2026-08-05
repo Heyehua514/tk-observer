@@ -1,7 +1,8 @@
 /** 商务工作台领域类型；新增商务模块时在此补充类型。 */
+import type { Region } from '@/types/commerce'
 import type { ListResult } from 'pocketbase'
 
-export type Region = 'US' | 'UK' | 'ID' | 'TH' | 'VN' | 'MY' | 'PH' | 'SG'
+export type { Region } from '@/types/commerce'
 export type CooperationStatus =
   'pending' | 'contacting' | 'signed' | 'terminated'
 
@@ -32,4 +33,13 @@ export type CreatorListParams = {
 
 export type CreatorListResult = Omit<ListResult<Creator>, 'items'> & {
   items: Creator[]
+}
+
+export type CreatorVideo = {
+  id: string
+  title: string
+  productName: string
+  region: Region
+  publishAt: string
+  updated: string
 }
