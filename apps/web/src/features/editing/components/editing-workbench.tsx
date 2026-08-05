@@ -4,8 +4,17 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import { SearchBar } from '@/components/shared/search-bar'
+import { useEditingWorkbench } from '../hooks/use-editing-workbench'
 
-export function EditingWorkbench() {
+export function EditingWorkbench({
+  query,
+  onQueryChange,
+}: {
+  query: string
+  onQueryChange: (query: string) => void
+}) {
+  const activeQuery = useEditingWorkbench(query)
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -28,6 +37,18 @@ export function EditingWorkbench() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value='tasks' className='mt-5'>
+          <div className='mb-4 flex items-center justify-between gap-3'>
+            <SearchBar
+              value={query}
+              onChange={onQueryChange}
+              placeholder='搜索视频标题、达人或商品'
+            />
+            {activeQuery && (
+              <span className='text-sm text-muted-foreground'>
+                搜索：{activeQuery}
+              </span>
+            )}
+          </div>
           <EmptyState
             title='暂无视频任务'
             description='任务将展示标题、关联商品、关联达人、目标站点、状态、截止日期和负责人。'

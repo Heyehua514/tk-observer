@@ -11,8 +11,17 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import { SearchBar } from '@/components/shared/search-bar'
+import { useMarketWorkbench } from '../hooks/use-market-workbench'
 
-export function MarketWorkbench() {
+export function MarketWorkbench({
+  query,
+  onQueryChange,
+}: {
+  query: string
+  onQueryChange: (query: string) => void
+}) {
+  const activeQuery = useMarketWorkbench(query)
   const adData = [
     { region: 'US', value: 0 },
     { region: 'UK', value: 0 },
@@ -45,6 +54,18 @@ export function MarketWorkbench() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value='products' className='mt-5'>
+          <div className='mb-4 flex items-center justify-between gap-3'>
+            <SearchBar
+              value={query}
+              onChange={onQueryChange}
+              placeholder='搜索商品名称、类目或站点'
+            />
+            {activeQuery && (
+              <span className='text-sm text-muted-foreground'>
+                搜索：{activeQuery}
+              </span>
+            )}
+          </div>
           <EmptyState
             title='选品库暂无商品'
             description='商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
