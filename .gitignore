@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+apps/web/.env
+apps/desktop/src-tauri/target/
+backend/pocketbase
+backend/pb_data/
+*.log
+work/

@@ -1,0 +1,35 @@
+/** 商务工作台领域类型；新增商务模块时在此补充类型。 */
+import type { ListResult } from 'pocketbase'
+
+export type Region = 'US' | 'UK' | 'ID' | 'TH' | 'VN' | 'MY' | 'PH' | 'SG'
+export type CooperationStatus =
+  'pending' | 'contacting' | 'signed' | 'terminated'
+
+export type Creator = {
+  id: string
+  nickname: string
+  tiktokUrl: string
+  followers: number
+  region: Region
+  cooperationStatus: CooperationStatus
+  commissionRate: number
+  owner: string
+  created: string
+  updated: string
+}
+
+export type CreatorInput = Omit<Creator, 'id' | 'created' | 'updated'>
+
+export type CreatorListParams = {
+  page: number
+  perPage: number
+  query: string
+  region: Region | 'all'
+  status: CooperationStatus | 'all'
+  sort:
+    'created' | '-created' | 'updated' | '-updated' | 'nickname' | '-nickname'
+}
+
+export type CreatorListResult = Omit<ListResult<Creator>, 'items'> & {
+  items: Creator[]
+}

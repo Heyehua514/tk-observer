@@ -1,0 +1,17 @@
+{
+  "name": "tk-observer",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev": "pnpm --dir apps/web dev",
+    "build": "pnpm --dir apps/web build",
+    "typecheck": "pnpm --dir apps/web typecheck",
+    "lint": "pnpm --dir apps/web lint",
+    "format": "pnpm --dir apps/web format",
+    "pb:serve": "./backend/pocketbase serve --dir=backend/pb_data --migrationsDir=backend/pb_migrations --hooksDir=backend/pb_hooks --http=127.0.0.1:8090",
+    "pb:migrate": "./backend/pocketbase migrate up --dir=backend/pb_data --migrationsDir=backend/pb_migrations",
+    "desktop:dev": "pnpm --dir apps/desktop tauri dev",
+    "desktop:build": "pnpm --dir apps/desktop tauri build"
+  }
+}
+
