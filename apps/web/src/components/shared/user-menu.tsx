@@ -22,7 +22,7 @@ export function UserMenu() {
   if (!user) return null
 
   const signOut = async () => {
-    logout()
+    await logout()
     queryClient.clear()
     sessionStorage.clear()
     await navigate({ to: '/login', replace: true })

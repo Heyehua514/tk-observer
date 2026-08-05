@@ -75,7 +75,7 @@ export async function loginWithPassword(email: string, password: string) {
     useAuthStore.getState().setUser(user)
     return user
   } catch (error) {
-    clearPocketBaseSession()
+    await clearPocketBaseSession()
     useAuthStore.getState().reset()
 
     if (!(error instanceof ClientResponseError) || error.status === 0) {
@@ -143,8 +143,8 @@ export async function registerAccount(input: RegistrationInput) {
   }
 }
 
-export function logout() {
-  clearPocketBaseSession()
+export async function logout() {
+  await clearPocketBaseSession()
   useAuthStore.getState().reset()
 }
 

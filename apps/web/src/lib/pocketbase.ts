@@ -46,14 +46,20 @@ sessionAuthStore.onChange((token, record) => {
 export const pb = new PocketBase(getStoredServerUrl(), sessionAuthStore)
 pb.autoCancellation(false)
 
-export function setPocketBaseUrl(value: string) {
+export async function setPocketBaseUrl(value: string) {
   const url = normalizeServerUrl(value)
   localStorage.setItem(SERVER_URL_KEY, url)
-  pb.authStore.clear()
+  await clearPocketBaseSession()
   pb.baseURL = url
   return url
 }
 
-export function clearPocketBaseSession() {
-  pb.authStore.clear()
+export async function clearPocketBaseSession() {
+  try {
+    await pb.realtime.unsubscribe()
+  } catch {
+    // 实时连接已经断开时，退出仍必须继续清除本地认证状态。
+  } finally {
+    pb.authStore.clear()
+  }
 }

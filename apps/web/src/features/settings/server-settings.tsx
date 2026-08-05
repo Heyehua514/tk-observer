@@ -66,7 +66,7 @@ export function ServerSettings() {
       toast.error('请先测试当前服务器地址')
       return
     }
-    setPocketBaseUrl(values.url)
+    await setPocketBaseUrl(values.url)
     useAuthStore.getState().reset()
     queryClient.clear()
     toast.success('服务器地址已保存，请重新登录')

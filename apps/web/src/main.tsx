@@ -35,10 +35,11 @@ export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
       if (error instanceof ClientResponseError && error.status === 401) {
-        logout()
-        queryClient.clear()
-        toast.error('登录状态已失效，请重新登录')
-        void router.navigate({ to: '/login', replace: true })
+        void logout().then(() => {
+          queryClient.clear()
+          toast.error('登录状态已失效，请重新登录')
+          void router.navigate({ to: '/login', replace: true })
+        })
       } else if (error instanceof ClientResponseError && error.status === 0) {
         toast.error('无法连接服务器，请检查网络')
       }
