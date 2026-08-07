@@ -7,9 +7,26 @@ import { requireRoles } from '@/lib/auth'
 import { RouteError } from '@/components/shared/route-error'
 import { BusinessWorkbench } from '@/features/business'
 import { cooperationStatuses, regions } from '@/features/business/constants'
-import type { CreatorListParams } from '@/features/business/types'
+import type {
+  CompanyListParams,
+  CreatorListParams,
+} from '@/features/business/types'
 
 type BusinessSearch = CreatorListParams & {
+  tab?:
+    | 'dashboard'
+    | 'creators'
+    | 'companies'
+    | 'clients'
+    | 'opportunities'
+    | 'orders'
+    | 'social'
+    | 'sponsorships'
+  companyPage: number
+  companyQuery: string
+  companyRegion: CompanyListParams['region']
+  companyKind: CompanyListParams['kind']
+  companySort: CompanyListParams['sort']
   recordType?: 'creator' | 'company'
   recordId?: string
 }
@@ -45,6 +62,39 @@ function parseSearch(search: Record<string, unknown>): BusinessSearch {
     region,
     status,
     sort,
+    tab: [
+      'dashboard',
+      'creators',
+      'companies',
+      'clients',
+      'opportunities',
+      'orders',
+      'social',
+      'sponsorships',
+    ].includes(String(search.tab))
+      ? (search.tab as BusinessSearch['tab'])
+      : 'dashboard',
+    companyPage:
+      typeof search.companyPage === 'number' && search.companyPage > 0
+        ? search.companyPage
+        : 1,
+    companyQuery:
+      typeof search.companyQuery === 'string' ? search.companyQuery : '',
+    companyRegion:
+      typeof search.companyRegion === 'string' &&
+      regions.some((value) => value === search.companyRegion)
+        ? (search.companyRegion as CompanyListParams['region'])
+        : 'all',
+    companyKind:
+      search.companyKind === 'client' || search.companyKind === 'supplier'
+        ? search.companyKind
+        : 'all',
+    companySort:
+      search.companySort === '-created' ||
+      search.companySort === 'company_name' ||
+      search.companySort === '-company_name'
+        ? search.companySort
+        : '-updated',
     recordType:
       search.recordType === 'creator' || search.recordType === 'company'
         ? search.recordType
@@ -66,9 +116,39 @@ function BusinessRoute() {
   return (
     <BusinessWorkbench
       params={params}
+      companyParams={{
+        page: params.companyPage,
+        perPage: 20,
+        query: params.companyQuery,
+        region: params.companyRegion,
+        kind: params.companyKind,
+        sort: params.companySort,
+      }}
+      tab={params.tab || 'dashboard'}
       onParamsChange={(patch) =>
         void navigate({
           search: (previous) => ({ ...previous, ...patch }),
+          replace: true,
+        })
+      }
+      onCompanyParamsChange={(patch) =>
+        void navigate({
+          search: (previous) => ({
+            ...previous,
+            ...(patch.page !== undefined ? { companyPage: patch.page } : {}),
+            ...(patch.query !== undefined ? { companyQuery: patch.query } : {}),
+            ...(patch.region !== undefined
+              ? { companyRegion: patch.region }
+              : {}),
+            ...(patch.kind !== undefined ? { companyKind: patch.kind } : {}),
+            ...(patch.sort !== undefined ? { companySort: patch.sort } : {}),
+          }),
+          replace: true,
+        })
+      }
+      onTabChange={(tab) =>
+        void navigate({
+          search: (previous) => ({ ...previous, tab }),
           replace: true,
         })
       }

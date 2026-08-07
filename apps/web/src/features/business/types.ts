@@ -35,6 +35,34 @@ export type CreatorListResult = Omit<ListResult<Creator>, 'items'> & {
   items: Creator[]
 }
 
+export type CompanyKind = 'client' | 'supplier'
+
+export type Company = {
+  id: string
+  companyName: string
+  kind: CompanyKind
+  contactName: string
+  contactEmail: string
+  region: Region
+  created: string
+  updated: string
+}
+
+export type CompanyInput = Omit<Company, 'id' | 'created' | 'updated'>
+
+export type CompanyListParams = {
+  page: number
+  perPage: number
+  query: string
+  region: Region | 'all'
+  kind: CompanyKind | 'all'
+  sort: '-updated' | '-created' | 'company_name' | '-company_name'
+}
+
+export type CompanyListResult = Omit<ListResult<Company>, 'items'> & {
+  items: Company[]
+}
+
 export type CreatorVideo = {
   id: string
   title: string
