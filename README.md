@@ -92,7 +92,7 @@ pnpm dev
 ## 本轮已实现能力
 
 - 顶部全局搜索：300ms debounce，按达人、商品、视频、客户分组，每组最多 5 条，并按当前角色隐藏无权访问的数据。
-- 工作台搜索基础设施：`SearchBar`、`FilterBar`、`GlobalSearch` 和 `useSearch`；达人、设计素材已支持搜索、筛选、排序及 URL query 同步，市场和剪辑已接入关键词 URL 状态。
+- 工作台搜索基础设施：`SearchBar`、`FilterBar`、`GlobalSearch` 和 `useSearch`；达人、设计素材及爆款选题已支持搜索、组合筛选、排序和 URL query 同步。
 - 实时数据：达人、设计素材、通知及关联视频通过 PocketBase realtime 使 TanStack Query 缓存失效，在线客户端无需手动刷新。
 - 达人 CRUD：新增、详情、预填编辑、删除、搜索、分页、批量改状态、批量删除及最近更新时间。
 - 设计审批：设计师上传素材并提交审核；boss 可通过或驳回，驳回理由由前端 zod、API Rule 和 PocketBase hook 共同校验。
@@ -100,8 +100,73 @@ pnpm dev
 - 数据关联：达人详情底部展示关联视频；全局搜索中的商品和视频详情已预留并展示现有关系数据。
 - 团队日历：`/overview/calendar` 提供 boss 可见的月视图占位页。
 - 外部数据源：`apps/web/src/lib/data-sources/types.ts` 定义统一 `ExternalDataSource` 扩展接口。
+- 微信视频号选题库：三个账号的选题 CRUD、自动爆款判定、批量删除、CSV 模板/导入/筛选结果导出、导入历史和 SQL 数据分析看板。
+- 剪辑内容调研：预置三个微信视频号对标账号，支持爆款视频分析笔记、AI 风格分析历史、热点调研结果解析及一键预填为选题。
+- 市场活动数据基础：新增共享活动、阶段、任务、报名、招商、场地、文案模板、物料和财务 collections，供市场与其他工作台关联使用。
+- 市场活动运营：活动列表与六 Tab 详情、任务拖拽看板、报名/招商/协作进度、财务录入与指标；场地资源支持多图上传、筛选、详情和快速匹配；模板、物料及财务支持新增、预览和复盘导出。
+- 商务拓展：客户 CRUD、六阶段商机 Pipeline、渠道商单、朋友圈计划、活动招商协作，以及达人商务可用性、报价和备注字段。
+- 商务经营驾驶舱：真实经营指标、大尺寸商机 Pipeline、临期行动队列、近期商单/朋友圈/客户动态；支持数字入场、页面过渡、拖拽反馈和减少动态效果。
+- 统一界面反馈：角色色块头像、北京时间、登录问候、引导式空状态、表格轻交互、通知铃铛提醒和顶部 Sonner Toast。
+- 团队记忆闭环：自动生成日报、周报、截止提醒和失败案例；磊哥总览展示今日简报、本月教训 TOP 3 与本周自动化运行指标。
 
-当前仍为骨架或占位的业务包括：客户/供应商完整 CRUD、选品库完整 CRUD、竞品监测、投放图表真实数据、活动排期、设计任务看板、视频任务 CRUD、成片上传预览和发布排期。
+当前仍为骨架或占位的业务包括：选品库完整 CRUD、竞品监测、投放图表真实数据、设计任务看板、视频任务 CRUD、成片上传预览和发布排期。
+
+## 微信视频号数据约定
+
+微信视频号目前没有可供本项目直接读取后台指标的公开 API。选题与表现数据只通过谢洁手动新增或 CSV 批量导入进入系统；本项目不会模拟或声称存在自动抓取。后续如接入飞瓜、新榜或微信开放能力，应通过 `ExternalDataSource` 和 PocketBase Hook/定时任务写入现有 collections，前端页面无需更换数据模型。
+
+CSV 模板列为：标题、账号、视频类型、播放量、完播率、涨粉、点赞、评论、转发、发布日期、标签、内容简述。同标题与同发布日期视为重复并跳过，`is_viral` 不接受客户端输入，由 PocketBase Hook 按“完播率不低于 60%，或播放量不低于同账号均值 2 倍”重算。
+
+## 团队记忆自动化
+
+`1786001000_create_team_memory_automation.js` 新增 `daily_reports`、`weekly_reports`、`failed_cases`，并为截止提醒与本地内容分析追加必要字段。报告和失败案例只允许 boss 读取，客户端不能写入。
+
+PocketBase 进程必须使用北京时间运行：
+
+```bash
+TZ=Asia/Shanghai pnpm pb:serve
+```
+
+自动任务与服务端自检日志：
+
+| Hook | 计划 | 自检日志 |
+|---|---|---|
+| `deadline-check.pb.js` | 每天 08:00 | `deadline-check: N 条任务+N 条商机已提醒` |
+| `daily-report.pb.js` | 每天 18:00 | `daily-report: 已生成 YYYY-MM-DD 日报` |
+| `weekly-report.pb.js` | 每周一 08:00 | `weekly-report: 周报已生成，对比上周 X→Y` |
+| `failed-case-recorder.pb.js` | 商机或任务更新后 | `failed-case: 已记录 N 条失败案例` |
+| `auto-analyze.pb.js` | 每 5 分钟 | `auto-analyze: completed, analyzed=N` |
+
+三个 cron 和内容分析提供 superuser 手动端点：
+
+```text
+POST /api/tk-observer/automation/deadline-check
+POST /api/tk-observer/automation/daily-report
+POST /api/tk-observer/automation/weekly-report
+POST /api/tk-observer/automation/auto-analyze
+```
+
+`auto-analyze` 不在选题录入请求中调用 AI。新记录会保持 `ai_analysis` 和 `analyzed_at` 为空，由每 5 分钟的后台批次或 superuser 手动端点处理，因此 WorkBuddy 速度不会阻塞录入。
+
+分析通过本机 WorkBuddy CodeBuddy CLI 执行，默认绝对路径为：
+
+```text
+/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/bin/codebuddy
+```
+
+可在启动 PocketBase 前设置 `WORKBUDDY_CLI=/absolute/path/to/codebuddy` 覆盖该路径。WorkBuddy 桌面端必须已登录；每个实际分析批次会消耗 WorkBuddy credits。macOS Hook 使用系统 `/usr/bin/perl` 为 CLI 设置 120 秒 wall timeout，防止挂死批次永久占用进程锁。端点返回 `completed` 表示结构化结果已写入，`empty` 表示没有待分析记录，`in_progress` 表示已有批次运行且本次未消耗 credits，`workbuddy_unavailable` 表示 CLI 缺失、未登录、credits 不足、超时或输出校验失败，`write_failed` 表示数据库事务已整批回滚。失败时两个分析字段保持为空，下一次 5 分钟调度或手动调用会自动重试。
+
+CodeBuddy 2.115.0 的 `--json-schema` 会要求当前模型调用不可用的 `StructuredOutput` 工具，因此 Hook 不传该参数；提示词负责约束格式，本地解析器负责严格校验四个字段，校验不通过时不会写入数据库。
+
+后端集成自检只允许连接临时 PocketBase，脚本会拒绝端口 `8090`：
+
+```bash
+PB_TEST_BASE_URL=http://127.0.0.1:8092 \
+PB_TEST_SUPERUSER_EMAIL=<temporary-superuser> \
+PB_TEST_SUPERUSER_PASSWORD=<temporary-password> \
+PB_TEST_ALLOW_MUTATIONS=1 \
+node backend/tests/team-memory-hooks.integration.mjs
+```
 
 ## 本地测试账号
 
@@ -125,6 +190,8 @@ pnpm dev
 pnpm typecheck
 pnpm lint
 pnpm --dir apps/web format:check
+pnpm --dir apps/web test
+pnpm --dir apps/web test:eval
 pnpm build
 ```
 
@@ -147,6 +214,8 @@ pnpm build
 业务记录变化 -> PocketBase realtime -> Query cache 失效 -> 在线列表更新
 顶部输入关键词 -> 300ms debounce -> 按角色查询允许的 collection -> 分组结果/详情
 达人详情 -> creators.id -> videos.creator relation -> 关联视频列表
+选题写入/删除 -> video_ideas Hook -> SQL 重算同账号爆款状态 -> realtime 刷新
+CSV 导入 -> 去重写入 -> import_history 快照 -> SQL 分析视图自动刷新
 ```
 
 协作层结构由以下追加 migration 定义，已经执行过的文件不得回改：
@@ -155,6 +224,9 @@ pnpm build
 - `1785862060_require_design_rejection_reason.js`：审批驳回理由规则。
 - `1785862070_strict_design_rejection_reason.js`：收紧空白理由校验。
 - `pb_hooks/notifications.pb.js`：三种通知和审批请求的服务端校验。
+- `1785863000_create_editing_content_collections.js`：微信视频号选题、导入历史、对标账号/视频、热点话题和风格分析数据表。
+- `1785864000_create_video_idea_analytics_views.js`：核心指标、账号对比、视频类型对比和爆款特征只读 SQL 视图。
+- `pb_hooks/video_ideas.pb.js`：服务端自动重算 `is_viral`，客户端不能手工设置该字段。
 
 ## 达人 CRUD 模板
 

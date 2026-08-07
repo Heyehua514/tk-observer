@@ -2,6 +2,8 @@
 import { useQuery } from '@tanstack/react-query'
 import {
   Activity,
+  ArrowDownRight,
+  ArrowUpRight,
   CircleDollarSign,
   ClipboardList,
   Clapperboard,
@@ -19,8 +21,11 @@ import {
 import { formatMoney } from '@/lib/format'
 import { pb } from '@/lib/pocketbase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import { RoleAvatar } from '@/components/shared/role-avatar'
+import { TeamMemory } from '../team-memory'
 
 const fallbackTrend = [
   { date: '08-01', value: 126000 },
@@ -68,11 +73,40 @@ export function OverviewDashboard() {
   const totalGmv =
     data.data?.gmv.reduce((sum, item) => sum + Number(item.amount_minor), 0) ||
     987600
+  const gmvRecords = data.data?.gmv || []
+  const latestGmv = Number(gmvRecords[gmvRecords.length - 1]?.amount_minor || 0)
+  const previousGmv = Number(
+    gmvRecords[gmvRecords.length - 2]?.amount_minor || 0
+  )
+  const gmvDelta = previousGmv
+    ? ((latestGmv - previousGmv) / previousGmv) * 100
+    : null
   const metrics = [
-    { label: '本月 GMV', value: formatMoney(totalGmv), icon: CircleDollarSign },
-    { label: '在跑达人数', value: data.data?.creators ?? 0, icon: UsersRound },
-    { label: '待办任务数', value: data.data?.tasks ?? 0, icon: ClipboardList },
-    { label: '本周出片数', value: data.data?.videos ?? 0, icon: Clapperboard },
+    {
+      label: '本月 GMV',
+      value: totalGmv,
+      icon: CircleDollarSign,
+      money: true,
+      delta: gmvDelta,
+    },
+    {
+      label: '在跑达人数',
+      value: data.data?.creators ?? 0,
+      icon: UsersRound,
+      delta: null,
+    },
+    {
+      label: '待办任务数',
+      value: data.data?.tasks ?? 0,
+      icon: ClipboardList,
+      delta: null,
+    },
+    {
+      label: '本周出片数',
+      value: data.data?.videos ?? 0,
+      icon: Clapperboard,
+      delta: null,
+    },
   ]
 
   return (
@@ -87,7 +121,17 @@ export function OverviewDashboard() {
             <CardContent className='flex items-start justify-between p-5'>
               <div>
                 <p className='text-sm text-muted-foreground'>{metric.label}</p>
-                <p className='mt-2 text-2xl font-semibold'>{metric.value}</p>
+                <p className='mt-2 text-2xl font-semibold'>
+                  <AnimatedNumber
+                    value={metric.value}
+                    format={
+                      metric.money
+                        ? (value) => formatMoney(Math.round(value))
+                        : (value) => Math.round(value).toLocaleString('zh-CN')
+                    }
+                  />
+                </p>
+                <MetricTrend delta={metric.delta} />
               </div>
               <metric.icon className='size-5 text-blue-600' />
             </CardContent>
@@ -121,6 +165,7 @@ export function OverviewDashboard() {
                   stroke='#2563eb'
                   strokeWidth={2}
                   dot={false}
+                  animationDuration={800}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -159,6 +204,7 @@ export function OverviewDashboard() {
           </CardContent>
         </Card>
       </div>
+      <TeamMemory />
       <Card className='shadow-none'>
         <CardHeader>
           <CardTitle className='text-base'>成员任务进度</CardTitle>
@@ -174,8 +220,16 @@ export function OverviewDashboard() {
             return (
               <div
                 key={name}
-                className='grid grid-cols-[72px_1fr_44px] items-center gap-3 text-sm'
+                className='grid grid-cols-[34px_72px_1fr_44px] items-center gap-3 text-sm'
               >
+                <RoleAvatar
+                  name={name}
+                  role={
+                    ['boss', 'business', 'market', 'design', 'editing'][
+                      index
+                    ] as 'boss' | 'business' | 'market' | 'design' | 'editing'
+                  }
+                />
                 <span>{name}</span>
                 <div className='h-2 overflow-hidden rounded-full bg-muted'>
                   <div
@@ -192,5 +246,24 @@ export function OverviewDashboard() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function MetricTrend({ delta }: { delta: number | null }) {
+  if (delta === null)
+    return <p className='mt-1 text-xs text-muted-foreground'>暂无对比</p>
+  const positive = delta >= 0
+  const Icon = positive ? ArrowUpRight : ArrowDownRight
+  return (
+    <p
+      className={
+        positive
+          ? 'mt-1 flex items-center gap-1 text-xs text-emerald-600'
+          : 'mt-1 flex items-center gap-1 text-xs text-red-600'
+      }
+    >
+      <Icon className='size-3.5' />
+      {Math.abs(delta).toFixed(1)}%
+    </p>
   )
 }

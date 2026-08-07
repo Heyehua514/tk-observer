@@ -1,0 +1,11 @@
+TK观察工作台
+
+此项目由 Codex 临时任务“构建软件”迁移而来。
+原始目录：/Users/liyuzhen/Documents/Codex/2026-08-05/w/tk-observer
+迁移日期：2026-08-06
+
+为避免复制无用的大型缓存，未迁移以下可重新生成内容：
+- apps/desktop/src-tauri/target
+- work/toolchains
+
+项目源码、Git 历史、PocketBase 数据和 Node.js 依赖均已保留。

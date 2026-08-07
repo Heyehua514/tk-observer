@@ -20,6 +20,8 @@ import { Route as AppMarketIndexRouteImport } from './routes/_app/market/index'
 import { Route as AppOverviewIndexRouteImport } from './routes/_app/overview/index'
 import { Route as AppOverviewCalendarRouteImport } from './routes/_app/overview/calendar'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
+import { Route as AppSettingsFeishuRouteImport } from './routes/_app/settings/feishu'
+import { Route as AppMarketEventsEventIdRouteImport } from './routes/_app/market/events/$eventId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -74,28 +76,42 @@ const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   path: '/settings/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsFeishuRoute = AppSettingsFeishuRouteImport.update({
+  id: '/settings/feishu',
+  path: '/settings/feishu',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMarketEventsEventIdRoute = AppMarketEventsEventIdRouteImport.update({
+  id: '/market/events/$eventId',
+  path: '/market/events/$eventId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/overview/calendar': typeof AppOverviewCalendarRoute
+  '/settings/feishu': typeof AppSettingsFeishuRoute
   '/business/': typeof AppBusinessIndexRoute
   '/design/': typeof AppDesignIndexRoute
   '/editing/': typeof AppEditingIndexRoute
   '/market/': typeof AppMarketIndexRoute
   '/overview/': typeof AppOverviewIndexRoute
   '/settings/': typeof AppSettingsIndexRoute
+  '/market/events/$eventId': typeof AppMarketEventsEventIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof AuthLoginRoute
   '/overview/calendar': typeof AppOverviewCalendarRoute
+  '/settings/feishu': typeof AppSettingsFeishuRoute
   '/business': typeof AppBusinessIndexRoute
   '/design': typeof AppDesignIndexRoute
   '/editing': typeof AppEditingIndexRoute
   '/market': typeof AppMarketIndexRoute
   '/overview': typeof AppOverviewIndexRoute
   '/settings': typeof AppSettingsIndexRoute
+  '/market/events/$eventId': typeof AppMarketEventsEventIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,12 +120,14 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_app/overview/calendar': typeof AppOverviewCalendarRoute
+  '/_app/settings/feishu': typeof AppSettingsFeishuRoute
   '/_app/business/': typeof AppBusinessIndexRoute
   '/_app/design/': typeof AppDesignIndexRoute
   '/_app/editing/': typeof AppEditingIndexRoute
   '/_app/market/': typeof AppMarketIndexRoute
   '/_app/overview/': typeof AppOverviewIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
+  '/_app/market/events/$eventId': typeof AppMarketEventsEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,23 +135,27 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/overview/calendar'
+    | '/settings/feishu'
     | '/business/'
     | '/design/'
     | '/editing/'
     | '/market/'
     | '/overview/'
     | '/settings/'
+    | '/market/events/$eventId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/overview/calendar'
+    | '/settings/feishu'
     | '/business'
     | '/design'
     | '/editing'
     | '/market'
     | '/overview'
     | '/settings'
+    | '/market/events/$eventId'
   id:
     | '__root__'
     | '/'
@@ -141,12 +163,14 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_auth/login'
     | '/_app/overview/calendar'
+    | '/_app/settings/feishu'
     | '/_app/business/'
     | '/_app/design/'
     | '/_app/editing/'
     | '/_app/market/'
     | '/_app/overview/'
     | '/_app/settings/'
+    | '/_app/market/events/$eventId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -234,27 +258,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/feishu': {
+      id: '/_app/settings/feishu'
+      path: '/settings/feishu'
+      fullPath: '/settings/feishu'
+      preLoaderRoute: typeof AppSettingsFeishuRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/market/events/$eventId': {
+      id: '/_app/market/events/$eventId'
+      path: '/market/events/$eventId'
+      fullPath: '/market/events/$eventId'
+      preLoaderRoute: typeof AppMarketEventsEventIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppOverviewCalendarRoute: typeof AppOverviewCalendarRoute
+  AppSettingsFeishuRoute: typeof AppSettingsFeishuRoute
   AppBusinessIndexRoute: typeof AppBusinessIndexRoute
   AppDesignIndexRoute: typeof AppDesignIndexRoute
   AppEditingIndexRoute: typeof AppEditingIndexRoute
   AppMarketIndexRoute: typeof AppMarketIndexRoute
   AppOverviewIndexRoute: typeof AppOverviewIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+  AppMarketEventsEventIdRoute: typeof AppMarketEventsEventIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppOverviewCalendarRoute: AppOverviewCalendarRoute,
+  AppSettingsFeishuRoute: AppSettingsFeishuRoute,
   AppBusinessIndexRoute: AppBusinessIndexRoute,
   AppDesignIndexRoute: AppDesignIndexRoute,
   AppEditingIndexRoute: AppEditingIndexRoute,
   AppMarketIndexRoute: AppMarketIndexRoute,
   AppOverviewIndexRoute: AppOverviewIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
+  AppMarketEventsEventIdRoute: AppMarketEventsEventIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

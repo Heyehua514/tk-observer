@@ -183,7 +183,22 @@ export function GlobalSearch() {
     } else {
       await navigate({
         to: '/editing',
-        search: { query: '', recordType: result.kind, recordId: result.id },
+        search: {
+          section: 'production',
+          tab: 'list',
+          page: 1,
+          perPage: 20,
+          query: '',
+          account: 'all',
+          videoType: 'all',
+          tag: '',
+          dateFrom: '',
+          dateTo: '',
+          viral: 'all',
+          sort: '-views',
+          recordType: result.kind,
+          recordId: result.id,
+        },
       })
     }
   }

@@ -6,16 +6,12 @@ import { Button } from './ui/button'
 type PasswordInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   'type'
-> & {
-  ref?: React.Ref<HTMLInputElement>
-}
+>
 
-export function PasswordInput({
-  className,
-  disabled,
-  ref,
-  ...props
-}: PasswordInputProps) {
+export const PasswordInput = React.forwardRef<
+  HTMLInputElement,
+  PasswordInputProps
+>(({ className, disabled, ...props }, ref) => {
   const [showPassword, setShowPassword] = React.useState(false)
 
   return (
@@ -42,4 +38,6 @@ export function PasswordInput({
       </Button>
     </div>
   )
-}
+})
+
+PasswordInput.displayName = 'PasswordInput'

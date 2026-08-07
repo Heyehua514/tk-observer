@@ -1,13 +1,13 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, type RenderResult } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import { SearchProvider } from '@/context/search-provider'
 
-const COMMAND_MENU_PLACEHOLDER = 'Type a command or search...'
+const GLOBAL_SEARCH_PLACEHOLDER = '搜索达人、商品、视频、客户…'
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
-  setTheme: vi.fn(),
 }))
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -18,29 +18,31 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
   }
 })
 
-vi.mock('@/context/theme-provider', () => ({
-  useTheme: () => ({ setTheme: mocks.setTheme }),
-}))
-
-type ShortcutModifier = 'Control' | 'Meta'
-
 async function renderWithSearchProvider() {
-  return await render(<SearchProvider>{null}</SearchProvider>)
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+
+  return await render(
+    <QueryClientProvider client={queryClient}>
+      <SearchProvider>{null}</SearchProvider>
+    </QueryClientProvider>
+  )
 }
 
 /**
- * Open the palette by shortcut, retrying while the keydown listener may not be mounted yet.
+ * Open the global search by shortcut, retrying while the keydown listener may not be mounted yet.
  * Waits between attempts so a successful toggle is not immediately undone by a second chord.
  */
-async function openCommandPalette(
+async function openGlobalSearch(
   screen: RenderResult,
-  modifier: ShortcutModifier = 'Control'
+  modifier: 'Control' | 'Meta' = 'Control'
 ) {
   await vi.waitFor(
     async () => {
       const isCommandPaletteOpen =
         document.querySelector(
-          `[placeholder="${COMMAND_MENU_PLACEHOLDER}"]`
+          `[placeholder="${GLOBAL_SEARCH_PLACEHOLDER}"]`
         ) !== null
 
       if (!isCommandPaletteOpen) {
@@ -48,39 +50,37 @@ async function openCommandPalette(
       }
 
       await expect
-        .element(screen.getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
+        .element(screen.getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER))
         .toBeInTheDocument()
     },
     { interval: 50, timeout: 5000 }
   )
 }
 
-describe('SearchProvider and CommandMenu', () => {
+describe('SearchProvider and global search', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders the command palette when the palette is open', async () => {
+  it('renders the global search when it is opened', async () => {
     const screen = await renderWithSearchProvider()
     const { getByPlaceholder, getByText } = screen
 
-    await openCommandPalette(screen)
+    await openGlobalSearch(screen)
 
     await expect
-      .element(getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
+      .element(getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER))
       .toBeInTheDocument()
-    await expect.element(getByText('Theme')).toBeInTheDocument()
-    await expect.element(getByText('Light')).toBeInTheDocument()
-    await expect.element(getByText('Dark')).toBeInTheDocument()
-    await expect.element(getByText('System')).toBeInTheDocument()
-    await expect.element(getByText('Dashboard')).toBeInTheDocument()
+    await expect
+      .element(getByText('输入至少两个字开始搜索'))
+      .toBeInTheDocument()
   })
 
-  it('does not show the dialog content when search is closed', async () => {
+  it('does not show search content when it is closed', async () => {
     const { getByPlaceholder } = await renderWithSearchProvider()
 
     await expect
-      .element(getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
+      .element(getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER))
       .not.toBeInTheDocument()
   })
 
@@ -88,74 +88,47 @@ describe('SearchProvider and CommandMenu', () => {
     ['Ctrl', 'Control'],
     ['Cmd', 'Meta'],
   ] as const)(
-    'opens the command menu when %s + K is pressed',
+    'opens global search when %s + K is pressed',
     async (_label, modifier) => {
       const screen = await renderWithSearchProvider()
 
       await expect
-        .element(screen.getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
+        .element(screen.getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER))
         .not.toBeInTheDocument()
 
-      await openCommandPalette(screen, modifier)
+      await openGlobalSearch(screen, modifier)
 
       await expect
-        .element(screen.getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
+        .element(screen.getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER))
         .toBeInTheDocument()
     }
   )
 
-  it('navigates to a top-level route and closes the palette when a nav item is selected', async () => {
+  it('shows an empty state for a query with no matches', async () => {
     const screen = await renderWithSearchProvider()
 
-    await openCommandPalette(screen)
-
-    await userEvent.click(screen.getByText('Tasks'))
-
-    expect(mocks.navigate).toHaveBeenCalledWith({ to: '/tasks' })
-    await expect
-      .element(screen.getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
-      .not.toBeInTheDocument()
-  })
-
-  it('navigates for nested sidebar items (group with sub-items)', async () => {
-    const screen = await renderWithSearchProvider()
-    const { getByPlaceholder, getByRole } = screen
-
-    await openCommandPalette(screen)
-
-    await userEvent.click(getByRole('option', { name: 'Settings Account' }))
-
-    expect(mocks.navigate).toHaveBeenCalledWith({ to: '/settings/account' })
-    await expect
-      .element(getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
-      .not.toBeInTheDocument()
-  })
-
-  it('applies theme and closes the palette when a theme command is chosen', async () => {
-    const screen = await renderWithSearchProvider()
-
-    await openCommandPalette(screen)
-
-    await userEvent.click(screen.getByText('Dark'))
-
-    expect(mocks.setTheme).toHaveBeenCalledWith('dark')
-    await expect
-      .element(screen.getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
-      .not.toBeInTheDocument()
-  })
-
-  it('shows empty state when the filter matches nothing', async () => {
-    const screen = await renderWithSearchProvider()
-
-    await openCommandPalette(screen)
+    await openGlobalSearch(screen)
 
     await userEvent.fill(
-      screen.getByPlaceholder(COMMAND_MENU_PLACEHOLDER),
+      screen.getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER),
       'zzzz-no-match-xxxx'
     )
 
+    await expect.element(screen.getByText('未找到相关内容')).toBeInTheDocument()
+  })
+
+  it('shows the minimum-length hint for a short query', async () => {
+    const screen = await renderWithSearchProvider()
+
+    await openGlobalSearch(screen)
+
+    await userEvent.fill(
+      screen.getByPlaceholder(GLOBAL_SEARCH_PLACEHOLDER),
+      'a'
+    )
+
     await expect
-      .element(screen.getByText('No results found.'))
+      .element(screen.getByText('输入至少两个字开始搜索'))
       .toBeInTheDocument()
   })
 })

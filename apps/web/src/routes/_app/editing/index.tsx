@@ -6,10 +6,51 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { requireRoles } from '@/lib/auth'
 import { RouteError } from '@/components/shared/route-error'
 import { EditingWorkbench, type EditingSearchParams } from '@/features/editing'
+import {
+  defaultEditingSearch,
+  videoAccounts,
+  videoTypes,
+} from '@/features/editing/constants'
+import type { VideoIdeaListParams } from '@/features/editing/types'
 
 function parseSearch(search: Record<string, unknown>): EditingSearchParams {
+  const account = videoAccounts.includes(
+    search.account as (typeof videoAccounts)[number]
+  )
+    ? (search.account as VideoIdeaListParams['account'])
+    : defaultEditingSearch.account
+  const videoType = videoTypes.includes(
+    search.videoType as (typeof videoTypes)[number]
+  )
+    ? (search.videoType as VideoIdeaListParams['videoType'])
+    : defaultEditingSearch.videoType
+  const sort = ['-views', '-completion_rate', '-follower_gain'].includes(
+    String(search.sort)
+  )
+    ? (search.sort as VideoIdeaListParams['sort'])
+    : defaultEditingSearch.sort
+  const section = ['ideas', 'competitors', 'trends', 'production'].includes(
+    String(search.section)
+  )
+    ? (search.section as EditingSearchParams['section'])
+    : defaultEditingSearch.section
+  const tab = search.tab === 'analytics' ? 'analytics' : 'list'
   return {
+    ...defaultEditingSearch,
     query: typeof search.query === 'string' ? search.query : '',
+    section,
+    tab,
+    page: Number(search.page) > 0 ? Number(search.page) : 1,
+    perPage: Number(search.perPage) > 0 ? Number(search.perPage) : 20,
+    account,
+    videoType,
+    tag: typeof search.tag === 'string' ? search.tag : '',
+    dateFrom: typeof search.dateFrom === 'string' ? search.dateFrom : '',
+    dateTo: typeof search.dateTo === 'string' ? search.dateTo : '',
+    viral: ['all', 'viral', 'normal'].includes(String(search.viral))
+      ? (search.viral as EditingSearchParams['viral'])
+      : 'all',
+    sort,
     recordType: search.recordType === 'video' ? 'video' : undefined,
     recordId: typeof search.recordId === 'string' ? search.recordId : undefined,
   }
@@ -27,10 +68,10 @@ function EditingRoute() {
   const navigate = useNavigate({ from: '/editing/' })
   return (
     <EditingWorkbench
-      query={params.query}
-      onQueryChange={(query) =>
+      params={params}
+      onParamsChange={(patch) =>
         void navigate({
-          search: (previous) => ({ ...previous, query }),
+          search: (previous) => ({ ...previous, ...patch }),
           replace: true,
         })
       }

@@ -4,8 +4,8 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
-import { CheckCircle2, LoaderCircle, Server } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { CheckCircle2, Link2, LoaderCircle, Server } from 'lucide-react'
 import PocketBase from 'pocketbase'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
@@ -132,6 +132,22 @@ export function ServerSettings() {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+      <Card className='max-w-2xl shadow-none'>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2 text-base'>
+            <Link2 className='size-4' />
+            飞书账号
+          </CardTitle>
+          <CardDescription>
+            连接个人飞书账号，启用文档与多维表格同步。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant='outline' asChild>
+            <Link to='/settings/feishu'>管理飞书连接</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

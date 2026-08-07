@@ -1,5 +1,12 @@
 /** 市场工作台主体：选品库、竞品、投放数据和活动排期骨架。 */
-import { BarChart3, CalendarDays, PackageSearch, Radar } from 'lucide-react'
+import {
+  BarChart3,
+  CalendarDays,
+  FileStack,
+  MapPinned,
+  PackageSearch,
+  Radar,
+} from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -13,6 +20,9 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { SearchBar } from '@/components/shared/search-bar'
 import { useMarketWorkbench } from '../hooks/use-market-workbench'
+import { MarketResourcesWorkbench } from '../resources'
+import { VenuesWorkbench } from '../venues'
+import { EventsPanel } from './market-records'
 
 export function MarketWorkbench({
   query,
@@ -52,6 +62,14 @@ export function MarketWorkbench({
             <CalendarDays className='size-4' />
             活动排期
           </TabsTrigger>
+          <TabsTrigger value='venues'>
+            <MapPinned className='size-4' />
+            场地资源
+          </TabsTrigger>
+          <TabsTrigger value='resources'>
+            <FileStack className='size-4' />
+            模板 / 物料 / 财务
+          </TabsTrigger>
         </TabsList>
         <TabsContent value='products' className='mt-5'>
           <div className='mb-4 flex items-center justify-between gap-3'>
@@ -85,16 +103,24 @@ export function MarketWorkbench({
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey='region' />
                 <YAxis />
-                <Bar dataKey='value' fill='#2563eb' radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey='value'
+                  fill='#2563eb'
+                  radius={[4, 4, 0, 0]}
+                  animationDuration={800}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </TabsContent>
         <TabsContent value='calendar' className='mt-5'>
-          <EmptyState
-            title='本月暂无活动'
-            description='后续在此接入活动日历与站点当地时间标注。'
-          />
+          <EventsPanel query={query} />
+        </TabsContent>
+        <TabsContent value='venues' className='mt-5'>
+          <VenuesWorkbench />
+        </TabsContent>
+        <TabsContent value='resources' className='mt-5'>
+          <MarketResourcesWorkbench />
         </TabsContent>
       </Tabs>
     </div>

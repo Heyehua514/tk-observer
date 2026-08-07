@@ -2,12 +2,15 @@
  * 顶部栏站内通知入口。
  * @description 展示未读红点、最近通知，支持单条跳转和全部已读。
  */
+import { useEffect, useRef } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { AppNotification, NotificationType } from '@/types/notification'
+import { motion, useAnimationControls, useReducedMotion } from 'framer-motion'
 import {
   Bell,
   CheckCheck,
   CircleDollarSign,
+  ClockAlert,
   MessageSquare,
   Palette,
 } from 'lucide-react'
@@ -20,11 +23,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { EmptyState } from '@/components/shared/empty-state'
 
 const notificationIcons = {
   design_review: Palette,
   gmv_target: CircleDollarSign,
   comment: MessageSquare,
+  deadline: ClockAlert,
 } satisfies Record<NotificationType, typeof Bell>
 
 const allowedLinks = [
@@ -46,6 +51,23 @@ export function NotificationBell() {
   const navigate = useNavigate()
   const items = notifications.data || []
   const unreadItems = items.filter((item) => !item.isRead)
+  const previousUnread = useRef<number | null>(null)
+  const bellControls = useAnimationControls()
+  const reduceMotion = useReducedMotion()
+
+  useEffect(() => {
+    if (
+      !reduceMotion &&
+      previousUnread.current !== null &&
+      unreadItems.length > previousUnread.current
+    ) {
+      void bellControls.start({
+        rotate: [0, 15, -15, 15, -15, 15, 0],
+        transition: { duration: 0.55 },
+      })
+    }
+    previousUnread.current = unreadItems.length
+  }, [bellControls, reduceMotion, unreadItems.length])
 
   const openNotification = async (notification: AppNotification) => {
     if (!notification.isRead) await markRead.mutateAsync([notification.id])
@@ -61,7 +83,9 @@ export function NotificationBell() {
           className='relative'
           aria-label='通知'
         >
-          <Bell className='size-4' />
+          <motion.span animate={bellControls} className='inline-flex'>
+            <Bell className='size-4' />
+          </motion.span>
           {unreadItems.length > 0 && (
             <span className='absolute top-1.5 right-1.5 size-2 rounded-full bg-red-500 ring-2 ring-background' />
           )}
@@ -100,9 +124,10 @@ export function NotificationBell() {
               正在加载通知…
             </div>
           ) : items.length === 0 ? (
-            <div className='p-8 text-center text-sm text-muted-foreground'>
-              暂无通知
-            </div>
+            <EmptyState
+              title='消息都处理完了'
+              description='新的审批、成交和协作提醒会出现在这里。'
+            />
           ) : (
             items.map((notification) => {
               const Icon = notificationIcons[notification.type]
