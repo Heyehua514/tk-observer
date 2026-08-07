@@ -23,21 +23,23 @@ CLI 默认路径：
 ```text
 -p <prompt>
 --output-format json
---json-schema <schema>
 --tools ""
 --permission-mode dontAsk
 --max-turns 1
 --no-session-persistence
 ```
 
-JSON Schema 要求返回 `titlePatterns`、`publishTimePatterns`、`contentTypePreferences` 和 `summary`。Hook 校验并规范化结果后，把完整 JSON 写入每条待处理记录的 `ai_analysis`，把当前时间写入 `analyzed_at`。
+PocketBase 通过 `/usr/bin/perl -e 'alarm shift; exec @ARGV' 120` 以独立参数包装 CodeBuddy。watchdog 在 120 秒后由操作系统终止挂死的 CLI，Hook 随后进入失败重试并释放进程锁；不经过 shell，也不拼接用户输入。
+
+提示词要求返回 `titlePatterns`、`publishTimePatterns`、`contentTypePreferences` 和 `summary`。CodeBuddy 2.115.0 的 `--json-schema` 会要求当前模型调用一个不存在的 `StructuredOutput` 工具，无法得到结果，因此本集成不传该参数。真实 `json` 输出是事件数组，最终文本位于最后一个 `type=result` 事件的 `result` 字段，模型也可能把结构化数据放在 Markdown JSON 代码块中。本地严格校验是写入前的唯一信任边界。Hook 校验并规范化结果后，把完整 JSON 写入每条待处理记录的 `ai_analysis`，把当前时间写入 `analyzed_at`。
 
 ## 失败处理
 
-- CLI 不存在、桌面端未登录、credits 不足、输出为空或 JSON 不合法时，不写 `ai_analysis` 和 `analyzed_at`。
+- CLI 不存在、桌面端未登录、credits 不足、120 秒超时、输出为空或 JSON 不合法时，不写 `ai_analysis` 和 `analyzed_at`。
 - 失败记录保持待处理，下次 cron 或手动端点自动重试。
-- 每次只运行一个批次，不并发调用 WorkBuddy。
-- 自检日志明确区分 `completed`、`empty` 和 `workbuddy_unavailable`。
+- 通过 PocketBase 进程级并发安全 store 锁保证每次只运行一个批次；重叠的 cron 或手动调用返回 `in_progress`，不查询数据也不调用 WorkBuddy。
+- 校验通过后在 PocketBase 事务中整批写回；数据库保存失败会整批回滚并返回 `write_failed`。
+- 自检日志明确区分 `completed`、`empty`、`in_progress`、`workbuddy_unavailable` 和 `write_failed`。
 
 ## 安全
 
