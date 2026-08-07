@@ -17,7 +17,7 @@
 - 全新临时 PocketBase 数据目录迁移：成功应用至 `1786104000`。
 - 前端测试：26 个文件、99 个测试通过。
 - 根目录没有 `test` script，因此 `pnpm test` 不可用；实际等价门禁 `pnpm --dir apps/web test` 已通过。
-- 全后端测试已有两个未完成 Phase D 模块缺失：`dependency-engine.js`、`task-engine.js`。公众号专项测试不受影响。
+- 后续已补齐 Phase D 的 `dependency-engine.js`、`task-engine.js`，全后端测试现已通过。
 
 ## 后续
 
