@@ -1,6 +1,7 @@
 /** 商务工作台主体：达人 CRUD、客户/供应商及合作跟进看板入口。 */
 import {
   Building2,
+  Newspaper,
   CalendarDays,
   ChartNoAxesCombined,
   Handshake,
@@ -16,6 +17,7 @@ import { OpportunitiesWorkbench } from '../opportunities'
 import { OrdersWorkbench } from '../orders'
 import { SocialWorkbench } from '../social'
 import { SponsorshipsWorkbench } from '../sponsorships'
+import { BlogWorkbench } from '../blog'
 import type { CompanyListParams, CreatorListParams } from '../types'
 import { CompanyTable } from './company-table'
 import { CreatorTable } from './creator-table'
@@ -29,6 +31,7 @@ type BusinessTab =
   | 'orders'
   | 'social'
   | 'sponsorships'
+  | 'blog'
 
 export function BusinessWorkbench({
   params,
@@ -88,6 +91,10 @@ export function BusinessWorkbench({
             <Handshake className='size-4' />
             活动招商
           </TabsTrigger>
+          <TabsTrigger value='blog'>
+            <Newspaper className='size-4' />
+            公众号分析
+          </TabsTrigger>
         </TabsList>
         <TabsContent value='dashboard' className='mt-5'>
           <BusinessDashboard onNavigate={onTabChange} />
@@ -115,6 +122,9 @@ export function BusinessWorkbench({
         </TabsContent>
         <TabsContent value='sponsorships' className='mt-5'>
           <SponsorshipsWorkbench />
+        </TabsContent>
+        <TabsContent value='blog' className='mt-5'>
+          <BlogWorkbench />
         </TabsContent>
       </Tabs>
     </div>

@@ -22,6 +22,7 @@ type BusinessSearch = CreatorListParams & {
     | 'orders'
     | 'social'
     | 'sponsorships'
+    | 'blog'
   companyPage: number
   companyQuery: string
   companyRegion: CompanyListParams['region']
@@ -71,6 +72,7 @@ function parseSearch(search: Record<string, unknown>): BusinessSearch {
       'orders',
       'social',
       'sponsorships',
+      'blog',
     ].includes(String(search.tab))
       ? (search.tab as BusinessSearch['tab'])
       : 'dashboard',
