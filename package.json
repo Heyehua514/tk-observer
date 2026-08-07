@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --dir apps/web dev",
     "build": "pnpm --dir apps/web build",
+    "test": "pnpm --dir apps/web test",
     "typecheck": "pnpm --dir apps/web typecheck",
     "lint": "pnpm --dir apps/web lint",
     "format": "pnpm --dir apps/web format",
@@ -14,4 +15,3 @@
     "desktop:build": "pnpm --dir apps/desktop tauri build"
   }
 }
-
