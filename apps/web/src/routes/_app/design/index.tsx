@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- TanStack 文件路由需导出 Route */
 // 路由：/design
-// 权限：design, boss
+// 权限：design, business, boss
 // 用途：设计人员维护素材、设计任务与品牌规范
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { regions } from '@/types/commerce'
@@ -44,7 +44,7 @@ function parseSearch(search: Record<string, unknown>): DesignAssetListParams {
 }
 
 export const Route = createFileRoute('/_app/design/')({
-  beforeLoad: () => requireRoles(['design']),
+  beforeLoad: () => requireRoles(['design', 'business']),
   validateSearch: parseSearch,
   component: DesignRoute,
   errorComponent: RouteError,

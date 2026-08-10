@@ -1,6 +1,6 @@
 /**
  * 主应用动态侧边栏。
- * boss 展示全部工作台，其他角色只展示自己的工作台和系统设置。
+ * boss 展示全部工作台；商务额外进入设计工作台提交需求。
  */
 import { Link, useLocation } from '@tanstack/react-router'
 import type { UserRole } from '@/types/auth'
@@ -95,7 +95,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navigation
-                .filter((item) => canSee(role, item.role))
+                .filter(
+                  (item) =>
+                    canSee(role, item.role) ||
+                    (role === 'business' && item.to === '/design')
+                )
                 .map((item) => (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton
