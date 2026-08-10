@@ -16,9 +16,7 @@ describe('data provider environment', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', '')
     vi.resetModules()
     const { getSupabaseEnvironment } = await import('./data-provider')
-    expect(() => getSupabaseEnvironment()).toThrow(
-      'Supabase环境变量未配置完整'
-    )
+    expect(() => getSupabaseEnvironment()).toThrow('Supabase环境变量未配置完整')
   })
 
   it('rejects unsupported provider names', async () => {
