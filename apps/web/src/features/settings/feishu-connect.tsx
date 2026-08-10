@@ -3,10 +3,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/shared/page-header'
 import { FeishuConnectPanel } from './components/feishu-connect-panel'
-import {
-  buildFeishuAuthorizeUrl,
-  validateFeishuCallback,
-} from './feishu-auth'
+import { buildFeishuAuthorizeUrl, validateFeishuCallback } from './feishu-auth'
 import { useFeishuConnection } from './hooks/use-feishu-connection'
 
 const FEISHU_STATE_KEY = 'tk-observer-feishu-oauth-state'
@@ -50,10 +47,7 @@ export function FeishuConnectPage() {
 
   return (
     <div className='space-y-6'>
-      <PageHeader
-        title='飞书连接'
-        description='管理个人授权与知识同步状态。'
-      />
+      <PageHeader title='飞书连接' description='管理个人授权与知识同步状态。' />
       <FeishuConnectPanel
         connected={connection.data?.connected || false}
         connectedAt={connection.data?.connectedAt || ''}

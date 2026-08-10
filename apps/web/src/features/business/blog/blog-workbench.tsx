@@ -26,18 +26,33 @@ import { useBlogArticles } from './use-blog-articles'
 const isThisMonth = (date: string) => {
   const now = new Date()
   const value = new Date(date)
-  return value.getFullYear() === now.getFullYear() && value.getMonth() === now.getMonth()
+  return (
+    value.getFullYear() === now.getFullYear() &&
+    value.getMonth() === now.getMonth()
+  )
 }
 
-function Metric({ label, value, icon: Icon }: { label: string; value: number; icon: typeof FileText }) {
+function Metric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: number
+  icon: typeof FileText
+}) {
   return (
     <Card>
       <CardHeader className='flex-row items-center justify-between space-y-0 pb-2'>
-        <CardTitle className='text-sm font-medium text-muted-foreground'>{label}</CardTitle>
+        <CardTitle className='text-sm font-medium text-muted-foreground'>
+          {label}
+        </CardTitle>
         <Icon className='size-4 text-muted-foreground' />
       </CardHeader>
       <CardContent>
-        <div className='text-2xl font-semibold'>{value.toLocaleString('zh-CN')}</div>
+        <div className='text-2xl font-semibold'>
+          {value.toLocaleString('zh-CN')}
+        </div>
       </CardContent>
     </Card>
   )
@@ -50,10 +65,12 @@ export function BlogWorkbench() {
   const rows = useMemo(
     () =>
       (articles.data || []).filter((item) => {
-        const matchesQuery = `${item.title} ${item.analysisNotes}`.toLowerCase().includes(query.toLowerCase())
+        const matchesQuery = `${item.title} ${item.analysisNotes}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
         return matchesQuery && (account === 'all' || item.account === account)
       }),
-    [account, articles.data, query],
+    [account, articles.data, query]
   )
   const all = articles.data || []
   const metrics = {
@@ -63,7 +80,12 @@ export function BlogWorkbench() {
   }
 
   if (articles.isError) {
-    return <EmptyState title='公众号数据暂时无法加载' description='请检查 PocketBase 服务后重试。' />
+    return (
+      <EmptyState
+        title='公众号数据暂时无法加载'
+        description='请检查 PocketBase 服务后重试。'
+      />
+    )
   }
 
   return (
@@ -74,12 +96,23 @@ export function BlogWorkbench() {
         <Metric label='本月新增' value={metrics.monthly} icon={BookOpenText} />
       </div>
       <div className='flex flex-wrap gap-3'>
-        <Input className='max-w-sm' placeholder='搜索标题或分析笔记' value={query} onChange={(event) => setQuery(event.target.value)} />
+        <Input
+          className='max-w-sm'
+          placeholder='搜索标题或分析笔记'
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
         <Select value={account} onValueChange={setAccount}>
-          <SelectTrigger className='w-44'><SelectValue placeholder='按账号筛选' /></SelectTrigger>
+          <SelectTrigger className='w-44'>
+            <SelectValue placeholder='按账号筛选' />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>全部账号</SelectItem>
-            {blogAccounts.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+            {blogAccounts.map((item) => (
+              <SelectItem key={item} value={item}>
+                {item}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -87,21 +120,60 @@ export function BlogWorkbench() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>文章标题</TableHead><TableHead>账号</TableHead><TableHead>发布日期</TableHead>
-              <TableHead>阅读量</TableHead><TableHead>在看</TableHead><TableHead>转发</TableHead><TableHead>状态</TableHead><TableHead>分析笔记</TableHead>
+              <TableHead>文章标题</TableHead>
+              <TableHead>账号</TableHead>
+              <TableHead>发布日期</TableHead>
+              <TableHead>阅读量</TableHead>
+              <TableHead>在看</TableHead>
+              <TableHead>转发</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>分析笔记</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className='max-w-sm font-medium'>{item.sourceUrl ? <a className='hover:underline' href={item.sourceUrl} target='_blank' rel='noreferrer'>{item.title}</a> : item.title}</TableCell>
-                <TableCell>{item.account}</TableCell><TableCell>{item.publishDate.slice(0, 10)}</TableCell>
-                <TableCell>{item.views.toLocaleString('zh-CN')}</TableCell><TableCell>{item.likes.toLocaleString('zh-CN')}</TableCell><TableCell>{item.shares.toLocaleString('zh-CN')}</TableCell>
-                <TableCell>{item.isViral ? <Badge>爆款</Badge> : <Badge variant='secondary'>普通</Badge>}</TableCell>
-                <TableCell className='max-w-xs truncate text-muted-foreground'>{item.analysisNotes || '待补充分析'}</TableCell>
+                <TableCell className='max-w-sm font-medium'>
+                  {item.sourceUrl ? (
+                    <a
+                      className='hover:underline'
+                      href={item.sourceUrl}
+                      target='_blank'
+                      rel='noreferrer'
+                    >
+                      {item.title}
+                    </a>
+                  ) : (
+                    item.title
+                  )}
+                </TableCell>
+                <TableCell>{item.account}</TableCell>
+                <TableCell>{item.publishDate.slice(0, 10)}</TableCell>
+                <TableCell>{item.views.toLocaleString('zh-CN')}</TableCell>
+                <TableCell>{item.likes.toLocaleString('zh-CN')}</TableCell>
+                <TableCell>{item.shares.toLocaleString('zh-CN')}</TableCell>
+                <TableCell>
+                  {item.isViral ? (
+                    <Badge>爆款</Badge>
+                  ) : (
+                    <Badge variant='secondary'>普通</Badge>
+                  )}
+                </TableCell>
+                <TableCell className='max-w-xs truncate text-muted-foreground'>
+                  {item.analysisNotes || '待补充分析'}
+                </TableCell>
               </TableRow>
             ))}
-            {!articles.isLoading && rows.length === 0 && <TableRow><TableCell colSpan={8} className='p-0'><EmptyState title='还没有公众号文章记录' description='录入第一篇文章后，这里会自动计算爆款状态并沉淀分析笔记。' /></TableCell></TableRow>}
+            {!articles.isLoading && rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} className='p-0'>
+                  <EmptyState
+                    title='还没有公众号文章记录'
+                    description='录入第一篇文章后，这里会自动计算爆款状态并沉淀分析笔记。'
+                  />
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

@@ -1,7 +1,7 @@
 /** 飞书连接数据 Hook；权限：当前用户仅查询和绑定自己的账号。 */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { pb } from '@/lib/pocketbase'
 import { useAuthStore } from '@/stores/auth-store'
+import { pb } from '@/lib/pocketbase'
 
 type FeishuConnection = {
   connected: boolean
@@ -18,8 +18,7 @@ export function useFeishuConnection() {
     enabled: Boolean(userId),
     queryFn: async (): Promise<FeishuConnection> => {
       const record = await pb.collection('users').getOne(userId, {
-        fields:
-          'id,feishu_open_id,feishu_connected_at,feishu_sync_enabled',
+        fields: 'id,feishu_open_id,feishu_connected_at,feishu_sync_enabled',
       })
       return {
         connected: Boolean(record.feishu_open_id),

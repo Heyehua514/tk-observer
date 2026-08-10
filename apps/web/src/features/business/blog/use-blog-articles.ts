@@ -23,8 +23,10 @@ export function useBlogArticles() {
   return useQuery({
     queryKey: blogArticleKeys.all,
     queryFn: async () =>
-      (await pb.collection('blog_articles').getFullList({ sort: '-publish_date' })).map(
-        mapArticle,
-      ),
+      (
+        await pb
+          .collection('blog_articles')
+          .getFullList({ sort: '-publish_date' })
+      ).map(mapArticle),
   })
 }

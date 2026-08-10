@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  buildFeishuAuthorizeUrl,
-  validateFeishuCallback,
-} from './feishu-auth'
+import { buildFeishuAuthorizeUrl, validateFeishuCallback } from './feishu-auth'
 
 describe('buildFeishuAuthorizeUrl', () => {
   it('builds the Feishu v1 authorization URL with encoded callback state', () => {
