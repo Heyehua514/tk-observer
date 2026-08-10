@@ -38,6 +38,8 @@ tk-observer/
 - macOS：Xcode Command Line Tools；生成 DMG 只能在 macOS 执行
 - Windows：Visual Studio C++ Build Tools 和 WebView2；生成 NSIS `.exe` 只能在 Windows 执行
 
+Supabase 并行迁移的本地启动、密钥边界和验证命令见 [`docs/supabase/local-development.md`](docs/supabase/local-development.md)。当前默认数据源仍为 PocketBase。
+
 ## 启动
 
 ### 1. 安装依赖
