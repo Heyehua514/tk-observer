@@ -13,5 +13,8 @@
     "pb:migrate": "./backend/pocketbase migrate up --dir=backend/pb_data --migrationsDir=backend/pb_migrations",
     "desktop:dev": "pnpm --dir apps/desktop tauri dev",
     "desktop:build": "pnpm --dir apps/desktop tauri build"
+  },
+  "devDependencies": {
+    "supabase": "^2.113.0"
   }
 }
