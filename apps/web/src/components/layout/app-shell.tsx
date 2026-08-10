@@ -16,6 +16,7 @@ import { LoginGreeting } from '@/components/shared/login-greeting'
 import { NotificationBell } from '@/components/shared/notification-bell'
 import { PageTransition } from '@/components/shared/page-transition'
 import { UserMenu } from '@/components/shared/user-menu'
+import { WorkspaceAtmosphere } from '@/components/shared/workspace-atmosphere'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 const breadcrumbs: Record<string, string> = {
@@ -43,7 +44,8 @@ export function AppShell() {
         <SidebarProvider defaultOpen={defaultOpen}>
           <AppSidebar />
           <SidebarInset>
-            <Header className='border-b bg-background' fixed>
+            <WorkspaceAtmosphere />
+            <Header className='bg-background/85' fixed>
               <div className='text-sm font-medium'>
                 {breadcrumbs[section] || 'TK观察工作台'}
               </div>
@@ -56,7 +58,7 @@ export function AppShell() {
               </div>
             </Header>
             <LoginGreeting />
-            <main className='min-w-0 flex-1 p-6'>
+            <main className='relative z-10 min-w-0 flex-1 p-6'>
               <PageTransition transitionKey={pathname}>
                 <Outlet />
               </PageTransition>

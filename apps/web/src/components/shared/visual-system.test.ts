@@ -1,0 +1,24 @@
+import themeSource from '@/styles/theme.css?raw'
+import { expect, it } from 'vitest'
+import cardSource from '@/components/ui/card.tsx?raw'
+import tabsSource from '@/components/ui/tabs.tsx?raw'
+import appShellSource from '@/components/layout/app-shell.tsx?raw'
+import businessDashboardSource from '@/features/business/dashboard/business-dashboard.tsx?raw'
+import overviewDashboardSource from '@/features/overview/components/overview-dashboard.tsx?raw'
+
+it('keeps dark tabs legible and the fixed header above workspace content', () => {
+  expect(tabsSource).toContain('dark:data-[state=active]:text-foreground')
+  expect(appShellSource).toContain(
+    "<Header className='bg-background/85' fixed>"
+  )
+})
+
+it('renders KPI signal bars instead of incomplete pseudo-elements', () => {
+  expect(overviewDashboardSource).toContain("before:content-['']")
+  expect(businessDashboardSource).toContain("before:content-['']")
+})
+
+it('provides stable color and elevation fallbacks for desktop webviews', () => {
+  expect(themeSource).toContain('@supports not (color: oklch(0 0 0))')
+  expect(cardSource).toContain('shadow-sm')
+})

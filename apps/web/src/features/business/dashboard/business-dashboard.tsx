@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
+import { MetricDeck } from '@/components/shared/metric-deck'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import {
   opportunityStagePatch,
@@ -161,11 +162,14 @@ export function BusinessDashboardContent({
 
   return (
     <div className='space-y-6'>
-      <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-5'>
+      <MetricDeck
+        aria-label='商务核心指标'
+        className='gap-3 sm:grid-cols-2 xl:grid-cols-5'
+      >
         {metricCards.map((metric) => (
           <Card
             key={metric.label}
-            className='gap-3 rounded-lg py-4 shadow-none'
+            className="h-full gap-3 overflow-hidden rounded-lg py-4 shadow-none before:block before:h-0.5 before:w-10 before:bg-primary before:content-['']"
           >
             <CardHeader className='flex grid-cols-none flex-row items-center justify-between px-4'>
               <span className='text-xs font-medium text-muted-foreground'>
@@ -197,7 +201,7 @@ export function BusinessDashboardContent({
             </CardContent>
           </Card>
         ))}
-      </div>
+      </MetricDeck>
 
       <div className='grid gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(300px,2fr)]'>
         <section className='min-w-0 border-y py-5'>

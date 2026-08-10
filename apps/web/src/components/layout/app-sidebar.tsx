@@ -79,9 +79,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
-      <SidebarHeader className='h-16 justify-center border-b px-4'>
+      <SidebarHeader className='h-16 justify-center border-b border-sidebar-border/70 bg-sidebar px-4'>
         <Link to='/overview' className='flex min-w-0 items-center gap-3'>
-          <span className='flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground'>
+          <span className='flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sm font-bold tracking-[-0.04em] text-sidebar-primary-foreground shadow-[0_0_0_4px_color-mix(in_oklab,var(--sidebar-primary)_12%,transparent)]'>
             TK
           </span>
           <span className='truncate font-semibold group-data-[collapsible=icon]:hidden'>

@@ -23,6 +23,7 @@ import { pb } from '@/lib/pocketbase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
+import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import { TeamMemory } from '../team-memory'
@@ -115,9 +116,15 @@ export function OverviewDashboard() {
         title='总览工作台'
         description='查看经营走势、团队进度和最近业务动态。'
       />
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+      <MetricDeck
+        aria-label='经营核心指标'
+        className='sm:grid-cols-2 xl:grid-cols-4'
+      >
         {metrics.map((metric) => (
-          <Card key={metric.label} className='shadow-none'>
+          <Card
+            key={metric.label}
+            className="h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
+          >
             <CardContent className='flex items-start justify-between p-5'>
               <div>
                 <p className='text-sm text-muted-foreground'>{metric.label}</p>
@@ -137,7 +144,7 @@ export function OverviewDashboard() {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </MetricDeck>
       <div className='grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'>
         <Card className='shadow-none'>
           <CardHeader>
