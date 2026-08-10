@@ -13,6 +13,7 @@
     "pb:migrate": "./backend/pocketbase migrate up --dir=backend/pb_data --migrationsDir=backend/pb_migrations",
     "desktop:dev": "pnpm --dir apps/desktop tauri dev",
     "desktop:build": "pnpm --dir apps/desktop tauri build",
+    "supabase:types": "supabase gen types typescript --local > apps/web/src/types/database.generated.ts",
     "supabase:schema:test": "node --test scripts/supabase/schema-inventory.test.mjs",
     "supabase:schema:export": "node scripts/supabase/export-pocketbase-schema.mjs"
   },
