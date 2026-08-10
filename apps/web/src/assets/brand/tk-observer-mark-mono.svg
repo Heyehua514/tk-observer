@@ -1,0 +1,24 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1024 1024"
+  role="img"
+  aria-labelledby="title"
+  data-brand="tk-observer"
+  data-symbol="observation-eye"
+  data-safe-area="144"
+  data-min-size="16"
+>
+  <title id="title">TK观察单色符号</title>
+  <path
+    d="M144 512c80-158 218-244 368-244s288 86 368 244c-80 158-218 244-368 244S224 670 144 512Z"
+    fill="none"
+    stroke="#063F37"
+    stroke-width="72"
+    stroke-linejoin="round"
+  />
+  <g fill="#063F37">
+    <path d="M350 394h150v50h-47v186h-57V444h-46v-50Z" />
+    <path d="M514 394h58v88l68-88h70l-93 114 99 122h-72l-72-92v92h-58V394Z" />
+    <circle cx="760" cy="344" r="32" />
+  </g>
+</svg>
