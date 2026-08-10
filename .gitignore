@@ -8,3 +8,4 @@ backend/pb_data/
 *.log
 work/
 .superpowers/
+.worktrees/
