@@ -1,6 +1,6 @@
+import type { Database } from '@/types/database.generated'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { getSupabaseEnvironment } from '@/lib/data-provider'
-import type { Database } from '@/types/database.generated'
 
 let client: SupabaseClient<Database> | undefined
 
