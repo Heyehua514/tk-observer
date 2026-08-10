@@ -12,7 +12,9 @@
     "pb:serve": "./backend/pocketbase serve --dir=backend/pb_data --migrationsDir=backend/pb_migrations --hooksDir=backend/pb_hooks --http=127.0.0.1:8090",
     "pb:migrate": "./backend/pocketbase migrate up --dir=backend/pb_data --migrationsDir=backend/pb_migrations",
     "desktop:dev": "pnpm --dir apps/desktop tauri dev",
-    "desktop:build": "pnpm --dir apps/desktop tauri build"
+    "desktop:build": "pnpm --dir apps/desktop tauri build",
+    "supabase:schema:test": "node --test scripts/supabase/schema-inventory.test.mjs",
+    "supabase:schema:export": "node scripts/supabase/export-pocketbase-schema.mjs"
   },
   "devDependencies": {
     "supabase": "^2.113.0"

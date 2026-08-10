@@ -9,3 +9,5 @@ backend/pb_data/
 work/
 .superpowers/
 .worktrees/
+.supabase/
+supabase/.temp/
