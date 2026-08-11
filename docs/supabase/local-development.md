@@ -77,3 +77,24 @@ event_sponsorships
 这些表已经配置角色级 RLS、软删除、`legacy_id`、数据库派生字段和 Realtime publication。`apps/web/src/types/database.generated.ts` 已包含对应的 Row、Insert、Update 和 Relationships 类型。
 
 这不代表前端已经切换。现有 feature hooks 继续读取 PocketBase，直到数据导入核对、文件迁移和回滚演练通过后，才允许在独立阶段修改 provider。
+
+## 已建立的剪辑生产与研究核心
+
+本地 Supabase 还包含 8 张剪辑业务表：
+
+```text
+video_tasks
+videos
+video_ideas
+import_history
+competitor_accounts
+competitor_videos
+trending_topics
+competitor_style_analysis
+```
+
+4 个只读分析视图为 `video_idea_summary`、`video_idea_account_stats`、`video_idea_type_stats` 和 `video_idea_viral_features`。视频文件使用私有 `video-files` Storage bucket，限制 512 MiB，支持 MP4、WebM 和 QuickTime。
+
+8 张表已配置角色级 RLS、软删除、Realtime publication 和 `REPLICA IDENTITY FULL`。`video_ideas.is_viral` 由数据库根据完播率或同账号播放量阈值自动派生，普通登录用户不能伪造该字段。
+
+本阶段没有导入 PocketBase 业务数据或文件，没有调用 AI、WorkBuddy、Cron 或外部 API，也没有修改前端 provider。

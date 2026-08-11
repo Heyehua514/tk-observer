@@ -24,11 +24,13 @@ select is(
       and schemaname = 'public'
       and tablename not in (
         'creators','clients','opportunities','channel_orders','social_plans',
-        'events','event_phases','event_tasks','event_registrations','event_sponsorships'
+        'events','event_phases','event_tasks','event_registrations','event_sponsorships',
+        'video_tasks','videos','video_ideas','import_history',
+        'competitor_accounts','competitor_videos','trending_topics','competitor_style_analysis'
       )
   ),
   0::bigint,
-  'core Realtime test has no unexpected public tables'
+  'Realtime publication has no unexpected public tables'
 );
 
 select is(
