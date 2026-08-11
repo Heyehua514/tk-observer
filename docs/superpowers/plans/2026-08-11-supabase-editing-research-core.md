@@ -78,7 +78,7 @@ git commit -m "feat(supabase): add editing production core"
 
 **Interfaces:**
 - Consumes: profiles and role helpers.
-- Produces: `video_ideas`, `import_history`, `competitor_accounts`, `competitor_videos`, `trending_topics`, `competitor_style_analysis`, `enforce_import_history_immutable()`.
+- Produces: `video_ideas`, `import_history`, `competitor_accounts`, `competitor_videos`, `trending_topics`, `competitor_style_analysis`, `enforce_import_history_immutable()`, `invalidate_import_history(uuid)`.
 
 - [ ] **Step 1: Write failing record and role tests**
 
@@ -103,6 +103,8 @@ if row(new.id, new.legacy_id, new.imported_at, new.file_name,
 then raise exception using errcode = '42501', message = 'import history is immutable';
 end if;
 ```
+
+Add `invalidate_import_history(uuid)` as a security-definer RPC. It requires owner/boss/editing, sets `deleted_at`, returns whether one visible record was changed, and is the only supported non-owner invalidation path.
 
 - [ ] **Step 4: Verify GREEN and commit**
 
