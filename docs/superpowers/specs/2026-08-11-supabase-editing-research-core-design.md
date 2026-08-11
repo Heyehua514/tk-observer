@@ -103,7 +103,7 @@ views >= 同账号未删除视频平均播放量的 2 倍
 | competitor_videos / topics / style | 全部 | 读写 | 读写 | 无 | 无 |
 | 4 个分析视图 | 读取 | 读取 | 读取 | 无有效数据 | 无有效数据 |
 
-`video_ideas` 触发器阻止 owner、boss、editing 直接修改 `is_viral`、`ai_analysis`、`analyzed_at`。爆款触发器和后续自动化函数使用数据库所有者权限完成受控写入。
+`video_ideas` 使用 PostgreSQL 列级 grant，authenticated 只能写业务输入列，不能写 `is_viral`、`ai_analysis`、`analyzed_at`。爆款 security-definer 函数和后续 service role 自动化可以受控写入服务端字段。
 
 ## Storage
 
