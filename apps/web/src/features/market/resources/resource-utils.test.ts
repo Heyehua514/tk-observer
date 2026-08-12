@@ -43,13 +43,16 @@ describe('market resource deterministic transforms', () => {
 
   it('exports quoted CSV cells without losing commas', () => {
     const csv = financesToCsv(rows)
+    expect(csv).toContain('"金额(人民币)"')
+    expect(csv).toContain('"¥100.00"')
     expect(csv).toContain('"主赞助,含展位"')
     expect(csv.split('\n')).toHaveLength(3)
   })
 
   it('calculates finance totals in Markdown and escapes table pipes', () => {
     const markdown = financesToMarkdown(rows, '厦门沙龙复盘')
-    expect(markdown).toContain('利润：7500 美分')
+    expect(markdown).toContain('利润：¥75.00')
+    expect(markdown).toContain('金额（人民币）')
     expect(markdown).toContain('利润率：75.0%')
     expect(markdown).toContain('场地\\|布置')
   })

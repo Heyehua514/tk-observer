@@ -1,4 +1,5 @@
 import type { EventFinance } from './types'
+import { formatFinanceCny } from './finance-format'
 
 export function applyTemplate(
   content: string,
@@ -18,7 +19,7 @@ export function financesToCsv(rows: EventFinance[]) {
     '活动',
     '收支类型',
     '类别',
-    '金额(美分)',
+    '金额(人民币)',
     '说明',
     '经手人',
     '日期',
@@ -30,7 +31,7 @@ export function financesToCsv(rows: EventFinance[]) {
         row.eventName,
         row.type,
         row.category,
-        row.amount,
+        formatFinanceCny(row.amount),
         row.description,
         row.paidBy,
         row.paidAt,
@@ -57,11 +58,11 @@ export function financesToMarkdown(
     ? rows
         .map(
           (row) =>
-            `| ${row.eventName} | ${row.type} | ${row.category} | ${row.amount} | ${row.description.replace(/\|/g, '\\|')} |`
+            `| ${row.eventName} | ${row.type} | ${row.category} | ${formatFinanceCny(row.amount)} | ${row.description.replace(/\|/g, '\\|')} |`
         )
         .join('\n')
-    : '| - | - | - | 0 | 暂无明细 |'
-  return `# ${title}\n\n- 收入总计：${income} 美分\n- 支出总计：${expense} 美分\n- 利润：${profit} 美分\n- 利润率：${rate}\n\n| 活动 | 类型 | 类别 | 金额（美分） | 说明 |\n| --- | --- | --- | ---: | --- |\n${details}\n`
+    : '| - | - | - | ¥0.00 | 暂无明细 |'
+  return `# ${title}\n\n- 收入总计：${formatFinanceCny(income)}\n- 支出总计：${formatFinanceCny(expense)}\n- 利润：${formatFinanceCny(profit)}\n- 利润率：${rate}\n\n| 活动 | 类型 | 类别 | 金额（人民币） | 说明 |\n| --- | --- | --- | ---: | --- |\n${details}\n`
 }
 
 export function downloadText(filename: string, content: string, type: string) {

@@ -16,6 +16,7 @@
 - 商务公众号分析 Tab 补齐动效指标、说明条、统一表格视觉和引导空态。
 - 市场活动财务录入改为人民币元输入，并在活动详情页增加 CSV / Markdown 导出。
 - 市场资源库财务面板统一人民币元输入和人民币格式展示。
+- 市场资源库财务 CSV / Markdown 导出统一为人民币展示，不再输出“美分”。
 
 ## 验证
 
@@ -34,7 +35,8 @@
 - `b705769 feat(business): capture opportunity follow-up details`
 - `f5b46f1 feat(market): normalize resource finance amounts`
 - `07c08d6 feat(business): add opportunity detail editing`
-- 待提交：商务公众号分析 UI 补齐。
+- `efc231a feat(business): polish blog analysis workspace`
+- 待提交：市场资源库财务导出口径统一。
 
 ## 外部状态
 
