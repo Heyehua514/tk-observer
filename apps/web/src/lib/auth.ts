@@ -11,7 +11,9 @@ import {
 } from '@/types/auth'
 import { ClientResponseError, type RecordModel } from 'pocketbase'
 import { useAuthStore } from '@/stores/auth-store'
+import { getDataProvider } from '@/lib/data-provider'
 import { clearPocketBaseSession, pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export const ACCESS_DENIED_SESSION_KEY = 'tk-observer-access-denied'
 
@@ -55,6 +57,58 @@ function mapUser(record: RecordModel): AppUser {
   }
 }
 
+type SupabaseProfile = {
+  name: string
+  role: string | null
+  avatar_path: string | null
+}
+
+function mapSupabaseUser(
+  id: string,
+  email: string | undefined,
+  profile: SupabaseProfile | null
+): AppUser {
+  if (!profile || !isUserRole(profile.role) || !profile.name) {
+    throw new Error('账号角色配置无效，请联系管理员')
+  }
+  return {
+    id,
+    email: email || '',
+    name: profile.name,
+    role: profile.role,
+    avatar: profile.avatar_path || undefined,
+  }
+}
+
+async function fetchSupabaseProfile(userId: string) {
+  const supabase = getSupabaseClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('name, role, avatar_path')
+    .eq('id', userId)
+    .maybeSingle()
+  if (error) throw error
+  return data as SupabaseProfile | null
+}
+
+async function loginWithSupabasePassword(email: string, password: string) {
+  const supabase = getSupabaseClient()
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    })
+    if (error || !data.user) throw error || new Error('NO_USER')
+    const profile = await fetchSupabaseProfile(data.user.id)
+    const user = mapSupabaseUser(data.user.id, data.user.email, profile)
+    useAuthStore.getState().setUser(user)
+    return user
+  } catch {
+    useAuthStore.getState().reset()
+    throw new LoginError('NETWORK')
+  }
+}
+
 async function accountExists(email: string) {
   const result = await pb.send<{ exists: boolean }>(
     '/api/tk-observer/account-exists',
@@ -67,6 +121,10 @@ async function accountExists(email: string) {
 }
 
 export async function loginWithPassword(email: string, password: string) {
+  if (getDataProvider() === 'supabase') {
+    return loginWithSupabasePassword(email, password)
+  }
+
   try {
     const result = await pb
       .collection('users')
@@ -105,6 +163,25 @@ type RegistrationInput = {
  * role 不接受前端输入，由服务端根据成员姓名白名单确定。
  */
 export async function registerAccount(input: RegistrationInput) {
+  if (getDataProvider() === 'supabase') {
+    const supabase = getSupabaseClient()
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: input.email.trim(),
+        password: input.password,
+        options: { data: { name: input.memberName } },
+      })
+      if (error || !data.user) throw error || new Error('NO_USER')
+      const profile = await fetchSupabaseProfile(data.user.id)
+      const user = mapSupabaseUser(data.user.id, data.user.email, profile)
+      useAuthStore.getState().setUser(user)
+      return user
+    } catch {
+      useAuthStore.getState().reset()
+      throw new RegistrationError('NETWORK')
+    }
+  }
+
   try {
     await pb.send('/api/tk-observer/register', {
       method: 'POST',
@@ -144,6 +221,11 @@ export async function registerAccount(input: RegistrationInput) {
 }
 
 export async function logout() {
+  if (getDataProvider() === 'supabase') {
+    await getSupabaseClient().auth.signOut()
+    useAuthStore.getState().reset()
+    return
+  }
   await clearPocketBaseSession()
   useAuthStore.getState().reset()
 }
@@ -161,7 +243,10 @@ export function getDefaultRoute(role: UserRole): WorkbenchPath {
 
 export function requireAuthentication() {
   const user = useAuthStore.getState().user
-  if (!user || !pb.authStore.isValid) throw redirect({ to: '/login' })
+  if (!user) throw redirect({ to: '/login' })
+  if (getDataProvider() === 'pocketbase' && !pb.authStore.isValid) {
+    throw redirect({ to: '/login' })
+  }
   return user
 }
 

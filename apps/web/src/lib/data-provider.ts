@@ -1,7 +1,7 @@
 export type DataProvider = 'pocketbase' | 'supabase'
 
 export function getDataProvider(): DataProvider {
-  const value = import.meta.env.VITE_DATA_PROVIDER || 'pocketbase'
+  const value = import.meta.env.VITE_DATA_PROVIDER || 'supabase'
   if (value !== 'pocketbase' && value !== 'supabase') {
     throw new Error(`不支持的数据提供者：${value}`)
   }

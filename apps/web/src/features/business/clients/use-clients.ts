@@ -1,44 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
-import type { Client, ClientInput } from './types'
+import { getSupabaseClient } from '@/lib/supabase'
+import { mapClientRecord, serializeClientInput } from './client-mapper'
+import type { ClientInput } from './types'
 
 export const clientKeys = { all: ['business', 'clients'] as const }
-
-const mapClient = (record: RecordModel): Client => ({
-  id: record.id,
-  name: String(record.name || ''),
-  contactName: String(record.contact_name || ''),
-  contactPhone: String(record.contact_phone || ''),
-  contactWechat: String(record.contact_wechat || ''),
-  company: String(record.company || ''),
-  industry: String(record.industry || 'other'),
-  source: String(record.source || 'other'),
-  level: (record.level || 'C') as Client['level'],
-  notes: String(record.notes || ''),
-  updated: String(record.updated || ''),
-})
-
-const serialize = (input: ClientInput) => ({
-  name: input.name,
-  contact_name: input.contactName,
-  contact_phone: input.contactPhone,
-  contact_wechat: input.contactWechat,
-  company: input.company,
-  industry: input.industry,
-  source: input.source,
-  level: input.level,
-  notes: input.notes,
-})
 
 export function useClients() {
   return useQuery({
     queryKey: clientKeys.all,
-    queryFn: async () =>
-      (await pb.collection('clients').getFullList({ sort: '-updated' })).map(
-        mapClient
-      ),
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('clients')
+          .select('*')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapClientRecord)
+      }
+      return (
+        await pb.collection('clients').getFullList({ sort: '-updated' })
+      ).map(mapClientRecord)
+    },
   })
 }
 
@@ -49,18 +35,38 @@ function useClientMutation(action: 'create' | 'update' | 'delete') {
       payload: ClientInput | { id: string; input: ClientInput } | string
     ) => {
       if (action === 'delete') {
+        if (getDataProvider() === 'supabase') {
+          const { error } = await getSupabaseClient()
+            .from('clients')
+            .update({ deleted_at: new Date().toISOString() })
+            .eq('id', payload as string)
+          if (error) throw error
+          return
+        }
         await pb.collection('clients').delete(payload as string)
         return
       }
       const data =
         action === 'create'
-          ? serialize(payload as ClientInput)
-          : serialize((payload as { id: string; input: ClientInput }).input)
+          ? serializeClientInput(payload as ClientInput)
+          : serializeClientInput(
+              (payload as { id: string; input: ClientInput }).input
+            )
+      if (getDataProvider() === 'supabase') {
+        const table = getSupabaseClient().from('clients')
+        if (action === 'create') {
+          const { error } = await table.insert(data)
+          if (error) throw error
+        } else {
+          const { error } = await table
+            .update(data)
+            .eq('id', (payload as { id: string }).id)
+          if (error) throw error
+        }
+        return
+      }
       if (action === 'create') await pb.collection('clients').create(data)
-      else
-        await pb
-          .collection('clients')
-          .update((payload as { id: string }).id, data)
+      else await pb.collection('clients').update((payload as { id: string }).id, data)
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: clientKeys.all })

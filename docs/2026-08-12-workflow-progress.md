@@ -18,13 +18,15 @@
 - 市场资源库财务面板统一人民币元输入和人民币格式展示。
 - 市场资源库财务 CSV / Markdown 导出统一为人民币展示，不再输出“美分”。
 - 商务商单表格抽出展示模型，统一状态、平台、内容类型、日期和金额的显示口径。
+- Supabase 迁移第一刀完成：默认数据提供者切为 Supabase，Auth 支持 Supabase 登录/注册/退出分流。
+- 商务基础数据开始切 Supabase：客户 CRUD 与达人列表/新增/编辑/删除默认走 Supabase，PocketBase 保留显式回退。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，58 个测试文件，149 个测试。
+- `pnpm test`：通过，63 个测试文件，159 个测试。
 
 ## 提交
 
@@ -38,7 +40,8 @@
 - `07c08d6 feat(business): add opportunity detail editing`
 - `efc231a feat(business): polish blog analysis workspace`
 - `6040306 feat(market): export resource finances in cny`
-- 待提交：商务商单表格展示模型抽离。
+- `eca2248 feat(business): simplify order row display`
+- 待提交：Supabase 默认入口与商务基础数据切换。
 
 ## 外部状态
 

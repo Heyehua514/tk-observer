@@ -8,7 +8,9 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { createSupabasePageQuery } from '@/lib/supabase-table'
 import type { CreatorListParams, CreatorListResult } from '../types'
 import { mapCreator } from './creator-mapper'
 
@@ -22,6 +24,42 @@ export const creatorKeys = {
 async function fetchCreators(
   params: CreatorListParams
 ): Promise<CreatorListResult> {
+  if (getDataProvider() === 'supabase') {
+    const sort = params.sort
+      .replace('created', 'created_at')
+      .replace('updated', 'updated_at')
+    const filters: Parameters<typeof createSupabasePageQuery>[0]['filters'] = [
+      { kind: 'is', column: 'deleted_at', value: null },
+    ]
+    if (params.region !== 'all') {
+      filters.push({ kind: 'eq', column: 'region', value: params.region })
+    }
+    if (params.status !== 'all') {
+      filters.push({
+        kind: 'eq',
+        column: 'cooperation_status',
+        value: params.status,
+      })
+    }
+    if (params.query) {
+      const escaped = params.query.replace(/%/g, '\\%').replace(/,/g, '\\,')
+      filters.push({
+        kind: 'or',
+        expression: `nickname.ilike.%${escaped}%,tiktok_url.ilike.%${escaped}%,owner_name.ilike.%${escaped}%`,
+      })
+    }
+    return createSupabasePageQuery({
+      table: 'creators',
+      page: params.page,
+      perPage: params.perPage,
+      sort: sort.startsWith('-')
+        ? `${sort.slice(1)}.desc`
+        : `${sort}.asc`,
+      filters,
+      mapRow: mapCreator,
+    })
+  }
+
   const filters: string[] = []
   const values: Record<string, string> = {}
   if (params.query) {
@@ -51,6 +89,7 @@ async function fetchCreators(
 export function useCreators(params: CreatorListParams) {
   const queryClient = useQueryClient()
   useEffect(() => {
+    if (getDataProvider() === 'supabase') return
     let unsubscribe: (() => void) | undefined
     let disposed = false
     void pb

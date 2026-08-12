@@ -2,18 +2,34 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { recordAudit } from '@/lib/audit'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { CreatorInput } from '../types'
-import { mapCreator, serializeCreator } from './creator-mapper'
+import {
+  mapCreator,
+  serializeCreator,
+  serializeSupabaseCreator,
+} from './creator-mapper'
 import { creatorKeys } from './use-creators'
 
 export function useUpdateCreator() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: CreatorInput }) =>
-      mapCreator(
-        await pb.collection('creators').update(id, serializeCreator(input))
-      ),
+    mutationFn: async ({ id, input }: { id: string; input: CreatorInput }) => {
+      const data = serializeCreator(input)
+      if (getDataProvider() === 'supabase') {
+        const { data: row, error } = await getSupabaseClient()
+          .from('creators')
+          .update(serializeSupabaseCreator(input))
+          .eq('id', id)
+          .select()
+          .single()
+        if (error) throw error
+        return mapCreator(row)
+      }
+      return mapCreator(await pb.collection('creators').update(id, data))
+    },
     onSuccess: (creator) => {
       recordAudit('修改达人资料', 'creators', creator.id)
       queryClient.setQueryData(creatorKeys.detail(creator.id), creator)

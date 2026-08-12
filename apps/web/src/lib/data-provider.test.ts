@@ -3,11 +3,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 afterEach(() => vi.unstubAllEnvs())
 
 describe('data provider environment', () => {
-  it('keeps PocketBase as the default provider', async () => {
+  it('uses Supabase as the default provider for the migration cutover', async () => {
     vi.stubEnv('VITE_DATA_PROVIDER', '')
     vi.resetModules()
     const { getDataProvider } = await import('./data-provider')
-    expect(getDataProvider()).toBe('pocketbase')
+    expect(getDataProvider()).toBe('supabase')
   })
 
   it('requires URL and anon key only when Supabase is selected', async () => {
