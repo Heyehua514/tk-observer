@@ -36,7 +36,7 @@
 - `f5b46f1 feat(market): normalize resource finance amounts`
 - `07c08d6 feat(business): add opportunity detail editing`
 - `efc231a feat(business): polish blog analysis workspace`
-- 待提交：市场资源库财务导出口径统一。
+- `6040306 feat(market): export resource finances in cny`
 
 ## 外部状态
 
