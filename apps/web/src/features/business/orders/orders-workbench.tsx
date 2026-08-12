@@ -1,5 +1,5 @@
 // 商务工作台渠道商单 CRUD；权限：business 与 boss 可操作。
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import type { RecordModel } from 'pocketbase'
@@ -30,7 +30,21 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { EmptyState } from '@/components/shared/empty-state'
+import { FilterBar } from '@/components/shared/filter-bar'
 import { useClients } from '../clients'
+import {
+  emptyOrderFilters,
+  filterOrders,
+  type OrderFilters,
+} from './order-filters'
+import { formatOrderAmount, orderAmountInput } from './order-amount'
+import {
+  orderContentTypeLabels,
+  orderContentTypeOptions,
+  orderPlatformLabels,
+  orderPlatformOptions,
+  orderStatusOptions,
+} from './order-options'
 
 type Order = {
   id: string
@@ -39,26 +53,21 @@ type Order = {
   creatorName: string
   amount: number
   status: string
+  platform: string
+  contentType: string
   publishDate: string
 }
-const statuses = [
-  ['negotiating', '洽谈中'],
-  ['confirmed', '已确认'],
-  ['filming', '拍摄中'],
-  ['published', '已发布'],
-  ['completed', '已完成'],
-  ['cancelled', '已取消'],
-] as const
 
 export function OrdersWorkbench() {
   const cache = useQueryClient()
   const clients = useClients()
   const [open, setOpen] = useState(false)
+  const [filters, setFilters] = useState<OrderFilters>(emptyOrderFilters)
   const [draft, setDraft] = useState({
     title: '',
     client: '',
     creator: '',
-    amount: 0,
+    amount: '',
   })
   const orders = useQuery({
     queryKey: ['business', 'orders'],
@@ -74,9 +83,17 @@ export function OrdersWorkbench() {
         creatorName: String(r.expand?.creator?.nickname || '—'),
         amount: Number(r.amount || 0),
         status: String(r.status),
+        platform: String(r.platform || ''),
+        contentType: String(r.content_type || ''),
         publishDate: String(r.publish_date || ''),
       })),
   })
+  const visibleOrders = useMemo(
+    () => filterOrders(orders.data || [], filters),
+    [filters, orders.data]
+  )
+  const updateFilters = (patch: Partial<OrderFilters>) =>
+    setFilters((current) => ({ ...current, ...patch }))
   const creators = useQuery({
     queryKey: ['business', 'available-creators'],
     queryFn: () =>
@@ -89,7 +106,10 @@ export function OrdersWorkbench() {
   const create = useMutation({
     mutationFn: () =>
       pb.collection('channel_orders').create({
-        ...draft,
+        title: draft.title,
+        client: draft.client,
+        creator: draft.creator,
+        amount: orderAmountInput(draft.amount) ?? 0,
         platform: 'tiktok',
         content_type: 'other',
         status: 'negotiating',
@@ -117,6 +137,62 @@ export function OrdersWorkbench() {
           新增商单
         </Button>
       </div>
+      <FilterBar onReset={() => setFilters(emptyOrderFilters)}>
+        <Input
+          className='max-w-sm'
+          placeholder='搜索标题、客户或达人'
+          value={filters.query}
+          onChange={(event) => updateFilters({ query: event.target.value })}
+        />
+        <Select
+          value={filters.status}
+          onValueChange={(status) => updateFilters({ status })}
+        >
+          <SelectTrigger className='w-32'>
+            <SelectValue placeholder='状态' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部状态</SelectItem>
+            {orderStatusOptions.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.platform}
+          onValueChange={(platform) => updateFilters({ platform })}
+        >
+          <SelectTrigger className='w-32'>
+            <SelectValue placeholder='平台' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部平台</SelectItem>
+            {orderPlatformOptions.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.contentType}
+          onValueChange={(contentType) => updateFilters({ contentType })}
+        >
+          <SelectTrigger className='w-36'>
+            <SelectValue placeholder='内容类型' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部内容</SelectItem>
+            {orderContentTypeOptions.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FilterBar>
       <div className='overflow-hidden rounded-lg border'>
         <Table>
           <TableHeader>
@@ -125,17 +201,25 @@ export function OrdersWorkbench() {
               <TableHead>客户</TableHead>
               <TableHead>达人</TableHead>
               <TableHead>金额</TableHead>
+              <TableHead>平台</TableHead>
+              <TableHead>内容类型</TableHead>
+              <TableHead>发布日期</TableHead>
               <TableHead>状态</TableHead>
               <TableHead className='w-12' />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.data?.map((item) => (
+            {visibleOrders.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className='font-medium'>{item.title}</TableCell>
                 <TableCell>{item.clientName}</TableCell>
                 <TableCell>{item.creatorName}</TableCell>
-                <TableCell>¥{(item.amount / 100).toLocaleString()}</TableCell>
+                <TableCell>{formatOrderAmount(item.amount)}</TableCell>
+                <TableCell>{orderPlatformLabels[item.platform] || item.platform}</TableCell>
+                <TableCell>
+                  {orderContentTypeLabels[item.contentType] || item.contentType}
+                </TableCell>
+                <TableCell>{item.publishDate?.slice(0, 10) || '—'}</TableCell>
                 <TableCell>
                   <Select
                     value={item.status}
@@ -147,7 +231,7 @@ export function OrdersWorkbench() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {statuses.map(([value, label]) => (
+                      {orderStatusOptions.map(([value, label]) => (
                         <SelectItem key={value} value={value}>
                           {label}
                         </SelectItem>
@@ -167,9 +251,9 @@ export function OrdersWorkbench() {
                 </TableCell>
               </TableRow>
             ))}
-            {!orders.isLoading && !orders.data?.length && (
+            {!orders.isLoading && visibleOrders.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className='p-0'>
+                <TableCell colSpan={9} className='p-0'>
                   <EmptyState
                     title='还没有渠道商单'
                     description='新建第一条商单，开始追踪合作状态和交付结果。'
@@ -226,17 +310,24 @@ export function OrdersWorkbench() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label='金额（美分）'>
+          <Field label='金额（人民币/元）'>
             <Input
               type='number'
               value={draft.amount}
+              min='0'
+              step='0.01'
               onChange={(e) =>
-                setDraft({ ...draft, amount: Number(e.target.value) })
+                setDraft({ ...draft, amount: e.target.value })
               }
             />
           </Field>
           <Button
-            disabled={!draft.title || !draft.client || !draft.creator}
+            disabled={
+              !draft.title ||
+              !draft.client ||
+              !draft.creator ||
+              orderAmountInput(draft.amount) === null
+            }
             onClick={() => create.mutate()}
           >
             保存

@@ -28,6 +28,18 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
+import { FilterBar } from '@/components/shared/filter-bar'
+import {
+  clientIndustryLabels,
+  clientIndustryOptions,
+  clientSourceLabels,
+  clientSourceOptions,
+} from './client-options'
+import {
+  emptyClientFilters,
+  filterClients,
+  type ClientFilters,
+} from './client-filters'
 import type { Client, ClientInput } from './types'
 import {
   useClients,
@@ -47,39 +59,20 @@ const empty: ClientInput = {
   level: 'C',
   notes: '',
 }
-const industries = [
-  ['tiktok_service', 'TikTok服务商'],
-  ['brand', '品牌方'],
-  ['mcn', 'MCN'],
-  ['supply_chain', '供应链'],
-  ['ad_agency', '广告代理'],
-  ['other', '其他'],
-] as const
-const sources = [
-  ['social', '朋友圈获客'],
-  ['referral', '老客户转介绍'],
-  ['event', '活动获客'],
-  ['outbound', '主动开发'],
-  ['other', '其他'],
-] as const
-
 export function ClientsWorkbench() {
   const clients = useClients()
   const create = useCreateClient()
   const update = useUpdateClient()
   const remove = useDeleteClient()
-  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<ClientFilters>(emptyClientFilters)
   const [editing, setEditing] = useState<Client | null>(null)
   const [draft, setDraft] = useState<ClientInput>(empty)
   const [open, setOpen] = useState(false)
+  const updateFilters = (patch: Partial<ClientFilters>) =>
+    setFilters((current) => ({ ...current, ...patch }))
   const filtered = useMemo(
-    () =>
-      (clients.data || []).filter((item) =>
-        `${item.name} ${item.contactName} ${item.company}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
-      ),
-    [clients.data, query]
+    () => filterClients(clients.data || [], filters),
+    [clients.data, filters]
   )
   const showForm = (client?: Client) => {
     setEditing(client || null)
@@ -108,18 +101,68 @@ export function ClientsWorkbench() {
   }
   return (
     <div className='space-y-4'>
-      <div className='flex flex-wrap items-center justify-between gap-3'>
-        <Input
-          className='max-w-sm'
-          placeholder='搜索客户、对接人或公司'
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+      <div className='flex justify-end'>
         <Button onClick={() => showForm()}>
           <Plus className='size-4' />
           新增客户
         </Button>
       </div>
+      <FilterBar onReset={() => setFilters(emptyClientFilters)}>
+        <Input
+          className='max-w-sm'
+          placeholder='搜索客户、对接人或公司'
+          value={filters.query}
+          onChange={(event) => updateFilters({ query: event.target.value })}
+        />
+        <Select
+          value={filters.industry}
+          onValueChange={(industry) => updateFilters({ industry })}
+        >
+          <SelectTrigger className='w-40'>
+            <SelectValue placeholder='行业' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部行业</SelectItem>
+            {clientIndustryOptions.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.source}
+          onValueChange={(source) => updateFilters({ source })}
+        >
+          <SelectTrigger className='w-36'>
+            <SelectValue placeholder='来源' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部来源</SelectItem>
+            {clientSourceOptions.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.level}
+          onValueChange={(level) => updateFilters({ level })}
+        >
+          <SelectTrigger className='w-32'>
+            <SelectValue placeholder='重要度' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部重要度</SelectItem>
+            {['S', 'A', 'B', 'C'].map((level) => (
+              <SelectItem key={level} value={level}>
+                {level}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FilterBar>
       <div className='overflow-hidden rounded-lg border'>
         <Table>
           <TableHeader>
@@ -142,10 +185,10 @@ export function ClientsWorkbench() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  {industries.find(([value]) => value === client.industry)?.[1]}
+                  {clientIndustryLabels[client.industry] || client.industry}
                 </TableCell>
                 <TableCell>
-                  {sources.find(([value]) => value === client.source)?.[1]}
+                  {clientSourceLabels[client.source] || client.source}
                 </TableCell>
                 <TableCell>
                   <Badge variant='secondary'>{client.level}</Badge>
@@ -237,7 +280,7 @@ export function ClientsWorkbench() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {industries.map(([value, label]) => (
+                  {clientIndustryOptions.map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>
@@ -254,7 +297,7 @@ export function ClientsWorkbench() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {sources.map(([value, label]) => (
+                  {clientSourceOptions.map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>
