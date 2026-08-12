@@ -37,7 +37,8 @@ import {
   filterOrders,
   type OrderFilters,
 } from './order-filters'
-import { formatOrderAmount, orderAmountInput } from './order-amount'
+import { formatOrderAmount } from './order-amount'
+import { orderCreatePayload } from './order-create'
 import {
   orderContentTypeLabels,
   orderContentTypeOptions,
@@ -68,6 +69,9 @@ export function OrdersWorkbench() {
     client: '',
     creator: '',
     amount: '',
+    platform: 'tiktok',
+    contentType: 'other',
+    publishDate: '',
   })
   const orders = useQuery({
     queryKey: ['business', 'orders'],
@@ -104,16 +108,11 @@ export function OrdersWorkbench() {
   const refresh = () =>
     void cache.invalidateQueries({ queryKey: ['business', 'orders'] })
   const create = useMutation({
-    mutationFn: () =>
-      pb.collection('channel_orders').create({
-        title: draft.title,
-        client: draft.client,
-        creator: draft.creator,
-        amount: orderAmountInput(draft.amount) ?? 0,
-        platform: 'tiktok',
-        content_type: 'other',
-        status: 'negotiating',
-      }),
+    mutationFn: () => {
+      const payload = orderCreatePayload(draft)
+      if (!payload) throw new Error('INVALID_ORDER_DRAFT')
+      return pb.collection('channel_orders').create(payload)
+    },
     onSuccess: () => {
       refresh()
       setOpen(false)
@@ -321,13 +320,53 @@ export function OrdersWorkbench() {
               }
             />
           </Field>
+          <Field label='平台'>
+            <Select
+              value={draft.platform}
+              onValueChange={(platform) => setDraft({ ...draft, platform })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {orderPlatformOptions.map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label='内容类型'>
+            <Select
+              value={draft.contentType}
+              onValueChange={(contentType) =>
+                setDraft({ ...draft, contentType })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {orderContentTypeOptions.map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label='预计发布日期'>
+            <Input
+              type='date'
+              value={draft.publishDate}
+              onChange={(e) =>
+                setDraft({ ...draft, publishDate: e.target.value })
+              }
+            />
+          </Field>
           <Button
-            disabled={
-              !draft.title ||
-              !draft.client ||
-              !draft.creator ||
-              orderAmountInput(draft.amount) === null
-            }
+            disabled={!orderCreatePayload(draft)}
             onClick={() => create.mutate()}
           >
             保存
