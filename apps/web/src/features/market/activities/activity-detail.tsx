@@ -13,8 +13,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
+import {
+  downloadText,
+  financesToCsv,
+  financesToMarkdown,
+  type EventFinance,
+} from '../resources'
 import { eventStatusLabels, eventTypeLabels } from '../constants'
 import { calculateActivityMetrics } from './activity-metrics'
+import { activityFinanceAmountInput } from './activity-finance'
 import {
   useActivityDetail,
   useCreateActivityFinance,
@@ -358,7 +365,9 @@ function FinancePanel({
     type?: string
     amount?: number
     category?: string
-    notes?: string
+    description?: string
+    paidBy?: string
+    paidAt?: string
   }>
   metrics: { income: number; expense: number; profit: number }
 }) {
@@ -366,6 +375,17 @@ function FinancePanel({
   const [type, setType] = useState<'income' | 'expense'>('expense')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
+  const exportRows: EventFinance[] = finances.map((item) => ({
+    id: item.id,
+    eventId,
+    eventName: eventId,
+    category: (item.category || 'other') as EventFinance['category'],
+    type: (item.type || 'expense') as EventFinance['type'],
+    amount: item.amount || 0,
+    description: item.description || '',
+    paidBy: item.paidBy || '',
+    paidAt: item.paidAt || '',
+  }))
   return (
     <div className='space-y-4'>
       <div className='grid gap-3 sm:grid-cols-3'>
@@ -380,6 +400,32 @@ function FinancePanel({
           }
         />
       </div>
+      <div className='flex justify-end gap-2'>
+        <Button
+          variant='outline'
+          onClick={() =>
+            downloadText(
+              `event-finances-${eventId}.csv`,
+              financesToCsv(exportRows),
+              'text/csv;charset=utf-8'
+            )
+          }
+        >
+          导出 CSV
+        </Button>
+        <Button
+          variant='outline'
+          onClick={() =>
+            downloadText(
+              `event-finances-${eventId}.md`,
+              financesToMarkdown(exportRows),
+              'text/markdown;charset=utf-8'
+            )
+          }
+        >
+          导出 Markdown
+        </Button>
+      </div>
       <div className='grid gap-2 rounded-lg border p-4 sm:grid-cols-4'>
         <select
           className='h-9 rounded-md border bg-background px-2 text-sm'
@@ -393,7 +439,8 @@ function FinancePanel({
           className='h-9 rounded-md border bg-background px-3 text-sm'
           type='number'
           min='0'
-          placeholder='金额（美分）'
+          step='0.01'
+          placeholder='金额（人民币/元）'
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
         />
@@ -404,12 +451,16 @@ function FinancePanel({
           onChange={(event) => setDescription(event.target.value)}
         />
         <Button
-          disabled={!amount || !description || create.isPending}
+          disabled={
+            activityFinanceAmountInput(amount) === null ||
+            !description ||
+            create.isPending
+          }
           onClick={() =>
             void create
               .mutateAsync({
                 type,
-                amount: Number(amount),
+                amount: activityFinanceAmountInput(amount) || 0,
                 description,
                 category: 'other',
                 paid_at: new Date().toISOString(),

@@ -2,6 +2,7 @@
 export { MarketResourcesWorkbench } from './market-resources-workbench'
 export {
   applyTemplate,
+  downloadText,
   financesToCsv,
   financesToMarkdown,
 } from './resource-utils'
