@@ -31,6 +31,10 @@ import {
   type OpportunityStage,
 } from './opportunity-rules'
 import { opportunityCreatePayload } from './opportunity-create'
+import {
+  opportunityDetailPatch,
+  type OpportunityDetailDraft,
+} from './opportunity-detail'
 import { opportunityDueText, type OpportunityView } from './opportunity-view'
 const labels: Record<OpportunityStage, string> = {
   contact: '初步接洽',
@@ -101,7 +105,30 @@ export function OpportunitiesWorkbench() {
       toast.success('商机已新增')
     },
   })
+  const updateDetail = useMutation({
+    mutationFn: async ({
+      id,
+      draft,
+    }: {
+      id: string
+      draft: OpportunityDetailDraft
+    }) => pb.collection('opportunities').update(id, opportunityDetailPatch(draft)),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ['business', 'opportunities'],
+      })
+      setSelected(null)
+      toast.success('商机详情已更新')
+    },
+    onError: (error) =>
+      toast.error(
+        error instanceof Error && error.message === 'LOST_REASON_REQUIRED'
+          ? '流失原因必填'
+          : '更新失败'
+      ),
+  })
   const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState<OpportunityView | null>(null)
   const [client, setClient] = useState('')
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const reduceMotion = useReducedMotion()
@@ -156,6 +183,7 @@ export function OpportunitiesWorkbench() {
                           }
                     }
                     className='cursor-grab rounded-md border bg-background p-3 shadow-sm'
+                    onClick={() => setSelected(item)}
                   >
                     <div className='text-sm font-medium'>{item.title}</div>
                     <div className='mt-1 text-xs text-muted-foreground'>
@@ -244,6 +272,112 @@ export function OpportunitiesWorkbench() {
           </form>
         </DialogContent>
       </Dialog>
+      <OpportunityDetailDialog
+        key={selected?.id || 'empty'}
+        opportunity={selected}
+        saving={updateDetail.isPending}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setSelected(null)
+        }}
+        onSave={(draft) => {
+          if (selected) updateDetail.mutate({ id: selected.id, draft })
+        }}
+      />
+    </div>
+  )
+}
+
+function OpportunityDetailDialog({
+  opportunity,
+  saving,
+  onOpenChange,
+  onSave,
+}: {
+  opportunity: OpportunityView | null
+  saving: boolean
+  onOpenChange: (open: boolean) => void
+  onSave: (draft: OpportunityDetailDraft) => void
+}) {
+  const [draft, setDraft] = useState<OpportunityDetailDraft>({
+    stage: opportunity?.stage || 'contact',
+    expectedClose: opportunity?.expectedClose?.slice(0, 10) || '',
+    notes: opportunity?.notes || '',
+    lostReason: '',
+  })
+
+  if (!opportunity) return null
+
+  return (
+    <Dialog open={Boolean(opportunity)} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{opportunity.title}</DialogTitle>
+        </DialogHeader>
+        <div className='space-y-4'>
+          <div className='grid gap-3 sm:grid-cols-2'>
+            <Info label='客户' value={opportunity.clientName} />
+            <Info label='预计金额' value={formatCny(opportunity.amount)} />
+          </div>
+          <Field label='阶段'>
+            <Select
+              value={draft.stage}
+              onValueChange={(stage) =>
+                setDraft({ ...draft, stage: stage as OpportunityStage })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {opportunityStages.map((stage) => (
+                  <SelectItem key={stage} value={stage}>
+                    {labels[stage]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label='预计成交日期'>
+            <Input
+              type='date'
+              value={draft.expectedClose}
+              onChange={(event) =>
+                setDraft({ ...draft, expectedClose: event.target.value })
+              }
+            />
+          </Field>
+          <Field label='跟进备注'>
+            <Input
+              value={draft.notes}
+              onChange={(event) =>
+                setDraft({ ...draft, notes: event.target.value })
+              }
+            />
+          </Field>
+          {draft.stage === 'lost' && (
+            <Field label='流失原因'>
+              <Input
+                value={draft.lostReason}
+                onChange={(event) =>
+                  setDraft({ ...draft, lostReason: event.target.value })
+                }
+              />
+            </Field>
+          )}
+          <Button disabled={saving} onClick={() => onSave(draft)}>
+            保存详情
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className='text-xs text-muted-foreground'>{label}</div>
+      <div className='mt-1 text-sm font-medium'>{value}</div>
     </div>
   )
 }
