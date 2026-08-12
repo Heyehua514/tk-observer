@@ -8,6 +8,7 @@
 - 商务客户管理补齐行业、来源、重要度筛选。
 - 商务客户详情增加基础信息、关联商机、关联商单面板。
 - 商务商机卡片增加预计成交日期和备注摘要。
+- 商务新增商机表单支持预计成交日期和跟进备注。
 - 商务渠道商单补齐人民币元输入、状态/平台/内容类型筛选、发布日期列。
 - 商务渠道商单新增表单支持平台、内容类型和预计发布日期。
 - 商务朋友圈运营增加本周 mini 日历和日历/列表视图切换。
@@ -18,7 +19,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，54 个测试文件，142 个测试。
+- `pnpm test`：通过，55 个测试文件，144 个测试。
 
 ## 提交
 
@@ -27,6 +28,7 @@
 - `f617e99 feat(business): enrich client and opportunity context`
 - `317acad feat(business): complete channel order create fields`
 - `b2a917d feat(market): improve activity finance exports`
+- `b705769 feat(business): capture opportunity follow-up details`
 
 ## 外部状态
 
