@@ -12,7 +12,10 @@
 
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，26 个前端测试文件、99 个测试。
+- `pnpm test`：通过，39 个前端测试文件、122 个测试。
+- `pnpm --dir apps/web format:check`：通过。
+- `pnpm build`：通过。
+- 后端确定性测试与 eval：`backend/tests/*.test.cjs` 与 `backend/tests/*.eval.cjs` 全部通过；WorkBuddy 真实输出 eval 默认跳过，避免未授权消耗 credits。
 - 根目录补充 `test` 转发脚本，统一执行 `apps/web` 测试。
 
 ### 任务 3：谢洁工作台
@@ -29,7 +32,7 @@
 
 ### 任务 6：夜跑自动化
 
-已完成到期提醒、日报、周报、WorkBuddy 视频分析、失败案例沉淀和总览「团队记忆」区域。全后端测试现为 51/51 通过。
+已完成到期提醒、日报、周报、WorkBuddy 视频分析、失败案例沉淀和总览「团队记忆」区域。新增闭环规则 Hook：活动招商客户等级校验、财务金额与收支方向校验、设计稿审核文件校验、模板与朋友圈计划使用计数。全后端确定性测试与 eval 已通过。
 
 ## 阻塞与未完成
 
