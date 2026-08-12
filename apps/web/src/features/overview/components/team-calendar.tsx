@@ -1,16 +1,35 @@
 /**
- * 团队日历月视图占位页。
+ * 团队日历月视图。
  * 路由：/overview/calendar；权限：boss。
  */
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, LoaderCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { calendarWeekdays } from '../constants'
-import { useCalendarPlaceholder } from '../hooks/use-calendar-placeholder'
+import { useTeamCalendar } from '../hooks/use-team-calendar'
+import type { TeamCalendarItemType } from '../team-calendar-model'
+
+const typeLabel: Record<TeamCalendarItemType, string> = {
+  activity: '活动',
+  task: '任务',
+  design: '设计',
+  social: '朋友圈',
+  order: '商单',
+}
+
+const typeClass: Record<TeamCalendarItemType, string> = {
+  activity: 'border-blue-200 bg-blue-50 text-blue-700',
+  task: 'border-slate-200 bg-slate-50 text-slate-700',
+  design: 'border-amber-200 bg-amber-50 text-amber-700',
+  social: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  order: 'border-violet-200 bg-violet-50 text-violet-700',
+}
 
 export function TeamCalendar() {
-  const calendar = useCalendarPlaceholder()
+  const calendar = useTeamCalendar()
+  const totalItems =
+    calendar.data?.days.reduce((sum, day) => sum + day.items.length, 0) ?? 0
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -18,11 +37,19 @@ export function TeamCalendar() {
         description='统一查看活动、设计审核、视频交付和发布排期。'
       />
       <section className='overflow-hidden rounded-lg border'>
-        <header className='flex h-14 items-center gap-2 border-b px-4'>
-          <CalendarDays className='size-4' />
-          <h2 className='text-sm font-medium'>
-            {calendar.year} 年 {calendar.month} 月
+        <header className='flex h-14 items-center justify-between border-b px-4'>
+          <h2 className='flex items-center gap-2 text-sm font-medium'>
+            <CalendarDays className='size-4' />
+            {calendar.data?.year ?? new Date().getFullYear()} 年{' '}
+            {calendar.data?.month ?? new Date().getMonth() + 1} 月
           </h2>
+          {calendar.isLoading ? (
+            <LoaderCircle className='size-4 animate-spin text-muted-foreground' />
+          ) : (
+            <span className='text-xs text-muted-foreground'>
+              {totalItems} 个排期事项
+            </span>
+          )}
         </header>
         <div className='grid grid-cols-7 border-b bg-muted/30'>
           {calendarWeekdays.map((weekday) => (
@@ -35,10 +62,10 @@ export function TeamCalendar() {
           ))}
         </div>
         <div className='grid grid-cols-7'>
-          {calendar.days.map((item) => (
+          {(calendar.data?.days || []).map((item) => (
             <div
               key={item.key}
-              className='min-h-24 border-r border-b p-2 last:border-r-0'
+              className='min-h-28 space-y-1 border-r border-b p-2 last:border-r-0'
             >
               {item.day && (
                 <span
@@ -50,14 +77,33 @@ export function TeamCalendar() {
                   {item.day}
                 </span>
               )}
+              {item.items.slice(0, 3).map((calendarItem) => (
+                <div
+                  key={`${calendarItem.type}-${calendarItem.id}`}
+                  className={cn(
+                    'truncate rounded border px-1.5 py-1 text-[11px] leading-none',
+                    typeClass[calendarItem.type]
+                  )}
+                  title={`${typeLabel[calendarItem.type]}：${calendarItem.title}`}
+                >
+                  {typeLabel[calendarItem.type]} · {calendarItem.title}
+                </div>
+              ))}
+              {item.items.length > 3 && (
+                <div className='text-[11px] text-muted-foreground'>
+                  +{item.items.length - 3} 更多
+                </div>
+              )}
             </div>
           ))}
         </div>
       </section>
-      <EmptyState
-        title='暂无团队排期'
-        description='下一轮将把活动、设计审核、视频截止日和发布时间接入此日历。'
-      />
+      {!calendar.isLoading && totalItems === 0 && (
+        <EmptyState
+          title='还没有团队排期'
+          description='活动、任务、设计需求、朋友圈计划和商单发布日期会自动汇总到这里。'
+        />
+      )}
     </div>
   )
 }
