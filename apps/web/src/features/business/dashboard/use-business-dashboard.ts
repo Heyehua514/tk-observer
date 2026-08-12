@@ -1,9 +1,15 @@
 /** 商务驾驶舱跨表只读查询；权限：business 与 boss。 */
 import { useQuery } from '@tanstack/react-query'
-import type { RecordModel } from 'pocketbase'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
-import type { OpportunityStage } from '../opportunities'
+import { getSupabaseClient } from '@/lib/supabase'
 import { calculateBusinessDashboard } from './dashboard-metrics'
+import {
+  mapDashboardClient,
+  mapDashboardOpportunity,
+  mapDashboardOrder,
+  mapDashboardSocialPlan,
+} from './dashboard-source'
 import type { BusinessDashboardData } from './types'
 
 export const businessDashboardKey = ['business', 'dashboard'] as const
@@ -12,6 +18,42 @@ export function useBusinessDashboard() {
   return useQuery({
     queryKey: businessDashboardKey,
     queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const [clients, opportunities, orders, socialPlans] =
+          await Promise.all([
+            getSupabaseClient()
+              .from('clients')
+              .select('*')
+              .is('deleted_at', null)
+              .order('updated_at', { ascending: false }),
+            getSupabaseClient()
+              .from('opportunities')
+              .select('*, clients(name)')
+              .is('deleted_at', null)
+              .order('updated_at', { ascending: false }),
+            getSupabaseClient()
+              .from('channel_orders')
+              .select('*, clients(name)')
+              .is('deleted_at', null)
+              .order('updated_at', { ascending: false }),
+            getSupabaseClient()
+              .from('social_plans')
+              .select('*')
+              .is('deleted_at', null)
+              .order('date'),
+          ])
+        for (const result of [clients, opportunities, orders, socialPlans]) {
+          if (result.error) throw result.error
+        }
+        return calculateBusinessDashboard({
+          clients: (clients.data || []).map(mapDashboardClient),
+          opportunities: (opportunities.data || []).map(
+            mapDashboardOpportunity
+          ),
+          orders: (orders.data || []).map(mapDashboardOrder),
+          socialPlans: (socialPlans.data || []).map(mapDashboardSocialPlan),
+        })
+      }
       const [clients, opportunities, orders, socialPlans] = await Promise.all([
         pb.collection('clients').getFullList({ sort: '-updated' }),
         pb
@@ -23,37 +65,10 @@ export function useBusinessDashboard() {
         pb.collection('social_plans').getFullList({ sort: 'date' }),
       ])
       const data: BusinessDashboardData = {
-        clients: clients.map((record: RecordModel) => ({
-          id: record.id,
-          name: String(record.name || ''),
-          created: String(record.created || ''),
-          updated: String(record.updated || ''),
-        })),
-        opportunities: opportunities.map((record: RecordModel) => ({
-          id: record.id,
-          clientName: String(record.expand?.client?.name || '未知客户'),
-          title: String(record.title || ''),
-          amount: Number(record.amount || 0),
-          stage: record.stage as OpportunityStage,
-          probability: Number(record.probability || 0),
-          expectedClose: String(record.expected_close || ''),
-          updated: String(record.updated || ''),
-        })),
-        orders: orders.map((record: RecordModel) => ({
-          id: record.id,
-          title: String(record.title || ''),
-          clientName: String(record.expand?.client?.name || '未知客户'),
-          amount: Number(record.amount || 0),
-          status: String(record.status || ''),
-          publishDate: String(record.publish_date || ''),
-          updated: String(record.updated || ''),
-        })),
-        socialPlans: socialPlans.map((record: RecordModel) => ({
-          id: record.id,
-          content: String(record.content || ''),
-          date: String(record.date || ''),
-          status: String(record.status || ''),
-        })),
+        clients: clients.map(mapDashboardClient),
+        opportunities: opportunities.map(mapDashboardOpportunity),
+        orders: orders.map(mapDashboardOrder),
+        socialPlans: socialPlans.map(mapDashboardSocialPlan),
       }
       return calculateBusinessDashboard(data)
     },
