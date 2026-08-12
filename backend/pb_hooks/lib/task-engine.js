@@ -50,7 +50,7 @@ const detectTimeConflict = (steps, deadline, now) => {
 
 const suggestWorkflow = ({ goal, deadline, participantRoles, templates }) => {
   const matchedTemplate = matchTemplate(goal, templates)
-  if (matchedTemplate) return { matchedTemplate, suggestedSteps: matchedTemplate.steps }
+  if (matchedTemplate) return { matchedTemplate, suggestedSteps: matchedTemplate.steps, riskAlerts: [] }
   const role = participantRoles[0] || 'business'
   const reviewerRole = participantRoles.includes('boss') ? 'boss' : role
   return {
@@ -59,6 +59,7 @@ const suggestWorkflow = ({ goal, deadline, participantRoles, templates }) => {
       { order: 1, title: String(goal), role, dependsOn: [], deliverables: ['执行结果'], estimatedDays: 1, acceptanceCriteria: '结果可验收', reviewerRole },
       { order: 2, title: '复核并交付', role: reviewerRole, dependsOn: [1], deliverables: ['交付确认'], estimatedDays: 1, acceptanceCriteria: '完成确认', reviewerRole },
     ],
+    riskAlerts: [],
   }
 }
 
