@@ -20,13 +20,14 @@
 - 商务商单表格抽出展示模型，统一状态、平台、内容类型、日期和金额的显示口径。
 - Supabase 迁移第一刀完成：默认数据提供者切为 Supabase，Auth 支持 Supabase 登录/注册/退出分流。
 - 商务基础数据开始切 Supabase：客户 CRUD 与达人列表/新增/编辑/删除默认走 Supabase，PocketBase 保留显式回退。
+- 商务核心链路继续切 Supabase：商机 Pipeline、渠道商单、朋友圈计划默认走 Supabase，PocketBase 保留显式回退。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，63 个测试文件，159 个测试。
+- `pnpm test`：通过，66 个测试文件，165 个测试。
 
 ## 提交
 
@@ -41,7 +42,8 @@
 - `efc231a feat(business): polish blog analysis workspace`
 - `6040306 feat(market): export resource finances in cny`
 - `eca2248 feat(business): simplify order row display`
-- 待提交：Supabase 默认入口与商务基础数据切换。
+- `37d6841 feat(supabase): cut over auth clients and creators`
+- 待提交：Supabase 商务核心链路切换。
 
 ## 外部状态
 

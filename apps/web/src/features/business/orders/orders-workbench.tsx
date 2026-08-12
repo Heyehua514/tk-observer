@@ -2,9 +2,10 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
-import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -39,23 +40,12 @@ import {
 } from './order-filters'
 import { buildOrderDisplay } from './order-display'
 import { orderCreatePayload } from './order-create'
+import { mapOrderRecord, serializeOrderPayload, type OrderRow } from './order-mapper'
 import {
   orderContentTypeOptions,
   orderPlatformOptions,
   orderStatusOptions,
 } from './order-options'
-
-type Order = {
-  id: string
-  title: string
-  clientName: string
-  creatorName: string
-  amount: number
-  status: string
-  platform: string
-  contentType: string
-  publishDate: string
-}
 
 export function OrdersWorkbench() {
   const cache = useQueryClient()
@@ -73,22 +63,22 @@ export function OrdersWorkbench() {
   })
   const orders = useQuery({
     queryKey: ['business', 'orders'],
-    queryFn: async () =>
-      (
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('channel_orders')
+          .select('*, clients(name), creators(nickname)')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapOrderRecord)
+      }
+      return (
         await pb
           .collection('channel_orders')
           .getFullList({ sort: '-updated', expand: 'client,creator' })
-      ).map((r: RecordModel): Order => ({
-        id: r.id,
-        title: String(r.title),
-        clientName: String(r.expand?.client?.name || '—'),
-        creatorName: String(r.expand?.creator?.nickname || '—'),
-        amount: Number(r.amount || 0),
-        status: String(r.status),
-        platform: String(r.platform || ''),
-        contentType: String(r.content_type || ''),
-        publishDate: String(r.publish_date || ''),
-      })),
+      ).map(mapOrderRecord)
+    },
   })
   const visibleOrders = useMemo(
     () => filterOrders(orders.data || [], filters),
@@ -98,18 +88,38 @@ export function OrdersWorkbench() {
     setFilters((current) => ({ ...current, ...patch }))
   const creators = useQuery({
     queryKey: ['business', 'available-creators'],
-    queryFn: () =>
-      pb
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('creators')
+          .select('id, nickname, cooperation_price')
+          .eq('is_biz_available', true)
+          .is('deleted_at', null)
+          .order('nickname')
+        if (error) throw error
+        return data || []
+      }
+      return pb
         .collection('creators')
-        .getFullList({ filter: 'is_biz_available = true', sort: 'nickname' }),
+        .getFullList({ filter: 'is_biz_available = true', sort: 'nickname' })
+    },
   })
   const refresh = () =>
     void cache.invalidateQueries({ queryKey: ['business', 'orders'] })
   const create = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const payload = orderCreatePayload(draft)
       if (!payload) throw new Error('INVALID_ORDER_DRAFT')
-      return pb.collection('channel_orders').create(payload)
+      if (getDataProvider() === 'supabase') {
+        await getSupabaseClient()
+          .from('channel_orders')
+          .insert(serializeOrderPayload(payload))
+          .then(({ error }) => {
+            if (error) throw error
+          })
+        return
+      }
+      await pb.collection('channel_orders').create(payload)
     },
     onSuccess: () => {
       refresh()
@@ -118,12 +128,31 @@ export function OrdersWorkbench() {
     },
   })
   const update = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      pb.collection('channel_orders').update(id, { status }),
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('channel_orders')
+          .update({ status })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('channel_orders').update(id, { status })
+    },
     onSuccess: refresh,
   })
   const remove = useMutation({
-    mutationFn: (id: string) => pb.collection('channel_orders').delete(id),
+    mutationFn: async (id: string) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('channel_orders')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('channel_orders').delete(id)
+    },
     onSuccess: refresh,
   })
   return (
@@ -348,7 +377,7 @@ function OrderRow({
   onStatusChange,
   onRemove,
 }: {
-  item: Order
+  item: OrderRow
   onStatusChange: (status: string) => void
   onRemove: () => void
 }) {

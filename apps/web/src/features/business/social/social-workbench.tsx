@@ -2,8 +2,9 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
-import type { RecordModel } from 'pocketbase'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,14 +33,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
 import { buildSocialWeek } from './social-calendar'
-
-type SocialPlan = {
-  id: string
-  date: string
-  content: string
-  target: string
-  status: string
-}
+import {
+  mapSocialPlanRecord,
+  serializeSocialPlanDraft,
+  type SocialPlan,
+} from './social-plan-mapper'
 export function SocialWorkbench() {
   const cache = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -51,16 +49,20 @@ export function SocialWorkbench() {
   })
   const plans = useQuery({
     queryKey: ['business', 'social-plans'],
-    queryFn: async () =>
-      (await pb.collection('social_plans').getFullList({ sort: '-date' })).map(
-        (r: RecordModel): SocialPlan => ({
-          id: r.id,
-          date: String(r.date),
-          content: String(r.content),
-          target: String(r.target_audience || ''),
-          status: String(r.status),
-        })
-      ),
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('social_plans')
+          .select('*')
+          .is('deleted_at', null)
+          .order('date', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapSocialPlanRecord)
+      }
+      return (
+        await pb.collection('social_plans').getFullList({ sort: '-date' })
+      ).map(mapSocialPlanRecord)
+    },
   })
   const week = useMemo(
     () => buildSocialWeek(new Date(), plans.data || []),
@@ -69,24 +71,48 @@ export function SocialWorkbench() {
   const refresh = () =>
     void cache.invalidateQueries({ queryKey: ['business', 'social-plans'] })
   const create = useMutation({
-    mutationFn: () =>
-      pb.collection('social_plans').create({
-        ...draft,
-        date: `${draft.date} 00:00:00.000Z`,
-        status: 'planned',
-      }),
+    mutationFn: async () => {
+      const data = serializeSocialPlanDraft(draft)
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('social_plans')
+          .insert(data)
+        if (error) throw error
+        return
+      }
+      await pb.collection('social_plans').create(data)
+    },
     onSuccess: () => {
       refresh()
       setOpen(false)
     },
   })
   const update = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      pb.collection('social_plans').update(id, { status }),
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('social_plans')
+          .update({ status })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('social_plans').update(id, { status })
+    },
     onSuccess: refresh,
   })
   const remove = useMutation({
-    mutationFn: (id: string) => pb.collection('social_plans').delete(id),
+    mutationFn: async (id: string) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('social_plans')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('social_plans').delete(id)
+    },
     onSuccess: refresh,
   })
   return (

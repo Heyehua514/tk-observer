@@ -18,6 +18,14 @@ vi.mock('@/lib/pocketbase', () => ({
   },
 }))
 
+vi.mock('@/lib/data-provider', () => ({
+  getDataProvider: () => 'pocketbase',
+  getSupabaseEnvironment: () => ({
+    url: 'http://127.0.0.1:54321',
+    anonKey: 'local-anon-key',
+  }),
+}))
+
 vi.mock('../clients', () => ({
   useClients: () => ({
     data: [

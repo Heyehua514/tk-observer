@@ -3,9 +3,10 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Plus } from 'lucide-react'
-import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,6 +36,10 @@ import {
   opportunityDetailPatch,
   type OpportunityDetailDraft,
 } from './opportunity-detail'
+import {
+  mapOpportunityRecord,
+  serializeOpportunityPayload,
+} from './opportunity-mapper'
 import { opportunityDueText, type OpportunityView } from './opportunity-view'
 const labels: Record<OpportunityStage, string> = {
   contact: '初步接洽',
@@ -50,22 +55,22 @@ export function OpportunitiesWorkbench() {
   const clients = useClients()
   const opportunities = useQuery({
     queryKey: ['business', 'opportunities'],
-    queryFn: async () =>
-      (
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('opportunities')
+          .select('*, clients(name)')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapOpportunityRecord)
+      }
+      return (
         await pb
           .collection('opportunities')
           .getFullList({ sort: '-updated', expand: 'client' })
-      ).map((record: RecordModel): OpportunityView => ({
-        id: record.id,
-        client: String(record.client),
-        clientName: String(record.expand?.client?.name || '未知客户'),
-        title: String(record.title),
-        amount: Number(record.amount || 0),
-        stage: record.stage as OpportunityStage,
-        probability: Number(record.probability || 0),
-        expectedClose: String(record.expected_close || ''),
-        notes: String(record.notes || ''),
-      })),
+      ).map(mapOpportunityRecord)
+    },
   })
   const mutate = useMutation({
     mutationFn: async ({
@@ -77,9 +82,16 @@ export function OpportunitiesWorkbench() {
     }) => {
       let reason = ''
       if (stage === 'lost') reason = window.prompt('请输入流失原因') || ''
-      await pb
-        .collection('opportunities')
-        .update(id, opportunityStagePatch(stage, reason))
+      const patch = opportunityStagePatch(stage, reason)
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('opportunities')
+          .update(patch)
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('opportunities').update(id, patch)
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
@@ -95,8 +107,18 @@ export function OpportunitiesWorkbench() {
       ),
   })
   const create = useMutation({
-    mutationFn: async (data: NonNullable<ReturnType<typeof opportunityCreatePayload>>) =>
-      pb.collection('opportunities').create(data),
+    mutationFn: async (
+      data: NonNullable<ReturnType<typeof opportunityCreatePayload>>
+    ) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('opportunities')
+          .insert(serializeOpportunityPayload(data))
+        if (error) throw error
+        return
+      }
+      await pb.collection('opportunities').create(data)
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['business', 'opportunities'],
@@ -112,7 +134,18 @@ export function OpportunitiesWorkbench() {
     }: {
       id: string
       draft: OpportunityDetailDraft
-    }) => pb.collection('opportunities').update(id, opportunityDetailPatch(draft)),
+    }) => {
+      const patch = opportunityDetailPatch(draft)
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('opportunities')
+          .update(patch)
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('opportunities').update(id, patch)
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['business', 'opportunities'],
