@@ -15,7 +15,9 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
+import { useVideoTasks } from '../hooks/use-video-tasks'
 import type {
   EditingSearchParams,
   TrendingTopic,
@@ -29,6 +31,9 @@ import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
 
 function ProductionSkeleton() {
+  const tasks = useVideoTasks()
+  const archive = useVideoArchive()
+
   return (
     <Tabs defaultValue='tasks'>
       <TabsList>
@@ -46,17 +51,77 @@ function ProductionSkeleton() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value='tasks' className='mt-5'>
-        <EmptyState
-          title='暂无视频任务'
-          description='任务将展示标题、关联商品、关联达人、目标站点、状态、截止日期和负责人。'
-        />
+        {tasks.data?.length ? (
+          <div className='overflow-hidden rounded-lg border'>
+            <table className='w-full text-sm'>
+              <thead className='bg-muted/50 text-xs tracking-wider text-muted-foreground uppercase'>
+                <tr>
+                  <th className='px-4 py-3 text-left font-medium'>任务</th>
+                  <th className='px-4 py-3 text-left font-medium'>状态</th>
+                  <th className='px-4 py-3 text-left font-medium'>截止</th>
+                  <th className='px-4 py-3 text-left font-medium'>负责人</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.data.map((task) => (
+                  <tr key={task.id} className='border-t'>
+                    <td className='px-4 py-3'>
+                      <div className='font-medium'>{task.title}</div>
+                      <div className='text-xs text-muted-foreground'>
+                        {task.subtitle}
+                      </div>
+                    </td>
+                    <td className='px-4 py-3'>{task.status}</td>
+                    <td className='px-4 py-3'>{task.dueAt || '未填'}</td>
+                    <td className='px-4 py-3'>{task.owner}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            title='暂无视频任务'
+            description='任务将展示标题、关联商品、关联达人、目标站点、状态、截止日期和负责人。'
+          />
+        )}
       </TabsContent>
       <TabsContent value='archive' className='mt-5'>
-        <EmptyState
-          title='还没有归档成片'
-          description='后续上传的视频文件会存入 PocketBase，并在此支持浏览器内预览。'
-          action={<Button disabled>上传成片</Button>}
-        />
+        {archive.data?.length ? (
+          <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
+            {archive.data.map((item) => (
+              <article key={item.id} className='rounded-lg border p-4'>
+                <div className='font-medium'>{item.title}</div>
+                <div className='mt-1 text-sm text-muted-foreground'>
+                  {item.subtitle}
+                </div>
+                <div className='mt-3 text-xs text-muted-foreground'>
+                  发布日期 {item.publishAt || '未填'}
+                </div>
+                {item.fileUrl ? (
+                  <a
+                    className='mt-3 inline-flex text-sm text-blue-600 hover:underline'
+                    href={item.fileUrl}
+                    target='_blank'
+                    rel='noreferrer'
+                  >
+                    打开成片
+                  </a>
+                ) : (
+                  <div className='mt-3 text-sm text-muted-foreground'>
+                    未配置文件链接
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title='还没有归档成片'
+            description='后续上传的视频文件会存入 PocketBase，并在此支持浏览器内预览。'
+            action={<Button disabled>上传成片</Button>}
+          />
+        )}
       </TabsContent>
       <TabsContent value='schedule' className='mt-5'>
         <div className='relative min-h-64 rounded-lg border p-6'>
