@@ -13,13 +13,14 @@
 - 商务渠道商单新增表单支持平台、内容类型和预计发布日期。
 - 商务朋友圈运营增加本周 mini 日历和日历/列表视图切换。
 - 市场活动财务录入改为人民币元输入，并在活动详情页增加 CSV / Markdown 导出。
+- 市场资源库财务面板统一人民币元输入和人民币格式展示。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，55 个测试文件，144 个测试。
+- `pnpm test`：通过，56 个测试文件，145 个测试。
 
 ## 提交
 
@@ -29,6 +30,7 @@
 - `317acad feat(business): complete channel order create fields`
 - `b2a917d feat(market): improve activity finance exports`
 - `b705769 feat(business): capture opportunity follow-up details`
+- `f5b46f1 feat(market): normalize resource finance amounts`
 
 ## 外部状态
 
