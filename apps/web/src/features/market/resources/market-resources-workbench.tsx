@@ -38,6 +38,7 @@ import {
   useSaveMaterial,
   useSaveTemplate,
 } from './use-market-resources'
+import { financeYuanInput, formatFinanceCny } from './finance-format'
 
 const templateTypeLabels: Record<TemplateType, string> = {
   invitation: '邀约文案',
@@ -323,7 +324,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
     eventId: eventId || '',
     category: 'sponsorship_income' as FinanceCategory,
     type: 'income' as FinanceType,
-    amount: 0,
+    amount: '',
     description: '',
     paidBy: '',
     paidAt: '',
@@ -353,15 +354,21 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
       <div className='grid gap-3 sm:grid-cols-3'>
         <div className='border-l-4 border-emerald-500 px-3'>
           <div className='text-xs text-muted-foreground'>收入总计</div>
-          <div className='text-xl font-semibold'>{totals.income} 美分</div>
+          <div className='text-xl font-semibold'>
+            {formatFinanceCny(totals.income)}
+          </div>
         </div>
         <div className='border-l-4 border-rose-500 px-3'>
           <div className='text-xs text-muted-foreground'>支出总计</div>
-          <div className='text-xl font-semibold'>{totals.expense} 美分</div>
+          <div className='text-xl font-semibold'>
+            {formatFinanceCny(totals.expense)}
+          </div>
         </div>
         <div className='border-l-4 border-primary px-3'>
           <div className='text-xs text-muted-foreground'>利润</div>
-          <div className='text-xl font-semibold'>{totals.profit} 美分</div>
+          <div className='text-xl font-semibold'>
+            {formatFinanceCny(totals.profit)}
+          </div>
         </div>
       </div>
       <div className='grid gap-2 border-y py-4 lg:grid-cols-7'>
@@ -400,10 +407,11 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
         <Input
           type='number'
           min={0}
-          placeholder='金额（美分）'
+          step='0.01'
+          placeholder='金额（人民币/元）'
           value={draft.amount}
           onChange={(e) =>
-            setDraft({ ...draft, amount: Number(e.target.value) })
+            setDraft({ ...draft, amount: e.target.value })
           }
         />
         <Input
@@ -417,11 +425,19 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
           onChange={(e) => setDraft({ ...draft, paidAt: e.target.value })}
         />
         <Button
-          disabled={!draft.eventId || !draft.description || save.isPending}
+          disabled={
+            !draft.eventId ||
+            !draft.description ||
+            financeYuanInput(draft.amount) === null ||
+            save.isPending
+          }
           onClick={() =>
             void save
-              .mutateAsync(draft)
-              .then(() => setDraft({ ...draft, amount: 0, description: '' }))
+              .mutateAsync({
+                ...draft,
+                amount: financeYuanInput(draft.amount) || 0,
+              })
+              .then(() => setDraft({ ...draft, amount: '', description: '' }))
           }
         >
           <Plus className='size-4' />
