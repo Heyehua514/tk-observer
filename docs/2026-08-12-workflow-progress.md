@@ -23,13 +23,14 @@
 - 商务核心链路继续切 Supabase：商机 Pipeline、渠道商单、朋友圈计划默认走 Supabase，PocketBase 保留显式回退。
 - 商务驾驶舱已切 Supabase：总客户数、本月新增、进行中商机、预计成交金额、本月商单默认读取 Supabase。
 - 剪辑工作台核心链路开始切 Supabase：选题 CRUD、CSV 导入/导出、分析视图、导入历史、视频任务、成片归档、对标账号、对标视频、热点话题和风格分析默认走 Supabase，PocketBase 保留显式回退。
+- 市场活动共享表开始切 Supabase：活动列表/保存/软删除、活动详情的阶段/任务/报名/招商读取、活动任务状态更新默认走 Supabase；场地、模板、物料、财务资源表因当前 Supabase generated schema 缺表，继续走 PocketBase fallback。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，68 个测试文件，170 个测试。
+- `pnpm test`：通过，69 个测试文件，175 个测试。
 
 ## 提交
 
@@ -47,7 +48,8 @@
 - `37d6841 feat(supabase): cut over auth clients and creators`
 - `39f36b9 feat(supabase): cut over business core flows`
 - `5e0ec06 feat(supabase): cut over business dashboard`
-- 待提交：Supabase 剪辑工作台核心链路切换。
+- `bc56395 feat(supabase): cut over editing workspace`
+- 待提交：Supabase 市场活动共享表切换。
 
 ## 外部状态
 
