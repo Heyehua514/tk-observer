@@ -7,6 +7,8 @@ type PublicTables = Database['public']['Tables']
 type SupabasePageFilter =
   | { kind: 'eq'; column: string; value: string | number | boolean }
   | { kind: 'is'; column: string; value: null }
+  | { kind: 'gte'; column: string; value: string | number }
+  | { kind: 'lte'; column: string; value: string | number }
   | { kind: 'or'; expression: string }
 
 export type SupabasePageQueryInput<T> = {
@@ -34,6 +36,8 @@ export async function createSupabasePageQuery<T>({
   for (const filter of filters) {
     if (filter.kind === 'eq') query = query.eq(filter.column, filter.value)
     if (filter.kind === 'is') query = query.is(filter.column, filter.value)
+    if (filter.kind === 'gte') query = query.gte(filter.column, filter.value)
+    if (filter.kind === 'lte') query = query.lte(filter.column, filter.value)
     if (filter.kind === 'or') query = query.or(filter.expression)
   }
   const sorted = query.order(column, {

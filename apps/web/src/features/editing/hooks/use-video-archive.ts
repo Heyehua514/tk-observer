@@ -1,10 +1,13 @@
 /** 剪辑工作台成片归档查询：只读读取已有 videos 表。 */
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { createSupabasePageQuery } from '@/lib/supabase-table'
 import {
   buildVideoArchiveItems,
   type VideoArchiveItem,
 } from '../components/production-model'
+import { mapSupabaseVideoArchiveRecord } from './editing-supabase-mappers'
 import { useEditingRealtime } from './use-editing-realtime'
 
 export const videoArchiveKeys = {
@@ -25,6 +28,16 @@ export function useVideoArchive() {
   return useQuery({
     queryKey: videoArchiveKeys.all,
     queryFn: async (): Promise<VideoArchiveItem[]> => {
+      if (getDataProvider() === 'supabase') {
+        const page = await createSupabasePageQuery({
+          table: 'videos',
+          page: 1,
+          perPage: 500,
+          sort: 'publish_at.desc',
+          mapRow: mapSupabaseVideoArchiveRecord,
+        })
+        return page.items
+      }
       const records = await pb.collection('videos').getFullList({
         sort: '-publish_at',
       })

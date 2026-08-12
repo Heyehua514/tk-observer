@@ -2,9 +2,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { recordAudit } from '@/lib/audit'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { VideoIdeaInput } from '../types'
 import { mapVideoIdea, serializeVideoIdea } from './editing-mappers'
+import {
+  mapSupabaseVideoIdeaRecord,
+  serializeSupabaseVideoIdea,
+} from './editing-supabase-mappers'
 import { videoIdeaKeys } from './use-video-ideas'
 
 export function useUpdateVideoIdea() {
@@ -17,6 +23,16 @@ export function useUpdateVideoIdea() {
       id: string
       input: VideoIdeaInput
     }) => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('video_ideas')
+          .update(serializeSupabaseVideoIdea(input))
+          .eq('id', id)
+          .select('*')
+          .single()
+        if (error) throw error
+        return mapSupabaseVideoIdeaRecord(data)
+      }
       await pb.collection('video_ideas').update(id, serializeVideoIdea(input))
       return mapVideoIdea(await pb.collection('video_ideas').getOne(id))
     },
