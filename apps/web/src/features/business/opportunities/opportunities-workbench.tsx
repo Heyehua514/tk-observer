@@ -30,6 +30,7 @@ import {
   opportunityStages,
   type OpportunityStage,
 } from './opportunity-rules'
+import { opportunityCreatePayload } from './opportunity-create'
 import { opportunityDueText, type OpportunityView } from './opportunity-view'
 const labels: Record<OpportunityStage, string> = {
   contact: '初步接洽',
@@ -90,16 +91,8 @@ export function OpportunitiesWorkbench() {
       ),
   })
   const create = useMutation({
-    mutationFn: async (data: {
-      title: string
-      client: string
-      amount: number
-    }) =>
-      pb.collection('opportunities').create({
-        ...data,
-        type: 'other',
-        ...opportunityStagePatch('contact'),
-      }),
+    mutationFn: async (data: NonNullable<ReturnType<typeof opportunityCreatePayload>>) =>
+      pb.collection('opportunities').create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['business', 'opportunities'],
@@ -207,7 +200,15 @@ export function OpportunitiesWorkbench() {
                 client: String(form.get('client') || ''),
                 amount: String(form.get('amount') || ''),
               })
-              if (input) create.mutate(input)
+              const payload = input
+                ? opportunityCreatePayload({
+                    ...input,
+                    amount: String(form.get('amount') || ''),
+                    expectedClose: String(form.get('expectedClose') || ''),
+                    notes: String(form.get('notes') || ''),
+                  })
+                : null
+              if (payload) create.mutate(payload)
             }}
           >
             <Field label='商机名称'>
@@ -230,6 +231,12 @@ export function OpportunitiesWorkbench() {
             </Field>
             <Field label='预计金额（人民币/元）'>
               <Input type='number' name='amount' min='0' step='0.01' required />
+            </Field>
+            <Field label='预计成交日期'>
+              <Input type='date' name='expectedClose' />
+            </Field>
+            <Field label='跟进备注'>
+              <Input name='notes' placeholder='记录下一步动作或客户反馈' />
             </Field>
             <Button type='submit' disabled={create.isPending}>
               保存

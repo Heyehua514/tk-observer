@@ -55,7 +55,11 @@ it('submits expected amount entered in RMB yuan as integer fen', async () => {
     .element(screen.getByText('预计金额（人民币/元）'))
     .toBeInTheDocument()
 
-  await userEvent.fill(screen.getByRole('textbox'), '日报自动化测试')
+  const titleInput = document.querySelector<HTMLInputElement>(
+    'input[name="title"]'
+  )
+  expect(titleInput).not.toBeNull()
+  await userEvent.fill(titleInput!, '日报自动化测试')
   const clientInput = document.querySelector<HTMLInputElement>(
     'input[name="client"]'
   )
@@ -81,5 +85,7 @@ it('submits expected amount entered in RMB yuan as integer fen', async () => {
       title: '日报自动化测试',
       client: 'client-1',
       amount: 1_000_000,
+      expected_close: '',
+      notes: '',
     })
 })
