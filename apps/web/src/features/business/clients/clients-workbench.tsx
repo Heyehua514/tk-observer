@@ -1,6 +1,6 @@
 // 商务工作台客户 CRUD；权限：business 与 boss 可操作。
 import { useMemo, useState } from 'react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,6 +29,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
+import { formatOrderAmount } from '../orders/order-amount'
 import {
   clientIndustryLabels,
   clientIndustryOptions,
@@ -47,6 +48,7 @@ import {
   useDeleteClient,
   useUpdateClient,
 } from './use-clients'
+import { useClientRelations } from './use-client-relations'
 
 const empty: ClientInput = {
   name: '',
@@ -66,6 +68,7 @@ export function ClientsWorkbench() {
   const remove = useDeleteClient()
   const [filters, setFilters] = useState<ClientFilters>(emptyClientFilters)
   const [editing, setEditing] = useState<Client | null>(null)
+  const [viewing, setViewing] = useState<Client | null>(null)
   const [draft, setDraft] = useState<ClientInput>(empty)
   const [open, setOpen] = useState(false)
   const updateFilters = (patch: Partial<ClientFilters>) =>
@@ -195,6 +198,14 @@ export function ClientsWorkbench() {
                 </TableCell>
                 <TableCell>{client.contactName || '—'}</TableCell>
                 <TableCell>
+                  <Button
+                    size='icon'
+                    variant='ghost'
+                    aria-label='查看客户详情'
+                    onClick={() => setViewing(client)}
+                  >
+                    <Eye className='size-4' />
+                  </Button>
                   <Button
                     size='icon'
                     variant='ghost'
@@ -340,6 +351,123 @@ export function ClientsWorkbench() {
           </Button>
         </DialogContent>
       </Dialog>
+      <ClientDetailDialog
+        client={viewing}
+        open={Boolean(viewing)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setViewing(null)
+        }}
+      />
+    </div>
+  )
+}
+
+function ClientDetailDialog({
+  client,
+  open,
+  onOpenChange,
+}: {
+  client: Client | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const relations = useClientRelations(client?.id)
+  if (!client) return null
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='max-h-[85vh] overflow-y-auto sm:max-w-3xl'>
+        <DialogHeader>
+          <DialogTitle>{client.name}</DialogTitle>
+        </DialogHeader>
+        <div className='grid gap-4 md:grid-cols-[240px_1fr]'>
+          <section className='space-y-3 rounded-lg border p-4'>
+            <Info label='所属公司' value={client.company || '独立客户'} />
+            <Info
+              label='行业'
+              value={clientIndustryLabels[client.industry] || client.industry}
+            />
+            <Info
+              label='来源'
+              value={clientSourceLabels[client.source] || client.source}
+            />
+            <Info label='重要度' value={client.level} />
+            <Info label='对接人' value={client.contactName || '—'} />
+            <Info label='电话' value={client.contactPhone || '—'} />
+            <Info label='微信' value={client.contactWechat || '—'} />
+          </section>
+          <section className='space-y-4'>
+            <RelationBlock
+              title='关联商机'
+              empty='该客户还没有商机'
+              items={(relations.data?.opportunities || []).map((item) => ({
+                id: item.id,
+                title: item.title,
+                meta: `${formatOrderAmount(item.amount)} · ${item.probability}% · ${item.stage}`,
+              }))}
+              loading={relations.isLoading}
+            />
+            <RelationBlock
+              title='关联商单'
+              empty='该客户还没有商单'
+              items={(relations.data?.orders || []).map((item) => ({
+                id: item.id,
+                title: item.title,
+                meta: `${formatOrderAmount(item.amount)} · ${item.status} · ${
+                  item.publishDate?.slice(0, 10) || '未排期'
+                }`,
+              }))}
+              loading={relations.isLoading}
+            />
+          </section>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className='text-xs text-muted-foreground'>{label}</div>
+      <div className='mt-1 text-sm font-medium'>{value}</div>
+    </div>
+  )
+}
+
+function RelationBlock({
+  title,
+  empty,
+  items,
+  loading,
+}: {
+  title: string
+  empty: string
+  items: { id: string; title: string; meta: string }[]
+  loading: boolean
+}) {
+  return (
+    <div className='rounded-lg border p-4'>
+      <div className='mb-3 flex items-center justify-between'>
+        <h3 className='text-sm font-medium'>{title}</h3>
+        <Badge variant='secondary'>{items.length}</Badge>
+      </div>
+      {loading ? (
+        <div className='text-sm text-muted-foreground'>正在加载关联数据…</div>
+      ) : items.length ? (
+        <div className='space-y-2'>
+          {items.map((item) => (
+            <div key={item.id} className='rounded-md bg-muted/40 p-3'>
+              <div className='text-sm font-medium'>{item.title}</div>
+              <div className='mt-1 text-xs text-muted-foreground'>
+                {item.meta}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className='text-sm text-muted-foreground'>{empty}</div>
+      )}
     </div>
   )
 }
