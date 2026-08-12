@@ -2,6 +2,7 @@
 import {
   BarChart3,
   CalendarDays,
+  CircleDollarSign,
   FileStack,
   MapPinned,
   PackageSearch,
@@ -15,11 +16,21 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { SearchBar } from '@/components/shared/search-bar'
 import { useMarketWorkbench } from '../hooks/use-market-workbench'
+import { useProductCatalog } from '../hooks/use-product-catalog'
 import { MarketResourcesWorkbench } from '../resources'
 import { VenuesWorkbench } from '../venues'
 import { EventsPanel } from './market-records'
@@ -32,6 +43,7 @@ export function MarketWorkbench({
   onQueryChange: (query: string) => void
 }) {
   const activeQuery = useMarketWorkbench(query)
+  const products = useProductCatalog(activeQuery)
   const adData = [
     { region: 'US', value: 0 },
     { region: 'UK', value: 0 },
@@ -84,10 +96,55 @@ export function MarketWorkbench({
               </span>
             )}
           </div>
-          <EmptyState
-            title='选品库暂无商品'
-            description='商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
-          />
+          {products.data?.length ? (
+            <div className='overflow-hidden rounded-lg border'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>商品</TableHead>
+                    <TableHead>类目</TableHead>
+                    <TableHead>售价</TableHead>
+                    <TableHead>成本</TableHead>
+                    <TableHead>毛利</TableHead>
+                    <TableHead>站点</TableHead>
+                    <TableHead>状态</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products.data.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className='font-medium'>
+                        <div className='flex items-center gap-2'>
+                          <CircleDollarSign className='size-4 text-blue-600' />
+                          {product.name}
+                        </div>
+                      </TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell>{product.priceMinor}</TableCell>
+                      <TableCell>{product.costMinor}</TableCell>
+                      <TableCell>
+                        <div className='flex flex-col gap-1'>
+                          <span>{product.marginMinor}</span>
+                          <span className='text-xs text-muted-foreground'>
+                            {product.marginRate}%
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{product.region}</TableCell>
+                      <TableCell>
+                        <Badge variant='secondary'>{product.status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <EmptyState
+              title='选品库暂无商品'
+              description='商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
+            />
+          )}
         </TabsContent>
         <TabsContent value='competitors' className='mt-5'>
           <EmptyState
