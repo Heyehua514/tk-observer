@@ -37,12 +37,10 @@ import {
   filterOrders,
   type OrderFilters,
 } from './order-filters'
-import { formatOrderAmount } from './order-amount'
+import { buildOrderDisplay } from './order-display'
 import { orderCreatePayload } from './order-create'
 import {
-  orderContentTypeLabels,
   orderContentTypeOptions,
-  orderPlatformLabels,
   orderPlatformOptions,
   orderStatusOptions,
 } from './order-options'
@@ -209,46 +207,14 @@ export function OrdersWorkbench() {
           </TableHeader>
           <TableBody>
             {visibleOrders.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className='font-medium'>{item.title}</TableCell>
-                <TableCell>{item.clientName}</TableCell>
-                <TableCell>{item.creatorName}</TableCell>
-                <TableCell>{formatOrderAmount(item.amount)}</TableCell>
-                <TableCell>{orderPlatformLabels[item.platform] || item.platform}</TableCell>
-                <TableCell>
-                  {orderContentTypeLabels[item.contentType] || item.contentType}
-                </TableCell>
-                <TableCell>{item.publishDate?.slice(0, 10) || '—'}</TableCell>
-                <TableCell>
-                  <Select
-                    value={item.status}
-                    onValueChange={(status) =>
-                      update.mutate({ id: item.id, status })
-                    }
-                  >
-                    <SelectTrigger className='w-28'>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {orderStatusOptions.map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    aria-label='删除商单'
-                    onClick={() => remove.mutate(item.id)}
-                  >
-                    <Trash2 className='size-4' />
-                  </Button>
-                </TableCell>
-              </TableRow>
+              <OrderRow
+                key={item.id}
+                item={item}
+                onStatusChange={(status) =>
+                  update.mutate({ id: item.id, status })
+                }
+                onRemove={() => remove.mutate(item.id)}
+              />
             ))}
             {!orders.isLoading && visibleOrders.length === 0 && (
               <TableRow>
@@ -376,6 +342,54 @@ export function OrdersWorkbench() {
     </div>
   )
 }
+
+function OrderRow({
+  item,
+  onStatusChange,
+  onRemove,
+}: {
+  item: Order
+  onStatusChange: (status: string) => void
+  onRemove: () => void
+}) {
+  const display = buildOrderDisplay(item)
+  return (
+    <TableRow>
+      <TableCell className='font-medium'>{item.title}</TableCell>
+      <TableCell>{item.clientName}</TableCell>
+      <TableCell>{item.creatorName}</TableCell>
+      <TableCell>{display.amount}</TableCell>
+      <TableCell>{display.platform}</TableCell>
+      <TableCell>{display.contentType}</TableCell>
+      <TableCell>{display.publishDate}</TableCell>
+      <TableCell>
+        <Select value={item.status} onValueChange={onStatusChange}>
+          <SelectTrigger className='w-28'>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {orderStatusOptions.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
+      <TableCell>
+        <Button
+          variant='ghost'
+          size='icon'
+          aria-label='删除商单'
+          onClick={onRemove}
+        >
+          <Trash2 className='size-4' />
+        </Button>
+      </TableCell>
+    </TableRow>
+  )
+}
+
 function Field({
   label,
   children,

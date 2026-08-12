@@ -17,6 +17,7 @@
 - 市场活动财务录入改为人民币元输入，并在活动详情页增加 CSV / Markdown 导出。
 - 市场资源库财务面板统一人民币元输入和人民币格式展示。
 - 市场资源库财务 CSV / Markdown 导出统一为人民币展示，不再输出“美分”。
+- 商务商单表格抽出展示模型，统一状态、平台、内容类型、日期和金额的显示口径。
 
 ## 验证
 
@@ -37,6 +38,7 @@
 - `07c08d6 feat(business): add opportunity detail editing`
 - `efc231a feat(business): polish blog analysis workspace`
 - `6040306 feat(market): export resource finances in cny`
+- 待提交：商务商单表格展示模型抽离。
 
 ## 外部状态
 
