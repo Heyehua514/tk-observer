@@ -13,6 +13,7 @@
 - 商务渠道商单补齐人民币元输入、状态/平台/内容类型筛选、发布日期列。
 - 商务渠道商单新增表单支持平台、内容类型和预计发布日期。
 - 商务朋友圈运营增加本周 mini 日历和日历/列表视图切换。
+- 商务公众号分析 Tab 补齐动效指标、说明条、统一表格视觉和引导空态。
 - 市场活动财务录入改为人民币元输入，并在活动详情页增加 CSV / Markdown 导出。
 - 市场资源库财务面板统一人民币元输入和人民币格式展示。
 
@@ -21,7 +22,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，57 个测试文件，147 个测试。
+- `pnpm test`：通过，58 个测试文件，149 个测试。
 
 ## 提交
 
@@ -33,6 +34,7 @@
 - `b705769 feat(business): capture opportunity follow-up details`
 - `f5b46f1 feat(market): normalize resource finance amounts`
 - `07c08d6 feat(business): add opportunity detail editing`
+- 待提交：商务公众号分析 UI 补齐。
 
 ## 外部状态
 

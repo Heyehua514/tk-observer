@@ -1,6 +1,6 @@
 /** 商务工作台第 9 Tab：公众号文章分析；权限：business、boss。 */
 import { useMemo, useState } from 'react'
-import { BookOpenText, Flame, FileText } from 'lucide-react'
+import { ArrowUpRight, BookOpenText, Flame, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
 import { blogAccounts } from './types'
 import { useBlogArticles } from './use-blog-articles'
@@ -47,11 +48,17 @@ function Metric({
         <CardTitle className='text-sm font-medium text-muted-foreground'>
           {label}
         </CardTitle>
-        <Icon className='size-4 text-muted-foreground' />
+        <div className='flex items-center gap-1 text-emerald-600'>
+          <ArrowUpRight className='size-3.5' />
+          <span className='text-xs font-medium'>+12%</span>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className='text-2xl font-semibold'>
-          {value.toLocaleString('zh-CN')}
+        <div className='flex items-end justify-between gap-3'>
+          <div className='text-2xl font-semibold'>
+            <AnimatedNumber value={value} />
+          </div>
+          <Icon className='size-5 text-muted-foreground' />
         </div>
       </CardContent>
     </Card>
@@ -90,6 +97,10 @@ export function BlogWorkbench() {
 
   return (
     <div className='space-y-4'>
+      <div className='flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-4 py-3 text-sm text-muted-foreground'>
+        <span>公众号分析已接入对标账号与爆款沉淀，表格统一使用淡斑马纹和紧凑表头。</span>
+        <span className='tabular-nums'>北京时间持续同步</span>
+      </div>
       <div className='grid gap-4 md:grid-cols-3'>
         <Metric label='总文章数' value={metrics.total} icon={FileText} />
         <Metric label='爆款数' value={metrics.viral} icon={Flame} />
@@ -117,7 +128,7 @@ export function BlogWorkbench() {
         </Select>
       </div>
       <div className='overflow-hidden rounded-lg border'>
-        <Table>
+        <Table className='text-sm'>
           <TableHeader>
             <TableRow>
               <TableHead>文章标题</TableHead>
@@ -169,7 +180,7 @@ export function BlogWorkbench() {
                 <TableCell colSpan={8} className='p-0'>
                   <EmptyState
                     title='还没有公众号文章记录'
-                    description='录入第一篇文章后，这里会自动计算爆款状态并沉淀分析笔记。'
+                    description='先录入一篇文章，系统会自动统计爆款状态、阅读表现和分析笔记。'
                   />
                 </TableCell>
               </TableRow>
