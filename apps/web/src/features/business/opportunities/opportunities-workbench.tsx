@@ -30,16 +30,7 @@ import {
   opportunityStages,
   type OpportunityStage,
 } from './opportunity-rules'
-
-type Opportunity = {
-  id: string
-  client: string
-  clientName: string
-  title: string
-  amount: number
-  stage: OpportunityStage
-  probability: number
-}
+import { opportunityDueText, type OpportunityView } from './opportunity-view'
 const labels: Record<OpportunityStage, string> = {
   contact: '初步接洽',
   proposal: '方案报价',
@@ -59,7 +50,7 @@ export function OpportunitiesWorkbench() {
         await pb
           .collection('opportunities')
           .getFullList({ sort: '-updated', expand: 'client' })
-      ).map((record: RecordModel): Opportunity => ({
+      ).map((record: RecordModel): OpportunityView => ({
         id: record.id,
         client: String(record.client),
         clientName: String(record.expand?.client?.name || '未知客户'),
@@ -67,6 +58,8 @@ export function OpportunitiesWorkbench() {
         amount: Number(record.amount || 0),
         stage: record.stage as OpportunityStage,
         probability: Number(record.probability || 0),
+        expectedClose: String(record.expected_close || ''),
+        notes: String(record.notes || ''),
       })),
   })
   const mutate = useMutation({
@@ -175,10 +168,18 @@ export function OpportunitiesWorkbench() {
                     <div className='mt-1 text-xs text-muted-foreground'>
                       {item.clientName}
                     </div>
+                    <div className='mt-1 text-xs text-muted-foreground'>
+                      {opportunityDueText(item.expectedClose)}
+                    </div>
                     <div className='mt-2 flex justify-between text-xs'>
                       <span>{formatCny(item.amount)}</span>
                       <span>{item.probability}%</span>
                     </div>
+                    {item.notes && (
+                      <div className='mt-2 line-clamp-2 text-xs text-muted-foreground'>
+                        {item.notes}
+                      </div>
+                    )}
                   </motion.article>
                 ))}
             </div>
