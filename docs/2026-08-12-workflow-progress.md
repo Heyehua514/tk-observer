@@ -380,3 +380,18 @@
 ### 提交
 
 - `feat(e2e): business client crud regression + soft-delete RLS harden`（Playwright 配置/E2E/截图脚本/3 个 RLS migration/vitest 排除/gitignore）。
+
+## pgTAP 全量回归加固（2026-08-13 深夜 审计）
+
+- 新增 `supabase/migrations/20260813001600_video_idea_column_grants.sql`：恢复 video_ideas 列级权限。根因：`20260813001300` 的表级 `grant all to authenticated` 覆盖了 video_viral_engine 原有的列级 revoke，客户端可伪造 is_viral / ai_analysis 派生字段；新 migration 重新 revoke 表级 insert/update，只放行输入指标列，派生字段仍由服务端维护。
+- 加固 7 个 pgTAP 测试文件（companies / products / editing_production / editing_research_records / overview_dashboard / team_memory / market_business_master_data）：全表 `count(*)` 断言改为按 fixture 行 name/title 限定。根因：新 migration 内的种子数据进入 supabase test db 临时库（companies 1 / products 1 / videos 1 / competitor_accounts 6 / gmv_metrics 1 / daily_reports 1 / creators 1 / clients 1），全表计数不再等于 fixture 数。
+- market_business_master_data 另同步 clients 策略名断言（owners and business can hard delete clients，对应 `20260813001400` 重命名）。
+
+### 验证
+
+- `SUPABASE_TELEMETRY_OFF=1 pnpm supabase:test`：23 个测试文件 / 401 断言全过（Result: PASS）。
+- 新 migration 已手动应用本地 Supabase 库。
+
+### 提交
+
+- `6fa9a09 fix(supabase): restore video_ideas column grants and harden pgtap assertions`
