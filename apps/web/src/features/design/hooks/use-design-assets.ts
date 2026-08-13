@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { resolveStorageUrls } from '@/lib/storage-url'
 import { getSupabaseClient } from '@/lib/supabase'
 import type { DesignAssetListParams } from '../types'
 import { mapDesignAsset } from './design-asset-mapper'
@@ -61,7 +62,16 @@ export function useDesignAssets(params: DesignAssetListParams) {
         }
         const { data, error } = await request
         if (error) throw error
-        return (data || []).map(mapSupabaseDesignAsset)
+        const assets = (data || []).map(mapSupabaseDesignAsset)
+        const urls = await resolveStorageUrls(
+          'design-assets',
+          assets.map((asset) => asset.file)
+        )
+        return assets.map((asset) =>
+          asset.file && urls[asset.file]
+            ? { ...asset, fileUrl: urls[asset.file] }
+            : asset
+        )
       }
       const filters: string[] = []
       const values: Record<string, string> = {}

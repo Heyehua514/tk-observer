@@ -299,6 +299,19 @@ function MaterialsPanel({ eventId }: { eventId?: string }) {
               <div className='mt-3 text-sm'>
                 {materialTypeLabels[item.type]}
               </div>
+              {item.file && (
+                <div className='mt-2'>
+                  <a
+                    href={item.file}
+                    target='_blank'
+                    rel='noreferrer'
+                    className='inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline'
+                  >
+                    <FileText className='size-3.5' />
+                    预览文件
+                  </a>
+                </div>
+              )}
               {item.notes && (
                 <div className='mt-1 text-sm text-muted-foreground'>
                   {item.notes}
@@ -329,6 +342,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
     description: '',
     paidBy: '',
     paidAt: '',
+    receipt: undefined as File | undefined,
   })
   const totals = useMemo(() => {
     const rows = finances.data || []
@@ -425,6 +439,13 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
           value={draft.paidAt}
           onChange={(e) => setDraft({ ...draft, paidAt: e.target.value })}
         />
+        <Input
+          type='file'
+          accept='image/*,application/pdf'
+          onChange={(e) =>
+            setDraft({ ...draft, receipt: e.target.files?.[0] })
+          }
+        />
         <Button
           disabled={
             !draft.eventId ||
@@ -438,7 +459,14 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
                 ...draft,
                 amount: financeYuanInput(draft.amount) || 0,
               })
-              .then(() => setDraft({ ...draft, amount: '', description: '' }))
+              .then(() =>
+                setDraft({
+                  ...draft,
+                  amount: '',
+                  description: '',
+                  receipt: undefined,
+                })
+              )
           }
         >
           <Plus className='size-4' />
@@ -465,6 +493,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
                 <TableHead>类型</TableHead>
                 <TableHead>金额</TableHead>
                 <TableHead>说明</TableHead>
+                <TableHead>凭证</TableHead>
                 <TableHead>日期</TableHead>
               </TableRow>
             </TableHeader>
@@ -480,6 +509,21 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
                   </TableCell>
                   <TableCell>{row.amount}</TableCell>
                   <TableCell>{row.description}</TableCell>
+                  <TableCell>
+                    {row.receipt ? (
+                      <a
+                        href={row.receipt}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline'
+                      >
+                        <FileText className='size-3.5' />
+                        查看
+                      </a>
+                    ) : (
+                      <span className='text-muted-foreground'>-</span>
+                    )}
+                  </TableCell>
                   <TableCell>{row.paidAt}</TableCell>
                 </TableRow>
               ))}

@@ -61,8 +61,13 @@ describe('market resource Supabase mapper', () => {
         description: '场地费',
         paid_by: null,
         paid_at: '2026-08-20T00:00:00Z',
+        receipt_path: 'finance-1/invoice.png',
       })
-    ).toMatchObject({ eventName: '厦门沙龙', paidAt: '2026-08-20' })
+    ).toMatchObject({
+      eventName: '厦门沙龙',
+      paidAt: '2026-08-20',
+      receipt: 'finance-1/invoice.png',
+    })
 
     expect(
       serializeSupabaseEventFinance({

@@ -385,6 +385,7 @@ function FinancePanel({
     description: item.description || '',
     paidBy: item.paidBy || '',
     paidAt: item.paidAt || '',
+    receipt: '',
   }))
   return (
     <div className='space-y-4'>

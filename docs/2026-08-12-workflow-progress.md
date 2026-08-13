@@ -288,3 +288,26 @@
 - 前端门禁：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 97 文件 / 213 测试全过；脚本测试 13/13。
 - 本地验收账号（测试库 profiles，幂等创建）：磊哥 boss、董雨辰 business、杨振康 business、孙铭泽 design、谢洁 editing、韩素云 market。
 - 提交：`feat(supabase): add cross-workbench acceptance loop test`（见 Git 最新记录）。
+
+## Storage 角色化访问与文件预览收口（2026-08-13 夜间 B1）
+
+- 新增 migration `20260813001200_storage_access.sql`：私有 bucket 按工作台角色开放 storage.objects 策略，不改已有 owner/video 策略。
+  - design-assets：读 owner/boss/design，写 owner/design；
+  - venue-photos、finance-receipts：读 owner/boss/market，写 owner/boss/market；
+  - event-materials：读 owner/boss/market/design，写 owner/boss/market；
+  - avatars：全员可读，成员仅可管理自己的 `auth.uid()/` 目录。
+- 新增 `apps/web/src/lib/storage-url.ts`：`resolveStorageUrls` / `signStoragePaths` 批量生成带时效（3600s）签名 URL，解析失败静默降级不抛错。
+- 前端文件预览收口（Supabase-first，PocketBase 保留回退）：
+  - 设计素材列表/审批弹窗的 `fileUrl` 改为签名 URL；
+  - 场地列表/详情照片改为签名 URL；
+  - 物料卡片新增「预览文件」入口；
+  - 财务明细映射新增 `receipt` 字段，录入支持上传凭证（finance-receipts bucket），明细表新增凭证查看入口。
+- 新增 pgTAP `supabase/tests/storage_access.test.sql`（12 断言）：策略清单 + market/business/design 上传边界 + 头像自助目录边界 + 全员可读头像；同步更新 `storage_foundation.test.sql` 的策略数量断言。
+- 新增 `scripts/supabase/storage-smoke.mjs` + 5 个单元测试：URL 构造、env 解析、无凭据时降级跳过在线步骤（密钥不落仓库）。
+
+### 验证（Storage B1）
+
+- 本地 Supabase `db reset` 全 23 migration 应用成功；pgTAP 23 文件 / 401 断言全过。
+- `node --test scripts/supabase/*.test.mjs`：18/18 通过。
+- `pnpm typecheck`、`pnpm lint`：零错误零警告。
+- `pnpm test`：98 文件 / 217 测试通过。

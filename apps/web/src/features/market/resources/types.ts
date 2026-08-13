@@ -61,6 +61,8 @@ export type EventFinance = {
   description: string
   paidBy: string
   paidAt: string
+  /** 凭证文件路径（Supabase 为 finance-receipts bucket 内路径，前端展示用签名 URL）。 */
+  receipt: string
 }
 
 export type EventOption = {

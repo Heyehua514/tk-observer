@@ -64,6 +64,7 @@ export function mapSupabaseEventFinance(record: Row): EventFinance {
     description: String(record.description || ''),
     paidBy: String(record.paid_by || ''),
     paidAt: dateOnly(record.paid_at),
+    receipt: String(record.receipt_path || ''),
   }
 }
 

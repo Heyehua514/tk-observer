@@ -5,6 +5,7 @@ import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { resolveStorageUrls } from '@/lib/storage-url'
 import { getSupabaseClient } from '@/lib/supabase'
 import type { Venue, VenueInput } from './types'
 import { mapSupabaseVenue, serializeSupabaseVenue } from './venue-supabase-mapper'
@@ -59,7 +60,13 @@ export function useVenueResources() {
           .order('is_verified', { ascending: false })
           .order('updated_at', { ascending: false })
         if (error) throw error
-        return (data || []).map(mapSupabaseVenue)
+        const venues = (data || []).map(mapSupabaseVenue)
+        const paths = venues.flatMap((venue) => venue.photos)
+        const urls = await resolveStorageUrls('venue-photos', paths)
+        return venues.map((venue) => ({
+          ...venue,
+          photos: venue.photos.map((path) => urls[path] || ''),
+        }))
       }
       return (
         await pb

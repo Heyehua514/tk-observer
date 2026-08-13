@@ -17,6 +17,7 @@ const rows: EventFinance[] = [
     description: '主赞助,含展位',
     paidBy: '品牌方',
     paidAt: '2026-08-06',
+    receipt: '',
   },
   {
     id: '2',
@@ -28,6 +29,7 @@ const rows: EventFinance[] = [
     description: '场地|布置',
     paidBy: '韩素云',
     paidAt: '2026-08-06',
+    receipt: '',
   },
 ]
 

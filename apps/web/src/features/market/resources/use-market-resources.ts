@@ -5,6 +5,7 @@ import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { resolveStorageUrls } from '@/lib/storage-url'
 import { getSupabaseClient } from '@/lib/supabase'
 import {
   mapSupabaseEventFinance,
@@ -194,7 +195,16 @@ export function useEventMaterials(eventId?: string) {
         if (eventId) request = request.eq('event_id', eventId)
         const { data, error } = await request
         if (error) throw error
-        return (data || []).map(mapSupabaseEventMaterial)
+        const materials = (data || []).map(mapSupabaseEventMaterial)
+        const urls = await resolveStorageUrls(
+          'event-materials',
+          materials.map((item) => item.file)
+        )
+        return materials.map((item) =>
+          item.file && urls[item.file]
+            ? { ...item, file: urls[item.file] }
+            : item
+        )
       }
       return (
         await pb.collection('event_materials').getFullList({
@@ -282,7 +292,16 @@ export function useEventFinances(eventId?: string) {
         if (eventId) request = request.eq('event_id', eventId)
         const { data, error } = await request
         if (error) throw error
-        return (data || []).map(mapSupabaseEventFinance)
+        const finances = (data || []).map(mapSupabaseEventFinance)
+        const urls = await resolveStorageUrls(
+          'finance-receipts',
+          finances.map((row) => row.receipt)
+        )
+        return finances.map((row) =>
+          row.receipt && urls[row.receipt]
+            ? { ...row, receipt: urls[row.receipt] }
+            : row
+        )
       }
       return (
         await pb.collection('event_finances').getFullList({
@@ -300,6 +319,9 @@ export function useEventFinances(eventId?: string) {
         description: String(record.description),
         paidBy: String(record.paid_by || ''),
         paidAt: String(record.paid_at || '').slice(0, 10),
+        receipt: record.receipt
+          ? pb.files.getURL(record, String(record.receipt))
+          : '',
       }))
     },
   })
@@ -316,23 +338,33 @@ export function useSaveFinance() {
       description: string
       paidBy: string
       paidAt: string
+      receipt?: File
     }) => {
       if (getDataProvider() === 'supabase') {
+        let receiptPath: string | null = null
+        if (input.receipt) {
+          receiptPath = `${input.eventId}/${Date.now()}-${input.receipt.name.replace(/[^\w.-]+/g, '-')}`
+          const upload = await getSupabaseClient().storage
+            .from('finance-receipts')
+            .upload(receiptPath, input.receipt, { upsert: false })
+          if (upload.error) throw upload.error
+        }
         const { error } = await getSupabaseClient()
           .from('event_finances')
-          .insert(serializeSupabaseEventFinance(input))
+          .insert({ ...serializeSupabaseEventFinance(input), receipt_path: receiptPath })
         if (error) throw error
         return
       }
-      await pb.collection('event_finances').create({
-        event: input.eventId,
-        category: input.category,
-        type: input.type,
-        amount: input.amount,
-        description: input.description,
-        paid_by: input.paidBy,
-        paid_at: input.paidAt,
-      })
+      const financeData = new FormData()
+      financeData.set('event', input.eventId)
+      financeData.set('category', input.category)
+      financeData.set('type', input.type)
+      financeData.set('amount', String(input.amount))
+      financeData.set('description', input.description)
+      if (input.paidBy) financeData.set('paid_by', input.paidBy)
+      if (input.paidAt) financeData.set('paid_at', input.paidAt)
+      if (input.receipt) financeData.set('receipt', input.receipt)
+      await pb.collection('event_finances').create(financeData)
     },
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: keys.finances })
