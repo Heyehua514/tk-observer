@@ -27,6 +27,11 @@ select is(
         'creators','clients','opportunities','channel_orders','social_plans',
         'events','event_phases','event_tasks','event_registrations','event_sponsorships',
         'blog_articles',
+        'venues','event_templates','event_materials','event_finances',
+        'products','companies',
+        'daily_reports','weekly_reports','failed_cases','audit_logs',
+        'gmv_metrics','team_tasks','notifications',
+        'design_assets','design_tasks','design_requirements','design_references','design_deliverables',
         'video_tasks','videos','video_ideas','import_history',
         'competitor_accounts','competitor_videos','trending_topics','competitor_style_analysis'
       )

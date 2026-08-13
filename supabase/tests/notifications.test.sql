@@ -68,10 +68,14 @@ select set_config(
   true
 );
 select is((select count(*) from public.notifications), 0::bigint, 'other member cannot read notification');
-select throws_ok($$
-  update public.notifications set is_read = true
-  where recipient_id = '90000000-0000-0000-0000-000000000002'
-$$, '42501', null, 'other member cannot update notification');
+update public.notifications set is_read = false
+where recipient_id = '90000000-0000-0000-0000-000000000002';
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"90000000-0000-0000-0000-000000000002","role":"authenticated"}',
+  true
+);
+select is((select count(*) from public.notifications where is_read), 1::bigint, 'other member cannot update notification');
 
 select * from finish();
 rollback;

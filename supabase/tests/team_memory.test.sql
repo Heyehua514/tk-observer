@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(15);
 
 select has_table('public', 'daily_reports', 'daily reports table exists');
 select has_table('public', 'weekly_reports', 'weekly reports table exists');

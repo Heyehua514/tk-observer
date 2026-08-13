@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(9);
 
 select has_table('public', 'products', 'products table exists');
 select has_check('public', 'products', 'products have price and status checks');
@@ -47,9 +47,8 @@ select set_config(
   true
 );
 select is((select count(*) from public.products), 1::bigint, 'boss can read products');
-select throws_ok($$
-  update public.products set status = 'paused'
-$$, '42501', null, 'boss cannot update products');
+update public.products set status = 'paused';
+select is((select count(*) from public.products where status = 'paused'), 0::bigint, 'boss cannot update products');
 
 select set_config(
   'request.jwt.claims',

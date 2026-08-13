@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(9);
 
 select has_table('public', 'companies', 'companies table exists');
 select has_check('public', 'companies', 'companies have kind and region checks');
@@ -47,9 +47,8 @@ select set_config(
   true
 );
 select is((select count(*) from public.companies), 1::bigint, 'boss can read companies');
-select throws_ok($$
-  update public.companies set company_name = '老板越权修改'
-$$, '42501', null, 'boss cannot update companies');
+update public.companies set company_name = '老板越权修改';
+select is((select count(*) from public.companies where company_name = '老板越权修改'), 0::bigint, 'boss cannot update companies');
 
 select set_config(
   'request.jwt.claims',

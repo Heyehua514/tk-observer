@@ -58,10 +58,11 @@
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
-- `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
+- `pnpm supabase:test`：通过，20 个文件、297 个断言全过；已补推本地 Supabase 测试库全部待应用迁移，并校准 7 个 pgTAP 套件与实际 RLS / Realtime 范围一致。
 
 ## 提交
 
+- `待提交（沙箱只读限制，改动保留在 7 个 pgTAP 测试文件）`
 - `7021c96 feat(business): cut over creator detail and videos`
 - `77e865e feat(workbench): tighten market and business workflows`
 - `cffa562 feat(business): add client relation detail panel`

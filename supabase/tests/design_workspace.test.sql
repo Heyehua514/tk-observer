@@ -1,5 +1,5 @@
 begin;
-select plan(22);
+select plan(23);
 
 select has_table('public', 'design_assets', 'design assets table exists');
 select has_table('public', 'design_tasks', 'design tasks table exists');

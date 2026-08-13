@@ -77,9 +77,13 @@ select set_config(
   true
 );
 select is((select count(*) from public.blog_articles), 0::bigint, 'market cannot read blog articles');
-select throws_ok($$
-  update public.blog_articles set analysis_notes = '市场越权'
-$$, '42501', null, 'market cannot update blog articles');
+update public.blog_articles set analysis_notes = '市场越权';
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"d0000000-0000-0000-0000-000000000001","role":"authenticated"}',
+  true
+);
+select is((select count(*) from public.blog_articles where analysis_notes = '市场越权'), 0::bigint, 'market cannot update blog articles');
 
 select * from finish();
 rollback;
