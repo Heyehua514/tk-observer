@@ -250,3 +250,17 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
+
+## 上线前自检脚本（部署准备）
+
+- 新增 `scripts/supabase/deploy-check.mjs`：只读检查 `apps/web/.env`（provider、Supabase 配置完整性、是否误配 service role 等高权限密钥，值一律脱敏不打印）、migration 时间戳是否重复/乱序、部署/验收/自动化对齐文档是否齐全，并输出部署建议顺序。
+- 新增测试 `scripts/supabase/deploy-check.test.mjs`：6 个用例（密钥脱敏、env 解析、provider 识别、密钥泄露检测、migration 顺序、报告结构）。
+- 提交：`9542774 feat(supabase): add read-only deploy preflight check script`。
+
+### 验证（上线前自检脚本）
+
+- `node --test scripts/supabase/*.test.mjs`：13/13 通过。
+- `pnpm supabase:schema:test`：2/2 通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
