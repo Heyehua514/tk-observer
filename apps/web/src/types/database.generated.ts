@@ -193,6 +193,45 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          kind: string
+          legacy_id: string | null
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          kind: string
+          legacy_id?: string | null
+          region?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          kind?: string
+          legacy_id?: string | null
+          region?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       competitor_accounts: {
         Row: {
           avg_views: number

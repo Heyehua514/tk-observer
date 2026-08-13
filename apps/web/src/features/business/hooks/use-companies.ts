@@ -4,9 +4,12 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { CompanyListParams, CompanyListResult } from '../types'
 import { mapCompany } from './company-mapper'
+import { mapSupabaseCompany } from './company-supabase-mapper'
 
 export const companyKeys = {
   all: ['companies'] as const,
@@ -17,6 +20,35 @@ export const companyKeys = {
 async function fetchCompanies(
   params: CompanyListParams
 ): Promise<CompanyListResult> {
+  if (getDataProvider() === 'supabase') {
+    let request = getSupabaseClient()
+      .from('companies')
+      .select('*', { count: 'exact' })
+      .is('deleted_at', null)
+      .range((params.page - 1) * params.perPage, params.page * params.perPage - 1)
+    if (params.query.trim()) {
+      const query = params.query.trim().replace(/[%_,]/g, '').slice(0, 80)
+      if (query) {
+        request = request.or(
+          `company_name.ilike.%${query}%,contact_name.ilike.%${query}%,contact_email.ilike.%${query}%`
+        )
+      }
+    }
+    if (params.region !== 'all') request = request.eq('region', params.region)
+    if (params.kind !== 'all') request = request.eq('kind', params.kind)
+    const ascending = !params.sort.startsWith('-')
+    const column = params.sort.replace('-', '')
+    const { data, error, count } = await request.order(column, { ascending })
+    if (error) throw error
+    const totalItems = count || 0
+    return {
+      page: params.page,
+      perPage: params.perPage,
+      totalItems,
+      totalPages: Math.max(Math.ceil(totalItems / params.perPage), 1),
+      items: (data || []).map(mapSupabaseCompany),
+    }
+  }
   const filters: string[] = []
   const values: Record<string, string> = {}
   if (params.query) {
@@ -45,6 +77,21 @@ async function fetchCompanies(
 export function useCompanies(params: CompanyListParams) {
   const queryClient = useQueryClient()
   useEffect(() => {
+    if (getDataProvider() === 'supabase') {
+      const channel = getSupabaseClient()
+        .channel('companies')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'companies' },
+          () => {
+            void queryClient.invalidateQueries({ queryKey: companyKeys.all })
+          }
+        )
+        .subscribe()
+      return () => {
+        void getSupabaseClient().removeChannel(channel)
+      }
+    }
     let unsubscribe: (() => void) | undefined
     let disposed = false
     void pb
