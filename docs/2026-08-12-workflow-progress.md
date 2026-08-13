@@ -238,3 +238,15 @@
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
 - pgTAP 需要 Docker，本轮环境未运行；断言与迁移同步提交，待本地 `pnpm supabase:test` 回归。
+
+## 验收清单与环境变量对齐（2026-08-13 晚）
+
+- 新增 `docs/验收清单.md`：把 PRD「真实数据验收」与「Supabase 后续切换条件」整理为可勾选清单（市场/商务/设计/剪辑/总览/权限矩阵/远程维护），并标注待决策项（auto-analyze、飞书、注册白名单、邮箱枚举）。
+- 修正 `apps/web/.env.example`：`VITE_DATA_PROVIDER=pocketbase` 改为 `supabase`，与 `data-provider.ts` 未配置时的默认值对齐。
+- 提交：`31c6a07 docs: add acceptance checklist for real business data`、`99fdb2d docs: align env example with supabase-first default`。
+
+### 验证（验收清单与环境变量对齐）
+
+- `git diff --check`：通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
