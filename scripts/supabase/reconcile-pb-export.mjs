@@ -38,7 +38,7 @@ const COLUMN_ALIASES = {
   receipt: ['receipt_path'],
 }
 
-function columnCandidates(name) {
+export function columnCandidates(name) {
   const aliases = COLUMN_ALIASES[name] || []
   return [...new Set([name, ...aliases])]
 }
@@ -75,7 +75,7 @@ function splitTopLevelColumns(body) {
   return chunks
 }
 
-function parseSupabaseTables(sqlText) {
+export function parseSupabaseTables(sqlText) {
   const statements = sqlText.split(/;\s*\n/)
   const tables = new Map()
   for (const statement of statements) {
@@ -107,7 +107,7 @@ function parseSupabaseTables(sqlText) {
   return tables
 }
 
-function listPbTables(db) {
+export function listPbTables(db) {
   const rows = db
     .prepare(
       `SELECT name FROM sqlite_master
@@ -120,7 +120,7 @@ function listPbTables(db) {
   return rows.map((row) => row.name)
 }
 
-function readPbTable(db, name) {
+export function readPbTable(db, name) {
   const count = db.prepare(`SELECT COUNT(*) AS c FROM "${name}"`).get().c
   const columns = db.prepare(`PRAGMA table_info("${name}")`).all()
   return {

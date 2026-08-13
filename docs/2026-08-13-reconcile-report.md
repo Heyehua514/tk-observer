@@ -45,5 +45,5 @@
 ## 下一步（Supabase 导入编排，不在本轮范围）
 
 - 新建迁移补齐 `event_materials.designer_id` 列。
-- 写只读导出脚本：把 12 张映射表的 28 行业务数据导出为 JSON/CSV，供未来 Supabase 导入。
+- 只读导出脚本已完成：`scripts/supabase/export-pb-business.mjs`，12 张映射表 21 行业务数据已导出为 JSON + CSV（`/tmp/tk-observer-supabase/`），供未来 Supabase 导入。
 - `users` 6 行只做账号映射核对，不导入业务表。

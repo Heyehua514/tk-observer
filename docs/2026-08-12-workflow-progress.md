@@ -169,3 +169,17 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+
+## 业务数据导出（Supabase 迁移收口二）
+
+- 新增只读导出工具 `scripts/supabase/export-pb-business.mjs`：把已映射且有数据的业务表逐表导出为 JSON + CSV（输出 `/tmp/tk-observer-supabase/`）。
+- 列名按对账归一化规则映射到 Supabase 目标列（`venue→venue_id`、`created→created_at` 等），CSV 自动转义逗号与引号。
+- 实际导出：12 张表 21 行业务数据（28 行总量减去 PB-only 的 users 6 行与 comments 1 行），users 不导出、由 Supabase Auth + profiles 承接。
+- 新增 2 个导出测试：列名归一化 + PB-only 跳过、CSV 转义与行数；脚本测试合计 7/7 通过。
+
+### 验证（业务数据导出）
+
+- `node --test scripts/supabase/*.test.mjs`：7/7 通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
