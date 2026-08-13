@@ -20,6 +20,7 @@ import {
   financesToCsv,
   financesToMarkdown,
 } from './resource-utils'
+import { marketResourceEmptyTitles } from './resource-empty-copy'
 import type {
   FinanceCategory,
   FinanceType,
@@ -168,7 +169,7 @@ function TemplatesPanel() {
           ))}
           {!templates.data?.length && (
             <EmptyState
-              title='暂无文案模板'
+              title={marketResourceEmptyTitles.templates}
               description='先沉淀一条可重复套用的活动文案。'
             />
           )}
@@ -308,7 +309,7 @@ function MaterialsPanel({ eventId }: { eventId?: string }) {
         </div>
       ) : (
         <EmptyState
-          title='暂无活动物料'
+          title={marketResourceEmptyTitles.materials}
           description='上传主 KV、海报、流程单等活动文件。'
         />
       )}
@@ -487,7 +488,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
         </div>
       ) : (
         <EmptyState
-          title='暂无财务明细'
+          title={marketResourceEmptyTitles.finances}
           description='选择活动并录入第一笔收入或支出。'
         />
       )}

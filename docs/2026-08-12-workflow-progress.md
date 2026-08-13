@@ -28,6 +28,7 @@
 - 剪辑工作台错误态和空态文案收口为 Supabase-first 中性提示，不再在核心页面暴露 PocketBase-only 失败文案。
 - 市场活动共享表开始切 Supabase：活动列表/保存/软删除、活动详情的阶段/任务/报名/招商读取、活动任务状态更新默认走 Supabase。
 - 市场资源表开始切 Supabase：场地库、文案模板、活动物料、活动财务新增 Supabase schema；场地列表/保存/历史活动、模板列表/保存/使用记录、物料列表/上传/保存、财务列表/保存默认走 Supabase，PocketBase 保留显式回退。
+- 市场资源库模板、物料和财务空态标题改为引导式文案，不再使用静态“暂无”占位。
 - 设计工作台开始切 Supabase：新增 `design_assets`、`design_tasks`、`design_requirements`、`design_references`、`design_deliverables` Supabase schema；素材上传/审批、需求接收/状态流转/参考/交付、任务看板默认走 Supabase，PocketBase 保留显式回退。
 - 总览团队记忆开始切 Supabase：新增 `daily_reports`、`weekly_reports`、`failed_cases`、`audit_logs` Supabase schema；今日简报、本月教训、闭环仪表默认读取 Supabase，PocketBase 保留显式回退。
 - 总览团队记忆错误态文案改为中性数据服务提示，不再绑定 PocketBase migration 语义。
@@ -50,7 +51,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，91 个测试文件，206 个测试。
+- `pnpm test`：通过，92 个测试文件，207 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
 
@@ -91,6 +92,7 @@
 - `a58c873 feat(market): cut over competitor monitoring`
 - `26926f5 feat(business): cut over dashboard stage updates`
 - `e811101 chore(overview): neutralize team memory error copy`
+- `b593008 chore(editing): neutralize data error copy`
 
 ## 外部状态
 
