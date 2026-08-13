@@ -328,3 +328,14 @@
 - `pnpm test`：99 文件 / 224 测试通过。
 - `pnpm build`：生产构建通过，dist 含 manifest.webmanifest、sw.js、pwa 图标，index.html 已装配 PWA 标签。
 - `node --test scripts/*.test.mjs scripts/supabase/*.test.mjs`：20/20 通过。
+
+## PocketBase 回退演练脚本与手册（2026-08-13 夜间 B3）
+
+- 新增 `scripts/supabase/pocketbase-rollback.mjs`：只读 dry-run，检查 provider、PocketBase URL、`backend/pb_data/data.db`、migration 文件数、Supabase 导出目录状态，输出 7 步回退操作清单（不写 .env、不启动服务、不访问网络、密钥不落盘）。
+- 新增 `scripts/supabase/pocketbase-rollback.test.mjs`（6 个测试）：env 解析、provider 默认值、data.db 缺失检测、导出目录存在/缺失、清单顺序与阻塞文案。
+- 新增 `docs/pocketbase-rollback-drill.md`：回退演练手册（人工执行清单、验收标准、回切 Supabase、自动回归命令）。
+- 实跑检查：provider=supabase、data.db 存在（843776 字节）、migration 21 个、导出目录 14 个文件，回退清单正常输出。
+
+### 验证（B3）
+
+- `node --test scripts/*.test.mjs scripts/supabase/*.test.mjs`：26/26 通过。
