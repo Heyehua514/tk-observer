@@ -4,6 +4,7 @@
 
 - 市场工作台首屏补齐竞品监测和投放摘要。
 - 市场竞品监测 Tab 接入共享 `competitor_accounts` 表。
+- 市场竞品监测 Tab 已改为 Supabase-first 查询共享 `competitor_accounts`，PocketBase 保留显式回退。
 - 市场投放概览抽为独立前端模型。
 - 商务客户管理补齐行业、来源、重要度筛选。
 - 商务客户详情增加基础信息、关联商机、关联商单面板。
@@ -46,7 +47,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，88 个测试文件，202 个测试。
+- `pnpm test`：通过，88 个测试文件，203 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
 
@@ -83,6 +84,7 @@
 - `a5810a3 feat(supabase): cut over blog articles`
 - `318c49f feat(business): polish sponsorship empty state`
 - `f04331b feat(overview): guide dashboard empty states`
+- `bc81a02 chore(settings): label pocketbase fallback server`
 
 ## 外部状态
 

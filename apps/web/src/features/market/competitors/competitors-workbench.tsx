@@ -22,7 +22,7 @@ export function CompetitorsWorkbench({ query = '' }: { query?: string }) {
     return (
       <EmptyState
         title='竞品数据暂时无法加载'
-        description='请检查 PocketBase 服务和当前角色权限。'
+        description='请检查数据服务和当前角色权限。'
       />
     )
   }

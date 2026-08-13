@@ -27,4 +27,16 @@ describe('mapMarketCompetitor', () => {
       updated: '2026-08-12 10:00:00.000Z',
     })
   })
+
+  it('maps Supabase updated_at into the market row timestamp', () => {
+    expect(
+      mapMarketCompetitor({
+        id: 'c2',
+        name: '白鲸出海',
+        platform: '微信公众号',
+        category: '出海跨境',
+        updated_at: '2026-08-13T10:00:00Z',
+      } as never).updated
+    ).toBe('2026-08-13T10:00:00Z')
+  })
 })
