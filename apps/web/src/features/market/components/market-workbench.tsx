@@ -36,6 +36,7 @@ import { useMarketWorkbench } from '../hooks/use-market-workbench'
 import { useProductCatalog } from '../hooks/use-product-catalog'
 import { MarketResourcesWorkbench } from '../resources'
 import { VenuesWorkbench } from '../venues'
+import { marketEmptyTitles } from './market-empty-copy'
 import { EventsPanel } from './market-records'
 
 const competitorRows = [
@@ -192,7 +193,7 @@ export function MarketWorkbench({
             </div>
           ) : (
             <EmptyState
-              title='选品库暂无商品'
+              title={marketEmptyTitles.products}
               description='商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
             />
           )}

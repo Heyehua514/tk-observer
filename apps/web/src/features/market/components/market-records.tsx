@@ -28,6 +28,7 @@ import {
   useVenues,
   venueData,
 } from '../hooks/use-market-records'
+import { marketEmptyTitles } from './market-empty-copy'
 import type { EventInput, VenueInput } from '../types'
 
 export function EventsPanel({ query }: { query: string }) {
@@ -128,7 +129,7 @@ export function EventsPanel({ query }: { query: string }) {
         </div>
       ) : (
         <EmptyState
-          title='暂无活动'
+          title={marketEmptyTitles.events}
           description='创建第一场金鳞会活动，后续可继续配置阶段和任务。'
         />
       )}
@@ -242,7 +243,7 @@ export function VenuesPanel({ query }: { query: string }) {
         </div>
       ) : (
         <EmptyState
-          title='暂无场地资源'
+          title={marketEmptyTitles.venues}
           description='录入可用于闭门沙龙、峰会和游学的高端场地。'
         />
       )}
