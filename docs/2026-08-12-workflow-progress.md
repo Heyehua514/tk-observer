@@ -197,3 +197,17 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+
+## 部署与多端说明（文档收口）
+
+- 新增 `docs/部署与多端说明.md`：覆盖当前 Supabase-first 架构、本地开发、远程部署推荐路径（Supabase 生产 + Web 静态托管 + Tauri 桌面 + 手机浏览器/PWA）、Storage 文件上传、远程维护账号、成本参考与上线前安全检查。
+- README 同步修正过时描述：架构改为 SPA + Supabase + Tauri（PocketBase 仅显式回退）、技术栈补充 Supabase、目录树补充 `supabase/` 与 `scripts/supabase/`、部署文档入口。
+- 数据迁移工具链（对账 + 导出）已在部署文档中登记为“已就绪”，文件迁移与真实数据导入明确归属上线前动作。
+
+### 验证（部署与多端说明）
+
+- `git diff --check`：通过。
+- `node --test scripts/supabase/*.test.mjs`：7/7 通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。

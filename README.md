@@ -1,6 +1,6 @@
 # TK观察工作台
 
-TK观察内部多角色工作台，面向 TikTok Shop 跨境电商团队。项目是纯 SPA + PocketBase + Tauri 2 架构：前端只通过 PocketBase SDK 访问数据，没有额外的自建后端服务。
+TK观察内部多角色工作台，面向 TikTok Shop 跨境电商团队。项目是 SPA + Supabase + Tauri 2 架构：默认数据源为 Supabase（Auth、业务表、RLS、Storage、Realtime、pg_cron 自动化），PocketBase 保留显式回退，没有额外的自建后端服务。
 
 ## 技术栈
 
@@ -8,7 +8,8 @@ TK观察内部多角色工作台，面向 TikTok Shop 跨境电商团队。项�
 - shadcn/ui + Tailwind CSS
 - TanStack Router / Query / Table
 - Recharts
-- PocketBase 0.39.x
+- Supabase（Auth / Postgres / Storage / Realtime / pg_cron）
+- PocketBase 0.39.x（仅显式回退）
 - Tauri 2
 - pnpm workspace
 
@@ -23,9 +24,14 @@ tk-observer/
 │  ├─ pb_migrations/         # Collection、字段与 API Rules
 │  ├─ pb_hooks/              # PocketBase JS hooks
 │  └─ pocketbase             # 本机二进制，不纳入 git
+├─ supabase/
+│  ├─ migrations/            # Supabase SQL migration（含 RLS、Realtime、自动化）
+│  └─ tests/                 # pgTAP 测试
+├─ scripts/supabase/         # 对账 / 导出 / schema 工具（只读）
 ├─ docs/
 │  ├─ 后续迭代建议.md
-│  └─ 模块模板说明.md
+│  ├─ 模块模板说明.md
+│  └─ 部署与多端说明.md
 └─ package.json
 ```
 
@@ -38,7 +44,7 @@ tk-observer/
 - macOS：Xcode Command Line Tools；生成 DMG 只能在 macOS 执行
 - Windows：Visual Studio C++ Build Tools 和 WebView2；生成 NSIS `.exe` 只能在 Windows 执行
 
-Supabase 并行迁移的本地启动、密钥边界和验证命令见 [`docs/supabase/local-development.md`](docs/supabase/local-development.md)。当前默认数据源仍为 PocketBase。
+Supabase 本地开发、密钥边界和验证命令见 [`docs/supabase/local-development.md`](docs/supabase/local-development.md)；远程部署、手机端与多端策略见 [`docs/部署与多端说明.md`](docs/部署与多端说明.md)。当前默认数据源为 Supabase，PocketBase 仅作显式回退。
 
 ## 启动
 
