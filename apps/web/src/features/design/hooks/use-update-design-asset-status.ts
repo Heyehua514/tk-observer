@@ -2,8 +2,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { DesignAssetStatus } from '../types'
+import { serializeSupabaseDesignAssetStatus } from './design-supabase-mapper'
 import { designAssetKeys } from './use-design-assets'
 
 type UpdateDesignAssetStatusInput = {
@@ -17,6 +20,14 @@ export function useUpdateDesignAssetStatus() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateDesignAssetStatusInput) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('design_assets')
+          .update(serializeSupabaseDesignAssetStatus(input, reviewer))
+          .eq('id', input.id)
+        if (error) throw error
+        return
+      }
       const reviewFields =
         input.status === 'pending_review'
           ? { review_reason: '', reviewed_by: '', reviewed_at: '' }

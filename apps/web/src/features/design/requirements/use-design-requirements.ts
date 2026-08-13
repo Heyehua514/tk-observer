@@ -2,8 +2,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { RequirementStatus } from './requirement-rules'
+import {
+  mapSupabaseDesignDeliverable,
+  mapSupabaseDesignReference,
+  mapSupabaseDesignRequirement,
+  serializeSupabaseDesignRequirement,
+} from './design-requirement-supabase-mapper'
 import type {
   DesignDeliverable,
   DesignReference,
@@ -35,22 +43,48 @@ const mapRequirement = (record: RecordModel): DesignRequirement => ({
 export function useDesignRequirements(status: RequirementStatus | 'all') {
   return useQuery({
     queryKey: [...designRequirementKeys.all, status],
-    queryFn: async () =>
-      (
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const request =
+          status === 'all'
+            ? getSupabaseClient()
+                .from('design_requirements')
+                .select('*')
+                .is('deleted_at', null)
+                .order('due_date', { ascending: true })
+            : getSupabaseClient()
+                .from('design_requirements')
+                .select('*')
+                .eq('status', status)
+                .is('deleted_at', null)
+                .order('due_date', { ascending: true })
+        const { data, error } = await request
+        if (error) throw error
+        return (data || []).map(mapSupabaseDesignRequirement)
+      }
+      return (
         await pb.collection('design_requirements').getFullList({
           sort: 'due_date',
           filter:
             status === 'all' ? '' : pb.filter('status = {:status}', { status }),
         })
-      ).map(mapRequirement),
+      ).map(mapRequirement)
+    },
   })
 }
 
 export function useCreateDesignRequirement() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: DesignRequirementInput) =>
-      pb.collection('design_requirements').create({
+    mutationFn: async (input: DesignRequirementInput) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('design_requirements')
+          .insert(serializeSupabaseDesignRequirement(input))
+        if (error) throw error
+        return
+      }
+      return pb.collection('design_requirements').create({
         title: input.title,
         description: input.description,
         requester: input.requester,
@@ -62,7 +96,8 @@ export function useCreateDesignRequirement() {
         priority: input.priority,
         due_date: input.dueDate,
         status: 'pending',
-      }),
+      })
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: designRequirementKeys.all,
@@ -75,8 +110,23 @@ export function useCreateDesignRequirement() {
 export function useUpdateRequirementStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: RequirementStatus }) =>
-      pb.collection('design_requirements').update(id, { status }),
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string
+      status: RequirementStatus
+    }) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('design_requirements')
+          .update({ status })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      return pb.collection('design_requirements').update(id, { status })
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: designRequirementKeys.all,
@@ -97,6 +147,33 @@ export function useRequirementRelations(
     ],
     enabled: Boolean(requirementId),
     queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const supabase = getSupabaseClient()
+        const [references, deliverables] = await Promise.all([
+          includeReferences
+            ? supabase
+                .from('design_references')
+                .select('*')
+                .eq('requirement_id', requirementId)
+                .is('deleted_at', null)
+                .order('created_at', { ascending: false })
+            : Promise.resolve({ data: [], error: null }),
+          supabase
+            .from('design_deliverables')
+            .select('*, design_assets(file_name)')
+            .eq('requirement_id', requirementId)
+            .is('deleted_at', null)
+            .order('delivered_at', { ascending: false }),
+        ])
+        if (references.error) throw references.error
+        if (deliverables.error) throw deliverables.error
+        return {
+          references: (references.data || []).map(mapSupabaseDesignReference),
+          deliverables: (deliverables.data || []).map(
+            mapSupabaseDesignDeliverable
+          ),
+        }
+      }
       const filter = pb.filter('requirement = {:id}', { id: requirementId })
       const [references, deliverables] = await Promise.all([
         includeReferences
@@ -136,8 +213,32 @@ function useRelationMutation(
 ) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) =>
-      pb.collection(collection).create(data),
+    mutationFn: async (data: Record<string, unknown>) => {
+      if (getDataProvider() === 'supabase') {
+        const supabase = getSupabaseClient()
+        if (collection === 'design_references') {
+          const { error } = await supabase.from('design_references').insert({
+            requirement_id: String(data.requirement || ''),
+            image_url: String(data.image_url || ''),
+            source: data.source ? String(data.source) : null,
+            notes: data.notes ? String(data.notes) : null,
+          })
+          if (error) throw error
+          return
+        }
+        const { error } = await supabase.from('design_deliverables').insert({
+          requirement_id: String(data.requirement || ''),
+          asset_id: String(data.asset || ''),
+          exported_size: String(data.exported_size || ''),
+          exported_format: String(data.exported_format || ''),
+          checklist_ok: Boolean(data.checklist_ok),
+          delivered_at: String(data.delivered_at || ''),
+        })
+        if (error) throw error
+        return
+      }
+      return pb.collection(collection).create(data)
+    },
     onSuccess: (_, data) => {
       void queryClient.invalidateQueries({
         queryKey: designRequirementKeys.detail(String(data.requirement || '')),
@@ -158,10 +259,24 @@ export function useApprovedDesignAssets(enabled: boolean) {
   return useQuery({
     queryKey: ['design', 'approved-assets'],
     enabled,
-    queryFn: () =>
-      pb.collection('design_assets').getFullList({
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('design_assets')
+          .select('id,file_name')
+          .eq('status', 'approved')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []).map((record) => ({
+          id: record.id,
+          file_name: record.file_name,
+        }))
+      }
+      return pb.collection('design_assets').getFullList({
         filter: 'status = "approved"',
         sort: '-updated',
-      }),
+      })
+    },
   })
 }

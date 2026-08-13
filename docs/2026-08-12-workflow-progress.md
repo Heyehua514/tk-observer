@@ -24,13 +24,15 @@
 - 商务驾驶舱已切 Supabase：总客户数、本月新增、进行中商机、预计成交金额、本月商单默认读取 Supabase。
 - 剪辑工作台核心链路开始切 Supabase：选题 CRUD、CSV 导入/导出、分析视图、导入历史、视频任务、成片归档、对标账号、对标视频、热点话题和风格分析默认走 Supabase，PocketBase 保留显式回退。
 - 市场活动共享表开始切 Supabase：活动列表/保存/软删除、活动详情的阶段/任务/报名/招商读取、活动任务状态更新默认走 Supabase；场地、模板、物料、财务资源表因当前 Supabase generated schema 缺表，继续走 PocketBase fallback。
+- 设计工作台开始切 Supabase：新增 `design_assets`、`design_tasks`、`design_requirements`、`design_references`、`design_deliverables` Supabase schema；素材上传/审批、需求接收/状态流转/参考/交付、任务看板默认走 Supabase，PocketBase 保留显式回退。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，69 个测试文件，175 个测试。
+- `pnpm test`：通过，72 个测试文件，182 个测试。
+- `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 
 ## 提交
 
@@ -49,7 +51,8 @@
 - `39f36b9 feat(supabase): cut over business core flows`
 - `5e0ec06 feat(supabase): cut over business dashboard`
 - `bc56395 feat(supabase): cut over editing workspace`
-- 待提交：Supabase 市场活动共享表切换。
+- `5883cf2 feat(supabase): cut over market activities`
+- 待提交：Supabase 设计工作台切换。
 
 ## 外部状态
 

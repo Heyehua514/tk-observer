@@ -1,9 +1,12 @@
-/** 设计素材列表查询，通过 PocketBase realtime 同步上传和审批状态。 */
+/** 设计素材列表查询，Supabase-first，PocketBase 保留回退。 */
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { DesignAssetListParams } from '../types'
 import { mapDesignAsset } from './design-asset-mapper'
+import { mapSupabaseDesignAsset } from './design-supabase-mapper'
 
 export const designAssetKeys = {
   all: ['design-assets'] as const,
@@ -13,6 +16,7 @@ export const designAssetKeys = {
 export function useDesignAssets(params: DesignAssetListParams) {
   const queryClient = useQueryClient()
   useEffect(() => {
+    if (getDataProvider() === 'supabase') return
     let unsubscribe: (() => void) | undefined
     let disposed = false
     void pb
@@ -33,6 +37,32 @@ export function useDesignAssets(params: DesignAssetListParams) {
   return useQuery({
     queryKey: [...designAssetKeys.list(), params],
     queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const supabase = getSupabaseClient()
+        const sort = params.sort.startsWith('-')
+          ? { column: params.sort.slice(1), ascending: false }
+          : { column: params.sort, ascending: true }
+        let request = supabase
+          .from('design_assets')
+          .select('*')
+          .is('deleted_at', null)
+          .order(sort.column, { ascending: sort.ascending })
+        if (params.status !== 'all') {
+          request = request.eq('status', params.status)
+        }
+        if (params.region !== 'all') {
+          request = request.eq('region', params.region)
+        }
+        if (params.query) {
+          const escaped = params.query.replace(/%/g, '\\%').replace(/,/g, '\\,')
+          request = request.or(
+            `file_name.ilike.%${escaped}%,dimensions.ilike.%${escaped}%`
+          )
+        }
+        const { data, error } = await request
+        if (error) throw error
+        return (data || []).map(mapSupabaseDesignAsset)
+      }
       const filters: string[] = []
       const values: Record<string, string> = {}
       if (params.query) {

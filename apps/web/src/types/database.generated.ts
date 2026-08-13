@@ -371,6 +371,274 @@ export type Database = {
         }
         Relationships: []
       }
+      design_assets: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          dimensions: string | null
+          file_name: string
+          file_path: string
+          id: string
+          legacy_id: string | null
+          owner_id: string | null
+          region: string
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          dimensions?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          legacy_id?: string | null
+          owner_id?: string | null
+          region: string
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          dimensions?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          legacy_id?: string | null
+          owner_id?: string | null
+          region?: string
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_assets_owner_id_fkey'
+            columns: ['owner_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_assets_reviewed_by_fkey'
+            columns: ['reviewed_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      design_deliverables: {
+        Row: {
+          asset_id: string
+          checklist_ok: boolean
+          created_at: string
+          deleted_at: string | null
+          delivered_at: string
+          exported_format: string
+          exported_size: string
+          id: string
+          legacy_id: string | null
+          requirement_id: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id: string
+          checklist_ok?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          delivered_at: string
+          exported_format: string
+          exported_size: string
+          id?: string
+          legacy_id?: string | null
+          requirement_id: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string
+          checklist_ok?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          delivered_at?: string
+          exported_format?: string
+          exported_size?: string
+          id?: string
+          legacy_id?: string | null
+          requirement_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_deliverables_asset_id_fkey'
+            columns: ['asset_id']
+            isOneToOne: false
+            referencedRelation: 'design_assets'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'design_deliverables_requirement_id_fkey'
+            columns: ['requirement_id']
+            isOneToOne: false
+            referencedRelation: 'design_requirements'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      design_references: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          image_url: string
+          legacy_id: string | null
+          notes: string | null
+          requirement_id: string
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          image_url: string
+          legacy_id?: string | null
+          notes?: string | null
+          requirement_id: string
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          image_url?: string
+          legacy_id?: string | null
+          notes?: string | null
+          requirement_id?: string
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_references_requirement_id_fkey'
+            columns: ['requirement_id']
+            isOneToOne: false
+            referencedRelation: 'design_requirements'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      design_requirements: {
+        Row: {
+          copy_content: string
+          created_at: string
+          deleted_at: string | null
+          delivery_format: string
+          description: string
+          due_date: string
+          id: string
+          legacy_id: string | null
+          priority: string
+          reference_urls: string | null
+          requester_id: string
+          status: string
+          target_size: string
+          title: string
+          updated_at: string
+          usage_scene: string
+        }
+        Insert: {
+          copy_content: string
+          created_at?: string
+          deleted_at?: string | null
+          delivery_format: string
+          description: string
+          due_date: string
+          id?: string
+          legacy_id?: string | null
+          priority: string
+          reference_urls?: string | null
+          requester_id: string
+          status?: string
+          target_size: string
+          title: string
+          updated_at?: string
+          usage_scene: string
+        }
+        Update: {
+          copy_content?: string
+          created_at?: string
+          deleted_at?: string | null
+          delivery_format?: string
+          description?: string
+          due_date?: string
+          id?: string
+          legacy_id?: string | null
+          priority?: string
+          reference_urls?: string | null
+          requester_id?: string
+          status?: string
+          target_size?: string
+          title?: string
+          updated_at?: string
+          usage_scene?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'design_requirements_requester_id_fkey'
+            columns: ['requester_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      design_tasks: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          due_at: string | null
+          id: string
+          legacy_id: string | null
+          region: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          region: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          region?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_phases: {
         Row: {
           completion_pct: number
