@@ -115,7 +115,7 @@ export function CreatorTable({
         header: '达人',
         cell: ({ row }) => (
           <button
-            className='text-left font-medium hover:text-blue-600 hover:underline'
+            className='text-left font-medium hover:text-primary hover:underline'
             onClick={() => setDetail(row.original)}
           >
             {row.original.nickname}

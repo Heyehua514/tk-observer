@@ -157,7 +157,7 @@ export function VideoIdeaTable({
         header: '标题',
         cell: ({ row }) => (
           <button
-            className='max-w-72 truncate text-left font-medium hover:text-blue-600 hover:underline'
+            className='max-w-72 truncate text-left font-medium hover:text-primary hover:underline'
             onClick={() => setDetail(row.original)}
           >
             {row.original.title}

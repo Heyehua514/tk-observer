@@ -54,7 +54,7 @@ export function VideoIdeaDetail({
                 href={idea.sourceUrl}
                 target='_blank'
                 rel='noreferrer'
-                className='inline-flex items-center gap-1 text-sm text-blue-600 hover:underline'
+                className='inline-flex items-center gap-1 text-sm text-primary hover:underline'
               >
                 打开原视频 <ExternalLink className='size-3' />
               </a>

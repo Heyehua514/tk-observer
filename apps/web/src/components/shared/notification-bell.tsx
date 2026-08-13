@@ -147,7 +147,7 @@ export function NotificationBell() {
                         {notification.title}
                       </span>
                       {!notification.isRead && (
-                        <span className='size-1.5 shrink-0 rounded-full bg-blue-600' />
+                        <span className='size-1.5 shrink-0 rounded-full bg-primary' />
                       )}
                     </span>
                     <span className='mt-1 line-clamp-2 text-xs text-muted-foreground'>

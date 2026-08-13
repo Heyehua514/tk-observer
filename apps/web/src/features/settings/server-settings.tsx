@@ -79,10 +79,10 @@ export function ServerSettings() {
         title='系统设置'
         description='配置桌面端连接的 PocketBase 回退服务。'
       />
-      <Card className='max-w-2xl shadow-none'>
+      <Card className='glass-card max-w-2xl rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-base'>
-            <Server className='size-4' />
+            <Server className='size-4 text-primary' />
             PocketBase 回退服务器
           </CardTitle>
           <CardDescription>
@@ -134,10 +134,10 @@ export function ServerSettings() {
           </Form>
         </CardContent>
       </Card>
-      <Card className='max-w-2xl shadow-none'>
+      <Card className='glass-card max-w-2xl rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-base'>
-            <Link2 className='size-4' />
+            <Link2 className='size-4 text-primary' />
             飞书账号
           </CardTitle>
           <CardDescription>

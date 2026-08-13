@@ -53,7 +53,7 @@ export function TeamMemoryContent({ data }: { data: TeamMemoryData }) {
       <div className='mb-5 flex items-start justify-between gap-4'>
         <div>
           <h2 className='flex items-center gap-2 text-base font-semibold'>
-            <BookOpenCheck className='size-5 text-emerald-600' />
+            <BookOpenCheck className='size-5 text-primary' />
             团队记忆
           </h2>
           <p className='mt-1 text-sm text-muted-foreground'>
@@ -67,7 +67,7 @@ export function TeamMemoryContent({ data }: { data: TeamMemoryData }) {
       <div className='grid gap-4 lg:grid-cols-3'>
         <div className='glass-card min-w-0 p-5'>
           <h3 className='flex items-center gap-2 text-sm font-semibold'>
-            <BookOpenCheck className='size-4 text-blue-600' />
+            <BookOpenCheck className='size-4 text-primary' />
             今日简报
           </h3>
           {data.dailyHighlight ? (

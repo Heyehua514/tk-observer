@@ -19,11 +19,11 @@ const typeLabel: Record<TeamCalendarItemType, string> = {
 }
 
 const typeClass: Record<TeamCalendarItemType, string> = {
-  activity: 'border-blue-200 bg-blue-50 text-blue-700',
-  task: 'border-slate-200 bg-slate-50 text-slate-700',
-  design: 'border-amber-200 bg-amber-50 text-amber-700',
-  social: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  order: 'border-violet-200 bg-violet-50 text-violet-700',
+  activity: 'border-primary/30 bg-primary/5 text-primary',
+  task: 'border-border bg-muted/50 text-foreground/70',
+  design: 'border-amber-500/30 bg-amber-500/10 text-amber-600',
+  social: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600',
+  order: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-600',
 }
 
 export function TeamCalendar() {
@@ -71,7 +71,7 @@ export function TeamCalendar() {
                 <span
                   className={cn(
                     'flex size-7 items-center justify-center text-xs',
-                    item.isToday && 'rounded-full bg-blue-600 text-white'
+                    item.isToday && 'rounded-full bg-primary text-primary-foreground'
                   )}
                 >
                   {item.day}

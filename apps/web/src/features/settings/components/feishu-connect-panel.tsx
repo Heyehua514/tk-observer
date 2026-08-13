@@ -25,10 +25,10 @@ export function FeishuConnectPanel({
 }) {
   return (
     <div className='grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]'>
-      <Card className='shadow-none'>
+      <Card className='glass-card rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-base'>
-            <Cloud className='size-4' />
+            <Cloud className='size-4 text-primary' />
             个人飞书账号
           </CardTitle>
           <CardDescription>
@@ -37,7 +37,14 @@ export function FeishuConnectPanel({
         </CardHeader>
         <CardContent className='flex flex-wrap items-center justify-between gap-4'>
           <div>
-            <div className='font-medium'>
+            <div className='flex items-center gap-2 font-medium'>
+              <span
+                className={
+                  connected
+                    ? 'size-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_12px_color-mix(in_oklab,var(--success)_60%,transparent)]'
+                    : 'size-2 shrink-0 rounded-full bg-muted-foreground/40'
+                }
+              />
               {connected ? '同步通道已建立' : '尚未建立同步通道'}
             </div>
             <div className='mt-1 text-sm text-muted-foreground'>
@@ -56,10 +63,10 @@ export function FeishuConnectPanel({
           />
         </CardContent>
       </Card>
-      <Card className='shadow-none'>
+      <Card className='glass-card rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-base'>
-            <ShieldCheck className='size-4' />
+            <ShieldCheck className='size-4 text-primary' />
             权限边界
           </CardTitle>
         </CardHeader>

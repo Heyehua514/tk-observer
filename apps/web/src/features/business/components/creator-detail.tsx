@@ -60,7 +60,7 @@ export function CreatorDetail({
                 <dt className='text-muted-foreground'>TikTok 主页</dt>
                 <dd>
                   <a
-                    className='inline-flex items-center gap-1 break-all text-blue-600 hover:underline'
+                    className='inline-flex items-center gap-1 break-all text-primary hover:underline'
                     href={creator.tiktokUrl}
                     target='_blank'
                     rel='noreferrer'
