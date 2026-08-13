@@ -34,6 +34,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_name: string
+          created_at: string
+          deleted_at: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          legacy_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          actor_name: string
+          created_at?: string
+          deleted_at?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          legacy_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          actor_name?: string
+          created_at?: string
+          deleted_at?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          legacy_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       channel_orders: {
         Row: {
           actual_views: number | null
@@ -367,6 +403,42 @@ export type Database = {
           owner_name?: string
           region?: string
           tiktok_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_reports: {
+        Row: {
+          created_at: string
+          date: string
+          deleted_at: string | null
+          generated_at: string
+          highlights: string
+          id: string
+          legacy_id: string | null
+          stats_json: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          generated_at: string
+          highlights: string
+          id?: string
+          legacy_id?: string | null
+          stats_json: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          generated_at?: string
+          highlights?: string
+          id?: string
+          legacy_id?: string | null
+          stats_json?: string
           updated_at?: string
         }
         Relationships: []
@@ -996,6 +1068,45 @@ export type Database = {
           },
         ]
       }
+      failed_cases: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          legacy_id: string | null
+          lessons: string | null
+          reason: string
+          recorded_at: string
+          source_id: string
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          lessons?: string | null
+          reason: string
+          recorded_at: string
+          source_id: string
+          source_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          lessons?: string | null
+          reason?: string
+          recorded_at?: string
+          source_id?: string
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_materials: {
         Row: {
           created_at: string
@@ -1515,6 +1626,42 @@ export type Database = {
           updated_at?: string
           video_type?: string
           views?: number
+        }
+        Relationships: []
+      }
+      weekly_reports: {
+        Row: {
+          comparison_json: string
+          created_at: string
+          deleted_at: string | null
+          generated_at: string
+          id: string
+          legacy_id: string | null
+          trends: string
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          comparison_json: string
+          created_at?: string
+          deleted_at?: string | null
+          generated_at: string
+          id?: string
+          legacy_id?: string | null
+          trends: string
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          comparison_json?: string
+          created_at?: string
+          deleted_at?: string | null
+          generated_at?: string
+          id?: string
+          legacy_id?: string | null
+          trends?: string
+          updated_at?: string
+          week_start?: string
         }
         Relationships: []
       }

@@ -1,7 +1,13 @@
 /** 总览工作台团队记忆跨表查询；权限：boss。 */
 import { useQuery } from '@tanstack/react-query'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { calculateTeamMemoryMetrics } from './team-memory-metrics'
+import {
+  mapSupabaseDailyReport,
+  mapSupabaseFailedCase,
+} from './team-memory-supabase-mapper'
 import type { TeamMemoryData, TeamMemoryFailedCase } from './types'
 
 export function beijingBoundary(now: Date, kind: 'day' | 'month' | 'week') {
@@ -26,6 +32,52 @@ export function useTeamMemory() {
       const monthStart = beijingBoundary(now, 'month')
       const weekStart = beijingBoundary(now, 'week')
       const todayStart = beijingBoundary(now, 'day')
+      if (getDataProvider() === 'supabase') {
+        const [daily, failedCases, cronRuns, templates] = await Promise.all([
+          getSupabaseClient()
+            .from('daily_reports')
+            .select('date,highlights')
+            .gte('date', todayStart)
+            .is('deleted_at', null)
+            .order('date', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          getSupabaseClient()
+            .from('failed_cases')
+            .select('id,reason,recorded_at')
+            .gte('recorded_at', monthStart)
+            .is('deleted_at', null)
+            .order('recorded_at', { ascending: false }),
+          getSupabaseClient()
+            .from('audit_logs')
+            .select('id')
+            .eq('entity_type', 'cron_run')
+            .gte('created_at', weekStart)
+            .is('deleted_at', null),
+          getSupabaseClient()
+            .from('event_templates')
+            .select('usage_count')
+            .is('deleted_at', null)
+            .order('usage_count', { ascending: false }),
+        ])
+        if (daily.error) throw daily.error
+        if (failedCases.error) throw failedCases.error
+        if (cronRuns.error) throw cronRuns.error
+        if (templates.error) throw templates.error
+        const cases = (failedCases.data || []).map(mapSupabaseFailedCase)
+        const metrics = calculateTeamMemoryMetrics(
+          cases,
+          cronRuns.data?.length || 0,
+          (templates.data || []).map((record) =>
+            Number(record.usage_count || 0)
+          ),
+          now
+        )
+        return {
+          ...metrics,
+          ...mapSupabaseDailyReport(daily.data),
+        }
+      }
       const [daily, failedCases, cronRuns, templates] = await Promise.all([
         pb.collection('daily_reports').getList(1, 1, {
           filter: `date >= "${todayStart}"`,
