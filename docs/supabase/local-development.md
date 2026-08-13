@@ -1,6 +1,6 @@
 # Supabase 本地开发
 
-本目录用于 PocketBase 到 Supabase 的并行迁移开发。当前应用默认仍使用 PocketBase，未经切换验收不得修改 `VITE_DATA_PROVIDER=pocketbase`。
+本目录用于 PocketBase 到 Supabase 的迁移与本地开发。当前应用默认数据源为 Supabase（`VITE_DATA_PROVIDER` 未配置时默认 `supabase`），PocketBase 仅作显式回退。
 
 ## 前置条件
 
@@ -31,16 +31,16 @@ pnpm supabase:stop
 
 ## 前端环境
 
-只有测试 Supabase 前端连接时，才将 `apps/web/.env.example` 复制为已忽略的 `apps/web/.env`，并填入本地 Supabase 启动输出中的 URL 与 anon key。
+将 `apps/web/.env.example` 复制为已忽略的 `apps/web/.env`，默认填入本地 Supabase 启动输出中的 URL 与 anon key：
 
 ```dotenv
-VITE_DATA_PROVIDER=pocketbase
+VITE_DATA_PROVIDER=supabase
 VITE_POCKETBASE_URL=http://127.0.0.1:8090
 VITE_SUPABASE_URL=http://127.0.0.1:54321
 VITE_SUPABASE_ANON_KEY=<local-anon-key>
 ```
 
-保持 `VITE_DATA_PROVIDER=pocketbase`，直到独立的迁移、数据核对和回滚演练全部通过，切换计划才可以修改它。
+需要联调 PocketBase 回退链路时，把 `VITE_DATA_PROVIDER` 改为 `pocketbase` 并启动 `pnpm pb:serve`。
 
 ## 密钥边界
 
@@ -51,10 +51,10 @@ VITE_SUPABASE_ANON_KEY=<local-anon-key>
 
 ## 当前阶段边界
 
-- PocketBase 仍是应用默认且唯一启用的数据源。
-- Supabase migration、pgTAP 和生成类型目前只构成并行基础设施。
+- Supabase 是应用默认数据源，PocketBase 仅作显式回退（`VITE_DATA_PROVIDER=pocketbase`）。
+- 数据对账与业务数据导出已完成（`scripts/supabase/`），Supabase migration、pgTAP 与生成类型为线上数据层。
 - 不运行双写，不改现有 PocketBase migration，不删除 PocketBase 数据。
-- 数据切换必须使用写入冻结、完整性核对和回滚演练，不允许直接改环境变量上线。
+- 上线前仍需完成：真实业务数据导入、图片/视频文件迁移到 Supabase Storage、回滚演练（详见 `docs/部署与多端说明.md`）。
 - 本地配置关闭 Supabase Analytics，因为当前 `logflare:1.50.1` 的 Apple Silicon 镜像不可执行；认证、RLS、数据库、Storage、Realtime、Studio 和本计划测试不依赖 Analytics。
 
 ## 已建立的市场商务核心

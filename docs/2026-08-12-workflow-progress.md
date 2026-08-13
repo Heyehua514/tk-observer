@@ -211,3 +211,15 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+
+## 本地开发文档修正（Supabase-first 现状对齐）
+
+- `docs/supabase/local-development.md` 修正过时声明：默认数据源改为 Supabase，PocketBase 仅作显式回退；环境变量示例改为 `VITE_DATA_PROVIDER=supabase`；阶段边界改为“数据对账与导出已完成，上线前仍需真实数据导入、文件迁移与回滚演练”。
+- 全仓扫描确认无残留“默认数据源仍为 PocketBase”类过时声明（历史 specs/plans 与当期验证快照保留原状）。
+
+### 验证（本地开发文档修正）
+
+- `git diff --check`：通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
