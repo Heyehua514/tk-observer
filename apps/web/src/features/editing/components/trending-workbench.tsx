@@ -32,6 +32,7 @@ import type {
   TrendingTopicInput,
   VideoIdeaInput,
 } from '../types'
+import { editingPermissionErrorDescription } from './editing-empty-copy'
 
 function parseTopicBlocks(text: string): TrendingTopicInput[] {
   const blocks = text
@@ -207,7 +208,7 @@ export function TrendingWorkbench({
       {topics.isError ? (
         <EmptyState
           title='热点话题加载失败'
-          description='请检查 PocketBase 连接和账号权限。'
+          description={editingPermissionErrorDescription}
         />
       ) : topics.data?.length ? (
         <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>

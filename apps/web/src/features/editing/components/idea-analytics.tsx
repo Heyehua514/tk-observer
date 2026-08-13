@@ -28,6 +28,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { useImportHistory } from '../hooks/use-import-history'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
 import type { ImportHistory, MetricSnapshot } from '../types'
+import { editingDataErrorDescription } from './editing-empty-copy'
 
 function MetricCard({
   label,
@@ -159,13 +160,13 @@ export function IdeaAnalytics() {
     return (
       <EmptyState
         title='分析数据加载失败'
-        description='PocketBase 暂时不可用，请检查服务器连接后重试。'
+        description={editingDataErrorDescription}
       />
     )
   if (!analytics.data)
     return (
       <EmptyState
-        title='暂无分析数据'
+        title='等待分析数据生成'
         description='新增选题或导入 CSV 后，这里会自动生成分析看板。'
       />
     )

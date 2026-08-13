@@ -69,6 +69,7 @@ import {
 } from '../hooks/use-video-ideas'
 import { parseVideoIdeaCsv, exportVideoIdeasCsv } from '../hooks/video-idea-csv'
 import type { VideoIdea, VideoIdeaListParams } from '../types'
+import { editingDataErrorDescription } from './editing-empty-copy'
 import { VideoIdeaDetail } from './video-idea-detail'
 
 function downloadCsv(fileName: string, content: string) {
@@ -476,11 +477,11 @@ export function VideoIdeaTable({
       {ideas.isError ? (
         <EmptyState
           title='选题数据加载失败'
-          description='PocketBase 暂时不可用，请检查服务器连接后重试。'
+          description={editingDataErrorDescription}
         />
       ) : ideas.data?.items.length === 0 ? (
         <EmptyState
-          title='暂无视频选题'
+          title='等待视频选题沉淀'
           description='可以手动新增，或下载 CSV 模板批量导入历史视频数据。'
           action={
             <Button onClick={onCreate}>

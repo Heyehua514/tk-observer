@@ -19,6 +19,7 @@ import {
   StyleAnalysisDialog,
   StyleAnalysisRecord,
 } from './style-analysis-dialog'
+import { editingPermissionErrorDescription } from './editing-empty-copy'
 
 export function CompetitorWorkbench({
   query,
@@ -60,7 +61,7 @@ export function CompetitorWorkbench({
       {accounts.isError ? (
         <EmptyState
           title='对标账号加载失败'
-          description='请检查 PocketBase 连接和账号权限。'
+          description={editingPermissionErrorDescription}
         />
       ) : (
         <div className='grid gap-4 md:grid-cols-3'>
@@ -207,7 +208,7 @@ export function CompetitorWorkbench({
             </div>
           ) : (
             <EmptyState
-              title='暂无对标视频'
+              title='等待对标视频沉淀'
               description='打开该账号的视频号，手动录入值得分析的爆款视频。'
             />
           )}
