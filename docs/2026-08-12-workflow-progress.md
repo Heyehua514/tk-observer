@@ -50,6 +50,13 @@
 - 商务公众号文章分析开始切 Supabase：新增 `blog_articles` Supabase schema、RLS、Realtime、爆款自动计算触发器；第 9 Tab 文章列表默认读取 Supabase，PocketBase 保留显式回退。
 - 商务达人详情与关联视频已切 Supabase-first：达人详情单条读取、详情页关联成片列表默认走 Supabase，PocketBase 保留显式回退。
 - 系统设置页文案改为“PocketBase 回退服务器”，避免与当前 Supabase-first 方向冲突。
+- 团队记忆自动化已在 Supabase 落地，与 PocketBase 闭环 hooks 完全对齐：新增 `20260813000900_team_memory_automation.sql`，启用 pg_cron 并调度 4 个定时任务（日报 18:00、周报周一 08:00、截止提醒 08:00、过期任务兜底扫描 08:30，均为北京时间）。
+- Supabase 商机新增 `created_by`、朋友圈计划新增 `usage_count`/`last_used_at`（只追加字段，不改旧 migration）。
+- Supabase 自动审计流水：商机阶段变化/成交、活动任务完成写 `audit_logs`，与日报/周报统计口径一致。
+- Supabase 失败自动沉淀：商机变「已流失」写 `failed_cases`（ON CONFLICT 去重），活动任务到期未完成即时记录 + 每日兜底扫描。
+- Supabase 截止提醒：当日到期活动任务推给负责人、当日预计成交商机推给创建人，重复运行不产生重复通知。
+- Supabase 规则校验：活动招商商机只允许关联重要度 S/A/B 客户，设计稿转 `pending_review` 必须有文件，违反直接拒绝写入。
+- Supabase 模板计数：文案模板每次更新 `last_used_at` 使用数 +1；朋友圈计划发布或关联商机时使用数 +1 并打时间戳。
 
 ## 验证
 
@@ -59,10 +66,12 @@
 - `pnpm test`：通过，96 个测试文件，211 个测试。
 - `pnpm build`：通过，无报错。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
-- `pnpm supabase:test`：通过，20 个文件、297 个断言全过；已补推本地 Supabase 测试库全部待应用迁移，并校准 7 个 pgTAP 套件与实际 RLS / Realtime 范围一致。
+- `pnpm supabase:test`：通过，21 个文件、348 个断言全过；新增 `team_memory_automation.test.sql`（51 个断言），覆盖失败沉淀、截止提醒、日报/周报、招商校验、模板计数和 cron 调度。
 - 前端源码已无「美分」与「暂无数据」非测试残留。
 
 ## 提交
+
+- `feat(supabase): add team memory automation triggers and cron`
 
 - `6d6757d test(supabase): align pgTAP suites with current RLS and realtime scope`
 - `7021c96 feat(business): cut over creator detail and videos`
