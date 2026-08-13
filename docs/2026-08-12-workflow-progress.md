@@ -57,12 +57,14 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+- `pnpm build`：通过，无报错。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：通过，20 个文件、297 个断言全过；已补推本地 Supabase 测试库全部待应用迁移，并校准 7 个 pgTAP 套件与实际 RLS / Realtime 范围一致。
+- 前端源码已无「美分」与「暂无数据」非测试残留。
 
 ## 提交
 
-- `待提交（沙箱只读限制，改动保留在 7 个 pgTAP 测试文件）`
+- `6d6757d test(supabase): align pgTAP suites with current RLS and realtime scope`
 - `7021c96 feat(business): cut over creator detail and videos`
 - `77e865e feat(workbench): tighten market and business workflows`
 - `cffa562 feat(business): add client relation detail panel`
