@@ -70,7 +70,7 @@
 - `8401465 feat(supabase): cut over product catalog`
 - `6b9cd11 feat(supabase): cut over companies`
 - `0628ff0 feat(supabase): cut over global search`
-- 待提交：Supabase 全局搜索详情切换。
+- `5682e01 feat(supabase): cut over global record detail`
 
 ## 外部状态
 
