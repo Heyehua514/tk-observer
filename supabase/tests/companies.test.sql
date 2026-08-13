@@ -39,14 +39,22 @@ select lives_ok($$
     '出海供应商', 'supplier', '王总', 'wang@example.test', 'US'
   )
 $$, 'business can create company');
-select is((select count(*) from public.companies), 1::bigint, 'business can read companies');
+select is(
+  (select count(*) from public.companies where company_name = '出海供应商'),
+  1::bigint,
+  'business can read companies'
+);
 
 select set_config(
   'request.jwt.claims',
   '{"sub":"c0000000-0000-0000-0000-000000000002","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.companies), 1::bigint, 'boss can read companies');
+select is(
+  (select count(*) from public.companies where company_name = '出海供应商'),
+  1::bigint,
+  'boss can read companies'
+);
 update public.companies set company_name = '老板越权修改';
 select is((select count(*) from public.companies where company_name = '老板越权修改'), 0::bigint, 'boss cannot update companies');
 

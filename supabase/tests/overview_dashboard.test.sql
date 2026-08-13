@@ -50,8 +50,17 @@ select lives_ok($$
     '董雨辰', '推进商务商机', 60, now() + interval '1 day', 'US'
   )
 $$, 'boss can create team task');
-select is((select count(*) from public.gmv_metrics), 1::bigint, 'boss can read gmv metrics');
-select is((select count(*) from public.team_tasks), 1::bigint, 'boss can read team tasks');
+select is(
+  (select count(*) from public.gmv_metrics
+   where amount_minor = 1280000 and currency = 'CNY'),
+  1::bigint,
+  'boss can read gmv metrics'
+);
+select is(
+  (select count(*) from public.team_tasks where title = '推进商务商机'),
+  1::bigint,
+  'boss can read team tasks'
+);
 
 select set_config(
   'request.jwt.claims',

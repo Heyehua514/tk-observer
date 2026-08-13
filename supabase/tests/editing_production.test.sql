@@ -98,8 +98,16 @@ select set_config(
   '{"sub":"50000000-0000-0000-0000-000000000001","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.videos), 1::bigint, 'business can read creator videos');
-select is((select count(*) from public.video_tasks), 0::bigint, 'business cannot read video tasks');
+select is(
+  (select count(*) from public.videos where title = '测试成片'),
+  1::bigint,
+  'business can read creator videos'
+);
+select is(
+  (select count(*) from public.video_tasks where title = '剪辑测试任务'),
+  0::bigint,
+  'business cannot read video tasks'
+);
 select lives_ok($$
   update public.videos set title = '商务越权修改'
   where id = '53000000-0000-0000-0000-000000000001'

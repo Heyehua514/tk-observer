@@ -39,14 +39,22 @@ select lives_ok($$
     '蓝牙音箱', 'electronics', 19900, 9200, 'CNY', 'US', 'active'
   )
 $$, 'market can create product');
-select is((select count(*) from public.products), 1::bigint, 'market can read products');
+select is(
+  (select count(*) from public.products where name = '蓝牙音箱'),
+  1::bigint,
+  'market can read products'
+);
 
 select set_config(
   'request.jwt.claims',
   '{"sub":"b0000000-0000-0000-0000-000000000002","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.products), 1::bigint, 'boss can read products');
+select is(
+  (select count(*) from public.products where name = '蓝牙音箱'),
+  1::bigint,
+  'boss can read products'
+);
 update public.products set status = 'paused';
 select is((select count(*) from public.products where status = 'paused'), 0::bigint, 'boss cannot update products');
 

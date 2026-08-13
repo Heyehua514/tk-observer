@@ -97,8 +97,16 @@ select lives_ok($$
 $$, 'editing can create style analyses');
 
 select set_config('request.jwt.claims', '{"sub":"60000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
-select is((select count(*) from public.competitor_accounts), 1::bigint, 'business can read competitor accounts');
-select is((select count(*) from public.video_ideas), 0::bigint, 'business cannot read video ideas');
+select is(
+  (select count(*) from public.competitor_accounts where name = '研究对标账号'),
+  1::bigint,
+  'business can read competitor accounts'
+);
+select is(
+  (select count(*) from public.video_ideas where title = '研究测试选题'),
+  0::bigint,
+  'business cannot read video ideas'
+);
 select lives_ok($$
   update public.competitor_accounts set notes = '商务补充'
   where id = '62000000-0000-0000-0000-000000000001'

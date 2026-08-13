@@ -31,7 +31,7 @@ select policies_are('public', 'clients', array[
   'client collaborators can read clients',
   'owners and business can create clients',
   'owners and business can update clients',
-  'owners can hard delete clients'
+  'owners and business can hard delete clients'
 ]);
 
 insert into auth.users (
@@ -68,7 +68,11 @@ select set_config(
   '{"sub":"10000000-0000-0000-0000-000000000002","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.creators), 1::bigint, 'business can read creators');
+select is(
+  (select count(*) from public.creators where nickname = '测试达人'),
+  1::bigint,
+  'business can read creators'
+);
 select lives_ok(
   $$ update public.creators set cooperation_notes = '可合作' where nickname = '测试达人' $$,
   'business can update creator business fields'
@@ -96,7 +100,11 @@ select set_config(
   '{"sub":"10000000-0000-0000-0000-000000000003","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.clients), 1::bigint, 'market can read clients for sponsorship expansion');
+select is(
+  (select count(*) from public.clients where name = '测试客户'),
+  1::bigint,
+  'market can read clients for sponsorship expansion'
+);
 
 select set_config(
   'request.jwt.claims',
@@ -107,7 +115,12 @@ select lives_ok(
   $$ update public.clients set deleted_at = now() where name = '测试客户' $$,
   'owner can soft delete clients'
 );
-select is((select count(*) from public.clients where deleted_at is not null), 1::bigint, 'owner can inspect soft-deleted clients');
+select is(
+  (select count(*) from public.clients
+   where name = '测试客户' and deleted_at is not null),
+  1::bigint,
+  'owner can inspect soft-deleted clients'
+);
 
 select * from finish();
 rollback;

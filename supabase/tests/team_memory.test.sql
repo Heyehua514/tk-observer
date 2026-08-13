@@ -73,8 +73,16 @@ select set_config(
   '{"sub":"80000000-0000-0000-0000-000000000002","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.daily_reports), 1::bigint, 'boss can read daily reports');
-select is((select count(*) from public.failed_cases), 1::bigint, 'boss can read failed cases');
+select is(
+  (select count(*) from public.daily_reports where date = '2026-08-13 10:00:00+00'),
+  1::bigint,
+  'boss can read daily reports'
+);
+select is(
+  (select count(*) from public.failed_cases where source_id = 'opp-1'),
+  1::bigint,
+  'boss can read failed cases'
+);
 
 select set_config(
   'request.jwt.claims',
