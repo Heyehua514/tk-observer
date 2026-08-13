@@ -200,7 +200,7 @@ export function OverviewDashboard() {
         {metrics.map((metric) => (
           <Card
             key={metric.label}
-            className="h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
+            className="bento-card h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
           >
             <CardContent className='flex items-start justify-between p-5'>
               <div>
@@ -217,20 +217,38 @@ export function OverviewDashboard() {
                 </p>
                 <MetricTrend delta={metric.delta} />
               </div>
-              <metric.icon className='size-5 text-blue-600' />
+              <metric.icon className='size-5 text-primary' />
             </CardContent>
           </Card>
         ))}
       </MetricDeck>
       <div className='grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'>
-        <Card className='shadow-none'>
+        <Card className='bento-card shadow-none'>
           <CardHeader>
             <CardTitle className='text-base'>GMV 走势</CardTitle>
           </CardHeader>
           <CardContent className='h-72'>
             <ResponsiveContainer width='100%' height='100%'>
               <LineChart data={trend}>
-                <CartesianGrid strokeDasharray='3 3' vertical={false} />
+                <defs>
+                  <linearGradient id='gmvFill' x1='0' y1='0' x2='0' y2='1'>
+                    <stop
+                      offset='0%'
+                      stopColor='var(--chart-1)'
+                      stopOpacity={0.28}
+                    />
+                    <stop
+                      offset='100%'
+                      stopColor='var(--chart-1)'
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray='3 3'
+                  vertical={false}
+                  stroke='var(--border)'
+                />
                 <XAxis dataKey='date' tickLine={false} axisLine={false} />
                 <YAxis
                   tickLine={false}
@@ -246,16 +264,17 @@ export function OverviewDashboard() {
                 <Line
                   type='monotone'
                   dataKey='value'
-                  stroke='#2563eb'
+                  stroke='var(--chart-1)'
                   strokeWidth={2}
                   dot={false}
-                  animationDuration={800}
+                  animationDuration={1000}
+                  fill='url(#gmvFill)'
                 />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card className='shadow-none'>
+        <Card className='bento-card shadow-none'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2 text-base'>
               <Activity className='size-4' />
@@ -264,12 +283,16 @@ export function OverviewDashboard() {
           </CardHeader>
           <CardContent>
             {data.data?.logs.length ? (
-              <div className='space-y-4'>
+              <div className='relative space-y-5 before:absolute before:inset-y-1 before:left-[5px] before:w-px before:bg-border'>
                 {data.data.logs.map((log) => (
                   <div
                     key={log.id}
-                    className='border-b pb-3 text-sm last:border-0'
+                    className='relative pl-6 text-sm'
                   >
+                    <span
+                      aria-hidden='true'
+                      className='absolute top-1.5 left-0 size-[11px] rounded-full border-2 border-background bg-primary shadow-[0_0_10px_color-mix(in_oklab,var(--primary)_55%,transparent)]'
+                    />
                     <div className='font-medium'>
                       {log.actorName} · {log.action}
                     </div>
@@ -289,7 +312,7 @@ export function OverviewDashboard() {
         </Card>
       </div>
       <TeamMemory />
-      <Card className='shadow-none'>
+      <Card className='bento-card shadow-none'>
         <CardHeader>
           <CardTitle className='text-base'>成员任务进度</CardTitle>
         </CardHeader>
@@ -317,7 +340,7 @@ export function OverviewDashboard() {
                 <span>{name}</span>
                 <div className='h-2 overflow-hidden rounded-full bg-muted'>
                   <div
-                    className='h-full rounded-full bg-blue-600'
+                    className='h-full rounded-full bg-primary'
                     style={{ width: `${progress}%` }}
                   />
                 </div>

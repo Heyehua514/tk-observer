@@ -9,8 +9,14 @@ export const Route = createFileRoute('/_auth')({
     if (user) throw redirect({ to: getDefaultRoute(user.role) })
   },
   component: () => (
-    <main className='flex min-h-svh items-center justify-center bg-muted/40 p-4'>
-      <Outlet />
+    <main className='dark relative flex min-h-svh items-center justify-center overflow-hidden bg-background p-4'>
+      <div
+        aria-hidden='true'
+        className='aurora aurora-animated pointer-events-none absolute inset-0'
+      />
+      <div className='relative z-10 w-full max-w-[850px]'>
+        <Outlet />
+      </div>
     </main>
   ),
 })

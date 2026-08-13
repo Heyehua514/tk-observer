@@ -64,8 +64,8 @@ export function TeamMemoryContent({ data }: { data: TeamMemoryData }) {
           自动更新
         </span>
       </div>
-      <div className='grid gap-6 lg:grid-cols-3 lg:divide-x'>
-        <div className='min-w-0 lg:pr-6'>
+      <div className='grid gap-4 lg:grid-cols-3'>
+        <div className='glass-card min-w-0 p-5'>
           <h3 className='flex items-center gap-2 text-sm font-semibold'>
             <BookOpenCheck className='size-4 text-blue-600' />
             今日简报
@@ -83,7 +83,7 @@ export function TeamMemoryContent({ data }: { data: TeamMemoryData }) {
             </p>
           )}
         </div>
-        <div className='min-w-0 lg:px-6'>
+        <div className='glass-card min-w-0 p-5'>
           <h3 className='flex items-center gap-2 text-sm font-semibold'>
             <Lightbulb className='size-4 text-amber-500' />
             本月教训
@@ -113,9 +113,9 @@ export function TeamMemoryContent({ data }: { data: TeamMemoryData }) {
             </p>
           )}
         </div>
-        <div className='min-w-0 lg:pl-6'>
+        <div className='glass-card min-w-0 p-5'>
           <h3 className='flex items-center gap-2 text-sm font-semibold'>
-            <Gauge className='size-4 text-violet-600' />
+            <Gauge className='size-4 text-primary' />
             闭环仪表
           </h3>
           <div className='mt-4 grid grid-cols-3 gap-3'>

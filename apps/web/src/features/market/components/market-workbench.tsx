@@ -77,7 +77,7 @@ export function MarketWorkbench({
         description='管理选品、竞品情报、站点投放和活动节奏。'
       />
       <div className='grid gap-3 md:grid-cols-6'>
-        <div className='rounded-lg border p-4 md:col-span-2'>
+        <div className='bento-card p-4 md:col-span-2'>
           <div className='text-xs text-muted-foreground'>竞品监测</div>
           <div className='mt-1 text-lg font-semibold'>3 个公众号</div>
           <div className='mt-2 space-y-1 text-sm text-muted-foreground'>
@@ -89,7 +89,7 @@ export function MarketWorkbench({
             ))}
           </div>
         </div>
-        <div className='rounded-lg border p-4 md:col-span-4'>
+        <div className='bento-card p-4 md:col-span-4'>
           <div className='flex items-center justify-between'>
             <div>
               <div className='text-xs text-muted-foreground'>投放数据</div>
@@ -99,7 +99,7 @@ export function MarketWorkbench({
           </div>
           <div className='mt-4 grid gap-3 sm:grid-cols-3'>
             {adOverview.summary.map((item) => (
-              <div key={item.label} className='rounded-md border bg-muted/20 p-3'>
+              <div key={item.label} className='rounded-lg border bg-card/60 p-3'>
                 <div className='text-xs text-muted-foreground'>{item.label}</div>
                 <div className='mt-1 text-xl font-semibold'>{item.value}</div>
                 <div className='text-xs text-emerald-600'>{item.delta}</div>
@@ -167,7 +167,7 @@ export function MarketWorkbench({
                     <TableRow key={product.id}>
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-2'>
-                          <CircleDollarSign className='size-4 text-blue-600' />
+                          <CircleDollarSign className='size-4 text-primary' />
                           {product.name}
                         </div>
                       </TableCell>
@@ -203,7 +203,7 @@ export function MarketWorkbench({
         </TabsContent>
         <TabsContent value='ads' className='mt-5'>
           <div className='space-y-4'>
-            <div className='h-72 rounded-lg border p-5'>
+            <div className='glass-card h-72 p-5'>
               <h3 className='mb-4 text-sm font-medium'>按站点投放数据</h3>
               <ResponsiveContainer width='100%' height='85%'>
                 <BarChart data={adOverview.regions}>
@@ -212,9 +212,9 @@ export function MarketWorkbench({
                   <YAxis />
                   <Bar
                     dataKey='value'
-                    fill='#2563eb'
+                    fill='var(--chart-1)'
                     radius={[4, 4, 0, 0]}
-                    animationDuration={800}
+                    animationDuration={1000}
                   />
                 </BarChart>
               </ResponsiveContainer>

@@ -156,7 +156,7 @@ export function DesignAssetGrid({
             return (
               <article
                 key={asset.id}
-                className='overflow-hidden rounded-lg border'
+                className='overflow-hidden rounded-xl border bg-card/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30'
               >
                 <div className='flex aspect-[3/2] items-center justify-center bg-muted/30'>
                   {asset.fileUrl ? (

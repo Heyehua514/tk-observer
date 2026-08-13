@@ -106,7 +106,10 @@ export function DesignRequirements() {
                 </TableCell>
                 <TableCell>{item.dueDate.slice(0, 10)}</TableCell>
                 <TableCell>
-                  <Badge variant='outline'>
+                  <Badge
+                    variant='outline'
+                    className='border-primary/30 bg-primary/5 text-primary'
+                  >
                     {requirementStatusLabels[item.status]}
                   </Badge>
                 </TableCell>

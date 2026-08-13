@@ -170,13 +170,13 @@ export function BusinessDashboardContent({
         {metricCards.map((metric) => (
           <Card
             key={metric.label}
-            className="h-full gap-3 overflow-hidden rounded-lg py-4 shadow-none before:block before:h-0.5 before:w-10 before:bg-primary before:content-['']"
+            className="bento-card h-full gap-3 overflow-hidden rounded-lg py-4 shadow-none before:block before:h-0.5 before:w-10 before:bg-primary before:content-['']"
           >
             <CardHeader className='flex grid-cols-none flex-row items-center justify-between px-4'>
               <span className='text-xs font-medium text-muted-foreground'>
                 {metric.label}
               </span>
-              <metric.icon className='size-4 text-muted-foreground' />
+              <metric.icon className='size-4 text-primary/70' />
             </CardHeader>
             <CardContent className='px-4'>
               <button
@@ -233,7 +233,11 @@ export function BusinessDashboardContent({
                   type='button'
                   aria-label={`处理 ${action.title}`}
                   onClick={() => onNavigate('opportunities')}
-                  className='flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-muted/35'
+                  className={`flex w-full items-center gap-3 border-l-2 py-3 pl-4 text-left transition-colors hover:bg-muted/35 ${
+                    action.urgency === 'overdue'
+                      ? 'border-red-500'
+                      : 'border-amber-400'
+                  }`}
                 >
                   <span
                     className={
@@ -375,7 +379,7 @@ function Pipeline({
                 setDraggingId(null)
                 if (id) onStageChange?.(id, stage)
               }}
-              className='min-h-72 rounded-lg border bg-muted/25 p-3'
+              className='min-h-72 rounded-xl border border-border/60 bg-muted/20 p-3'
             >
               <div className='mb-3 flex items-center justify-between gap-2'>
                 <span className='text-xs font-semibold'>
@@ -407,7 +411,7 @@ function Pipeline({
                             boxShadow: '0 1px 2px rgba(15,23,42,.06)',
                           }
                     }
-                    className='w-full cursor-grab rounded-lg border bg-background p-3 text-left active:cursor-grabbing'
+                    className='w-full cursor-grab rounded-xl border border-border/70 bg-background/70 p-3 text-left backdrop-blur-md active:cursor-grabbing'
                   >
                     <span className='line-clamp-2 block text-sm font-medium'>
                       {item.title}
@@ -417,7 +421,7 @@ function Pipeline({
                     </span>
                     <span className='mt-3 flex items-center justify-between text-xs'>
                       <span>{currency(item.amount)}</span>
-                      <span className='font-medium text-violet-600'>
+                      <span className='font-medium text-primary'>
                         {item.probability}%
                       </span>
                     </span>
@@ -447,7 +451,7 @@ function SectionHeading({
     <div className='flex items-start justify-between gap-3'>
       <div>
         <h2 className='flex items-center gap-2 text-sm font-semibold'>
-          <Icon className='size-4 text-violet-600' />
+          <Icon className='size-4 text-primary' />
           {title}
         </h2>
         <p className='mt-1 text-xs text-muted-foreground'>{description}</p>

@@ -65,7 +65,7 @@ function ProductionSkeleton() {
               </thead>
               <tbody>
                 {tasks.data.map((task) => (
-                  <tr key={task.id} className='border-t'>
+                  <tr key={task.id} className='border-t transition-colors hover:bg-primary/5'>
                     <td className='px-4 py-3'>
                       <div className='font-medium'>{task.title}</div>
                       <div className='text-xs text-muted-foreground'>
@@ -91,7 +91,10 @@ function ProductionSkeleton() {
         {archive.data?.length ? (
           <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
             {archive.data.map((item) => (
-              <article key={item.id} className='rounded-lg border p-4'>
+              <article
+                key={item.id}
+                className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30'
+              >
                 <div className='font-medium'>{item.title}</div>
                 <div className='mt-1 text-sm text-muted-foreground'>
                   {item.subtitle}
@@ -101,7 +104,7 @@ function ProductionSkeleton() {
                 </div>
                 {item.fileUrl ? (
                   <a
-                    className='mt-3 inline-flex text-sm text-blue-600 hover:underline'
+                    className='mt-3 inline-flex text-sm text-primary hover:underline'
                     href={item.fileUrl}
                     target='_blank'
                     rel='noreferrer'
@@ -125,7 +128,7 @@ function ProductionSkeleton() {
         )}
       </TabsContent>
       <TabsContent value='schedule' className='mt-5'>
-        <div className='relative min-h-64 rounded-lg border p-6'>
+        <div className='glass-card relative min-h-64 p-6'>
           <div className='absolute top-8 bottom-8 left-10 w-px bg-border' />
           <div className='ml-8 text-sm text-muted-foreground'>
             等待发布排期沉淀，后续按北京时间和站点当地时间双重标注。

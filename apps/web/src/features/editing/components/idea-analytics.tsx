@@ -215,7 +215,7 @@ export function IdeaAnalytics() {
         />
       </div>
       <div className='grid gap-6 xl:grid-cols-2'>
-        <Card className='shadow-none'>
+        <Card className='bento-card shadow-none'>
           <CardHeader>
             <CardTitle className='text-base'>各账号对比</CardTitle>
           </CardHeader>
@@ -239,29 +239,29 @@ export function IdeaAnalytics() {
                     yAxisId='views'
                     dataKey='views'
                     name='总播放量'
-                    fill='#2563eb'
-                    animationDuration={800}
+                    fill='var(--chart-1)'
+                    animationDuration={1000}
                   />
                   <Bar
                     yAxisId='completion'
                     dataKey='averageCompletionRate'
                     name='平均完播率'
-                    fill='#14b8a6'
-                    animationDuration={800}
+                    fill='var(--chart-2)'
+                    animationDuration={1000}
                   />
                   <Bar
                     yAxisId='viral'
                     dataKey='viralCount'
                     name='总爆款数'
-                    fill='#f97316'
-                    animationDuration={800}
+                    fill='var(--chart-4)'
+                    animationDuration={1000}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
-        <Card className='shadow-none'>
+        <Card className='bento-card shadow-none'>
           <CardHeader>
             <CardTitle className='text-base'>各视频类型对比</CardTitle>
           </CardHeader>
@@ -285,8 +285,8 @@ export function IdeaAnalytics() {
                   <Bar
                     dataKey='averageCompletionRate'
                     name='平均完播率'
-                    fill='#2563eb'
-                    animationDuration={800}
+                    fill='var(--chart-1)'
+                    animationDuration={1000}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -294,7 +294,7 @@ export function IdeaAnalytics() {
           </CardContent>
         </Card>
       </div>
-      <Card className='shadow-none'>
+      <Card className='bento-card shadow-none'>
         <CardHeader>
           <CardTitle className='text-base'>爆款特征分析</CardTitle>
         </CardHeader>

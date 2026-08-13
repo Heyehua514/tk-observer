@@ -68,7 +68,7 @@ export function CompetitorWorkbench({
           {accounts.data?.map((account) => (
             <article
               key={account.id}
-              className={`rounded-lg border p-4 ${activeId === account.id ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20' : 'bg-card'}`}
+              className={`rounded-xl border p-4 transition-colors ${activeId === account.id ? 'border-primary bg-primary/10 dark:bg-primary/15' : 'bg-card/70 hover:border-primary/30'}`}
             >
               <button
                 className='w-full text-left'
@@ -148,7 +148,7 @@ export function CompetitorWorkbench({
               {videos.data.map((video) => (
                 <article
                   key={video.id}
-                  className='rounded-lg border bg-card p-4'
+                  className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30'
                 >
                   <div className='flex flex-wrap items-start justify-between gap-3'>
                     <div>

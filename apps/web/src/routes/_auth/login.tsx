@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { memberOptions } from '@/types/auth'
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react'
+import appIconUrl from '../../../../desktop/assets/icon.svg'
 import {
   getDefaultRoute,
   LoginError,
@@ -17,13 +18,6 @@ import {
   RegistrationError,
 } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -41,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { formatBeijingClock } from '@/components/shared/beijing-time'
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, '请输入邮箱').email('请输入有效邮箱'),
@@ -81,6 +76,7 @@ function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [now, setNow] = useState(() => new Date())
   const navigate = useNavigate()
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -104,6 +100,11 @@ function LoginPage() {
       passwordConfirm: '',
     })
   }, [loginForm, registerForm])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30_000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   const submitLogin = async (values: LoginValues) => {
     setSubmitError('')
@@ -143,23 +144,48 @@ function LoginPage() {
   }
 
   return (
-    <Card className='w-full max-w-md border shadow-none'>
-      <CardHeader className='space-y-3 text-center'>
-        <div className='mx-auto flex size-11 items-center justify-center rounded-lg bg-primary font-semibold text-primary-foreground'>
-          TK
+    <div className='glass-card grid w-full grid-cols-1 overflow-hidden md:grid-cols-[56%_44%]'>
+      <section className='flex flex-col justify-center gap-6 p-8 md:p-10'>
+        <div className='space-y-5'>
+          <img
+            src={appIconUrl}
+            alt='TK观察'
+            className='logo-glow ml-6 size-14 rounded-2xl md:size-16'
+          />
+          <p className='pt-1 text-[11px] font-medium tracking-[0.24em] text-foreground/60 uppercase'>
+            TK OBSERVER WORKBENCH
+          </p>
+          <h1 className='text-2xl font-semibold tracking-tight md:text-3xl'>
+            看清信号，进入行动
+          </h1>
+          <p className='max-w-sm text-sm text-foreground/60'>
+            统一查看经营走势、团队进度和最近业务动态。
+          </p>
         </div>
-        <div>
-          <CardTitle className='text-xl tracking-normal'>
-            TK观察工作台
-          </CardTitle>
-          <CardDescription className='mt-1'>
-            请登录，首次使用请先注册公司账号
-          </CardDescription>
+        <div className='flex items-center gap-2 pt-1 text-xs text-success'>
+          <span className='relative flex size-2' aria-hidden='true'>
+            <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60' />
+            <span className='relative inline-flex size-2 rounded-full bg-success' />
+          </span>
+          工作台服务正常
         </div>
-      </CardHeader>
-      <CardContent>
+      </section>
+
+      <section className='border-t border-white/10 p-8 md:border-t-0 md:border-l md:p-10'>
+        <div className='mb-5 flex items-baseline justify-between gap-3'>
+          <h2 className='text-xl font-semibold tracking-tight'>
+            登录工作台
+          </h2>
+          <time
+            dateTime={now.toISOString()}
+            className='text-xs text-foreground/50 tabular-nums'
+            aria-label={`北京时间 ${formatBeijingClock(now)}`}
+          >
+            {formatBeijingClock(now)}
+          </time>
+        </div>
         <Tabs value={mode} onValueChange={changeMode}>
-          <TabsList className='mb-2 grid w-full grid-cols-2'>
+          <TabsList className='mb-4 grid w-full grid-cols-2'>
             <TabsTrigger value='login'>登录</TabsTrigger>
             <TabsTrigger value='register'>注册</TabsTrigger>
           </TabsList>
@@ -370,7 +396,10 @@ function LoginPage() {
             </Form>
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+        <p className='mt-4 text-center text-xs text-foreground/50'>
+          首次使用请先注册公司账号
+        </p>
+      </section>
+    </div>
   )
 }

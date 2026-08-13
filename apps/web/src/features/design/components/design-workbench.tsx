@@ -80,7 +80,7 @@ export function DesignWorkbench({
                 ].map((swatch) => (
                   <div
                     key={swatch.color}
-                    className='flex items-center gap-3 rounded-lg border p-3'
+                    className='flex items-center gap-3 rounded-xl border bg-card/60 p-3'
                   >
                     <span
                       className='size-9 rounded-md border'
