@@ -28,13 +28,14 @@
 - 设计工作台开始切 Supabase：新增 `design_assets`、`design_tasks`、`design_requirements`、`design_references`、`design_deliverables` Supabase schema；素材上传/审批、需求接收/状态流转/参考/交付、任务看板默认走 Supabase，PocketBase 保留显式回退。
 - 总览团队记忆开始切 Supabase：新增 `daily_reports`、`weekly_reports`、`failed_cases`、`audit_logs` Supabase schema；今日简报、本月教训、闭环仪表默认读取 Supabase，PocketBase 保留显式回退。
 - 通知铃铛开始切 Supabase：新增 `notifications` Supabase schema；当前用户通知列表、Realtime 失效和已读更新默认走 Supabase，PocketBase 保留显式回退。
+- 总览团队日历开始切 Supabase：活动、活动任务、设计需求、朋友圈计划、渠道商单排期默认聚合 Supabase 数据，PocketBase 保留显式回退。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，76 个测试文件，190 个测试。
+- `pnpm test`：通过，77 个测试文件，191 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 
 ## 提交
@@ -58,7 +59,8 @@
 - `5b537e1 feat(supabase): cut over design workspace`
 - `f56ece3 feat(supabase): cut over market resources`
 - `96c0745 feat(supabase): cut over team memory overview`
-- 待提交：Supabase 通知铃铛切换。
+- `b6e4842 feat(supabase): cut over notifications`
+- 待提交：Supabase 总览团队日历切换。
 
 ## 外部状态
 
