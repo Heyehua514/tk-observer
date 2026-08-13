@@ -35,6 +35,7 @@
 - 全局搜索开始切 Supabase：达人、公司/供应商、商品和视频跨工作台搜索默认查询 Supabase，PocketBase 保留显式回退。
 - 全局搜索详情抽屉开始切 Supabase：达人、公司/供应商、商品和视频详情读取，以及商品关联视频读取默认走 Supabase，PocketBase 保留显式回退。
 - 商务活动招商面板开始切 Supabase：活动招商列表、活动/客户展开和跟进阶段更新默认走 Supabase，PocketBase 保留显式回退。
+- 商务活动招商面板空态改为共享引导组件，不再使用纯文字占位。
 - 全局业务审计开始切 Supabase：mutation 成功后的 `recordAudit` 默认写入 Supabase `audit_logs`，失败仍不阻断主业务流程，PocketBase 保留显式回退。
 - 商务公众号文章分析开始切 Supabase：新增 `blog_articles` Supabase schema、RLS、Realtime、爆款自动计算触发器；第 9 Tab 文章列表默认读取 Supabase，PocketBase 保留显式回退。
 
@@ -43,7 +44,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，85 个测试文件，199 个测试。
+- `pnpm test`：通过，86 个测试文件，200 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
 
@@ -77,6 +78,7 @@
 - `5682e01 feat(supabase): cut over global record detail`
 - `7822bbf feat(supabase): cut over sponsorship panel`
 - `d2e9344 feat(supabase): cut over audit logging`
+- `a5810a3 feat(supabase): cut over blog articles`
 
 ## 外部状态
 

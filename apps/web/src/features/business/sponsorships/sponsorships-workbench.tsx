@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EmptyState } from '@/components/shared/empty-state'
 import { mapSponsorshipRecord } from './sponsorship-mapper'
 
 const stages = [
@@ -104,11 +105,11 @@ export function SponsorshipsWorkbench() {
           ))}
           {!records.isLoading && !records.data?.length && (
             <TableRow>
-              <TableCell
-                colSpan={5}
-                className='h-32 text-center text-muted-foreground'
-              >
-                暂无活动招商记录
+              <TableCell colSpan={5} className='p-0'>
+                <EmptyState
+                  title='还没有活动招商记录'
+                  description='市场录入活动招商后，商务可在这里跟进意向、洽谈、签约和流失状态。'
+                />
               </TableCell>
             </TableRow>
           )}
