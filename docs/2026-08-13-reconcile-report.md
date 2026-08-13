@@ -6,7 +6,7 @@
 ## 结论
 
 1. **业务数据无需迁移**：PocketBase 44 张表中 12 张映射表合计仅 28 行业务行（全部在已切 Supabase 的模块中），导入 Supabase 时逐表 INSERT 即可，无历史数据转换负担。
-2. **真实列缺口只有 1 个**：`event_materials.designer`（PB 为 relation 字段，Supabase `event_materials` 缺 `designer_id`）。当前该表 0 行数据，切 Supabase 新建迁移时补一列 `designer_id uuid references auth.users(id)` 即可，不涉及存量数据。
+2. **真实列缺口已收口**：原先唯一的缺口 `event_materials.designer`（PB relation 字段）已由 `20260813001000_event_materials_designer.sql` 补齐 `designer_id`，对账重跑后列覆盖 100%。该表 0 行数据，无存量迁移负担。
 3. **PB-only 表按用途分类处理**（详见下表），大部分是系统表或零数据表，不需要建对应 Supabase 业务表。
 4. **Supabase-only 表**：`profiles`（Supabase 用户档案）与 `member_invitations`（邀请函）是 Supabase 侧新增能力，正常存在。
 
@@ -20,7 +20,7 @@
 | Supabase-only 表 | 2 |
 | 映射且有数据 | 12 |
 | 映射表业务总行数 | 28 |
-| 列缺口表 | 1（`event_materials.designer`，0 行） |
+| 列缺口表 | 0（原 `event_materials.designer` 已由 20260813001000 补齐） |
 
 ## PB-only 表处置建议
 
@@ -44,6 +44,6 @@
 
 ## 下一步（Supabase 导入编排，不在本轮范围）
 
-- 新建迁移补齐 `event_materials.designer_id` 列。
+- 新建迁移补齐 `event_materials.designer_id` 列：已完成（`20260813001000_event_materials_designer.sql`）。
 - 只读导出脚本已完成：`scripts/supabase/export-pb-business.mjs`，12 张映射表 21 行业务数据已导出为 JSON + CSV（`/tmp/tk-observer-supabase/`），供未来 Supabase 导入。
 - `users` 6 行只做账号映射核对，不导入业务表。

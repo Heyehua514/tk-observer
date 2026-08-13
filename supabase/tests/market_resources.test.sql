@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(19);
 
 select has_table('public', 'venues', 'venues table exists');
 select has_table('public', 'event_templates', 'event templates table exists');
@@ -7,6 +7,7 @@ select has_table('public', 'event_materials', 'event materials table exists');
 select has_table('public', 'event_finances', 'event finances table exists');
 select col_is_fk('public', 'events', 'venue_id', 'events reference venues');
 select col_is_fk('public', 'event_materials', 'event_id', 'materials reference events');
+select col_is_fk('public', 'event_materials', 'designer_id', 'materials reference designer profile');
 select col_is_fk('public', 'event_finances', 'event_id', 'finances reference events');
 select has_check('public', 'venues', 'venues have capacity and enum checks');
 select has_check('public', 'event_finances', 'finances have amount and category checks');

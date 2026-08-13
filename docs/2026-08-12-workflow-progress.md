@@ -183,3 +183,17 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+
+## 对账缺口收口（event_materials.designer_id）
+
+- 新增 Supabase migration `20260813001000_event_materials_designer.sql`：给 `event_materials` 追加 `designer_id uuid references public.profiles(id) on delete set null` + 部分索引，只加不改，RLS 沿用现有行级策略。
+- 对账工具重跑：列缺口从 1 降为 0，44 张 PB 表 vs 39 张 Supabase 表全部列覆盖。
+- pgTAP 断言同步：`market_resources.test.sql` 计划数 18→19，新增 designer_id 外键断言（本地 pgTAP 需 Docker，本轮未跑，已记录）。
+
+### 验证（对账缺口收口）
+
+- `node --test scripts/supabase/*.test.mjs`：7/7 通过。
+- `pnpm supabase:schema:test`：2/2 通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
