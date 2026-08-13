@@ -1,4 +1,4 @@
-/** 系统设置：配置并持久化远程 PocketBase 地址。 */
+/** 系统设置：配置并持久化 PocketBase 回退服务地址。 */
 import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -77,13 +77,13 @@ export function ServerSettings() {
     <div className='space-y-6'>
       <PageHeader
         title='系统设置'
-        description='配置桌面端连接的远程 PocketBase 服务。'
+        description='配置桌面端连接的 PocketBase 回退服务。'
       />
       <Card className='max-w-2xl shadow-none'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-base'>
             <Server className='size-4' />
-            PocketBase 服务器
+            PocketBase 回退服务器
           </CardTitle>
           <CardDescription>
             地址会持久化在本机。修改后会清空当前会话，避免不同服务器之间混用缓存。
