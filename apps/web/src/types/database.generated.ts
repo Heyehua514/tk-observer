@@ -801,6 +801,122 @@ export type Database = {
         }
         Relationships: []
       }
+      event_finances: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          deleted_at: string | null
+          description: string
+          event_id: string
+          id: string
+          legacy_id: string | null
+          paid_at: string | null
+          paid_by: string | null
+          receipt_path: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          deleted_at?: string | null
+          description: string
+          event_id: string
+          id?: string
+          legacy_id?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          receipt_path?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          event_id?: string
+          id?: string
+          legacy_id?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          receipt_path?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'event_finances_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      event_materials: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          designer_id: string | null
+          event_id: string | null
+          file_path: string | null
+          id: string
+          legacy_id: string | null
+          name: string
+          notes: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          designer_id?: string | null
+          event_id?: string | null
+          file_path?: string | null
+          id?: string
+          legacy_id?: string | null
+          name: string
+          notes?: string | null
+          status: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          designer_id?: string | null
+          event_id?: string | null
+          file_path?: string | null
+          id?: string
+          legacy_id?: string | null
+          name?: string
+          notes?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'event_materials_designer_id_fkey'
+            columns: ['designer_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'event_materials_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       event_phases: {
         Row: {
           completion_pct: number
@@ -1037,6 +1153,51 @@ export type Database = {
           },
         ]
       }
+      event_templates: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          event_type: string
+          id: string
+          last_used_at: string | null
+          legacy_id: string | null
+          name: string
+          tags: string | null
+          type: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          event_type: string
+          id?: string
+          last_used_at?: string | null
+          legacy_id?: string | null
+          name: string
+          tags?: string | null
+          type: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          event_type?: string
+          id?: string
+          last_used_at?: string | null
+          legacy_id?: string | null
+          name?: string
+          tags?: string | null
+          type?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -1100,60 +1261,11 @@ export type Database = {
             referencedRelation: 'profiles'
             referencedColumns: ['id']
           },
-        ]
-      }
-      event_finances: {
-        Row: {
-          amount: number
-          category: string
-          created_at: string
-          deleted_at: string | null
-          description: string
-          event_id: string
-          id: string
-          legacy_id: string | null
-          paid_at: string | null
-          paid_by: string | null
-          receipt_path: string | null
-          type: string
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          category: string
-          created_at?: string
-          deleted_at?: string | null
-          description: string
-          event_id: string
-          id?: string
-          legacy_id?: string | null
-          paid_at?: string | null
-          paid_by?: string | null
-          receipt_path?: string | null
-          type: string
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          category?: string
-          created_at?: string
-          deleted_at?: string | null
-          description?: string
-          event_id?: string
-          id?: string
-          legacy_id?: string | null
-          paid_at?: string | null
-          paid_by?: string | null
-          receipt_path?: string | null
-          type?: string
-          updated_at?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: 'event_finances_event_id_fkey'
-            columns: ['event_id']
+            foreignKeyName: 'events_venue_id_fkey'
+            columns: ['venue_id']
             isOneToOne: false
-            referencedRelation: 'events'
+            referencedRelation: 'venues'
             referencedColumns: ['id']
           },
         ]
@@ -1197,98 +1309,39 @@ export type Database = {
         }
         Relationships: []
       }
-      event_materials: {
+      gmv_metrics: {
         Row: {
+          amount_minor: number
           created_at: string
+          currency: string
           deleted_at: string | null
-          event_id: string | null
-          file_path: string | null
           id: string
           legacy_id: string | null
-          name: string
-          notes: string | null
-          status: string
-          type: string
+          metric_date: string
+          region: string
           updated_at: string
         }
         Insert: {
+          amount_minor: number
           created_at?: string
+          currency?: string
           deleted_at?: string | null
-          event_id?: string | null
-          file_path?: string | null
           id?: string
           legacy_id?: string | null
-          name: string
-          notes?: string | null
-          status: string
-          type: string
+          metric_date: string
+          region?: string
           updated_at?: string
         }
         Update: {
+          amount_minor?: number
           created_at?: string
+          currency?: string
           deleted_at?: string | null
-          event_id?: string | null
-          file_path?: string | null
           id?: string
           legacy_id?: string | null
-          name?: string
-          notes?: string | null
-          status?: string
-          type?: string
+          metric_date?: string
+          region?: string
           updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'event_materials_event_id_fkey'
-            columns: ['event_id']
-            isOneToOne: false
-            referencedRelation: 'events'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      event_templates: {
-        Row: {
-          content: string
-          created_at: string
-          deleted_at: string | null
-          event_type: string
-          id: string
-          last_used_at: string | null
-          legacy_id: string | null
-          name: string
-          tags: string | null
-          type: string
-          updated_at: string
-          usage_count: number
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          deleted_at?: string | null
-          event_type: string
-          id?: string
-          last_used_at?: string | null
-          legacy_id?: string | null
-          name: string
-          tags?: string | null
-          type: string
-          updated_at?: string
-          usage_count?: number
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          deleted_at?: string | null
-          event_type?: string
-          id?: string
-          last_used_at?: string | null
-          legacy_id?: string | null
-          name?: string
-          tags?: string | null
-          type?: string
-          updated_at?: string
-          usage_count?: number
         }
         Relationships: []
       }
@@ -1331,42 +1384,6 @@ export type Database = {
           total_rows?: number
           updated_at?: string
           updated_count?: number
-        }
-        Relationships: []
-      }
-      gmv_metrics: {
-        Row: {
-          amount_minor: number
-          created_at: string
-          currency: string
-          deleted_at: string | null
-          id: string
-          legacy_id: string | null
-          metric_date: string
-          region: string
-          updated_at: string
-        }
-        Insert: {
-          amount_minor: number
-          created_at?: string
-          currency?: string
-          deleted_at?: string | null
-          id?: string
-          legacy_id?: string | null
-          metric_date: string
-          region?: string
-          updated_at?: string
-        }
-        Update: {
-          amount_minor?: number
-          created_at?: string
-          currency?: string
-          deleted_at?: string | null
-          id?: string
-          legacy_id?: string | null
-          metric_date?: string
-          region?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -1464,6 +1481,7 @@ export type Database = {
           amount: number
           client_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
           expected_close: string | null
           id: string
@@ -1480,6 +1498,7 @@ export type Database = {
           amount?: number
           client_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
           expected_close?: string | null
           id?: string
@@ -1496,6 +1515,7 @@ export type Database = {
           amount?: number
           client_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
           expected_close?: string | null
           id?: string
@@ -1516,46 +1536,14 @@ export type Database = {
             referencedRelation: 'clients'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'opportunities_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
         ]
-      }
-      profiles: {
-        Row: {
-          avatar_path: string | null
-          created_at: string
-          id: string
-          invited_by: string | null
-          last_login_at: string | null
-          legacy_id: string | null
-          name: string
-          role: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          avatar_path?: string | null
-          created_at?: string
-          id: string
-          invited_by?: string | null
-          last_login_at?: string | null
-          legacy_id?: string | null
-          name: string
-          role?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          avatar_path?: string | null
-          created_at?: string
-          id?: string
-          invited_by?: string | null
-          last_login_at?: string | null
-          legacy_id?: string | null
-          name?: string
-          role?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       products: {
         Row: {
@@ -1602,6 +1590,45 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_path: string | null
+          created_at: string
+          id: string
+          invited_by: string | null
+          last_login_at: string | null
+          legacy_id: string | null
+          name: string
+          role: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_path?: string | null
+          created_at?: string
+          id: string
+          invited_by?: string | null
+          last_login_at?: string | null
+          legacy_id?: string | null
+          name: string
+          role?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_path?: string | null
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          last_login_at?: string | null
+          legacy_id?: string | null
+          name?: string
+          role?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_plans: {
         Row: {
           actual_result: string | null
@@ -1611,11 +1638,13 @@ export type Database = {
           deleted_at: string | null
           expected_outcome: string | null
           id: string
+          last_used_at: string | null
           legacy_id: string | null
           linked_opportunity_id: string | null
           status: string
           target_audience: string | null
           updated_at: string
+          usage_count: number
         }
         Insert: {
           actual_result?: string | null
@@ -1625,11 +1654,13 @@ export type Database = {
           deleted_at?: string | null
           expected_outcome?: string | null
           id?: string
+          last_used_at?: string | null
           legacy_id?: string | null
           linked_opportunity_id?: string | null
           status?: string
           target_audience?: string | null
           updated_at?: string
+          usage_count?: number
         }
         Update: {
           actual_result?: string | null
@@ -1639,11 +1670,13 @@ export type Database = {
           deleted_at?: string | null
           expected_outcome?: string | null
           id?: string
+          last_used_at?: string | null
           legacy_id?: string | null
           linked_opportunity_id?: string | null
           status?: string
           target_audience?: string | null
           updated_at?: string
+          usage_count?: number
         }
         Relationships: [
           {
@@ -1654,6 +1687,45 @@ export type Database = {
             referencedColumns: ['id']
           },
         ]
+      }
+      team_tasks: {
+        Row: {
+          assignee_name: string
+          created_at: string
+          deleted_at: string | null
+          due_at: string | null
+          id: string
+          legacy_id: string | null
+          progress: number
+          region: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_name: string
+          created_at?: string
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          progress?: number
+          region?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_name?: string
+          created_at?: string
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          progress?: number
+          region?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       trending_topics: {
         Row: {
@@ -1699,45 +1771,6 @@ export type Database = {
           reference_url?: string | null
           source?: string | null
           topic?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      team_tasks: {
-        Row: {
-          assignee_name: string
-          created_at: string
-          deleted_at: string | null
-          due_at: string | null
-          id: string
-          legacy_id: string | null
-          progress: number
-          region: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          assignee_name: string
-          created_at?: string
-          deleted_at?: string | null
-          due_at?: string | null
-          id?: string
-          legacy_id?: string | null
-          progress?: number
-          region?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          assignee_name?: string
-          created_at?: string
-          deleted_at?: string | null
-          due_at?: string | null
-          id?: string
-          legacy_id?: string | null
-          progress?: number
-          region?: string
-          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -1889,42 +1922,6 @@ export type Database = {
         }
         Relationships: []
       }
-      weekly_reports: {
-        Row: {
-          comparison_json: string
-          created_at: string
-          deleted_at: string | null
-          generated_at: string
-          id: string
-          legacy_id: string | null
-          trends: string
-          updated_at: string
-          week_start: string
-        }
-        Insert: {
-          comparison_json: string
-          created_at?: string
-          deleted_at?: string | null
-          generated_at: string
-          id?: string
-          legacy_id?: string | null
-          trends: string
-          updated_at?: string
-          week_start: string
-        }
-        Update: {
-          comparison_json?: string
-          created_at?: string
-          deleted_at?: string | null
-          generated_at?: string
-          id?: string
-          legacy_id?: string | null
-          trends?: string
-          updated_at?: string
-          week_start?: string
-        }
-        Relationships: []
-      }
       video_tasks: {
         Row: {
           created_at: string
@@ -2023,6 +2020,42 @@ export type Database = {
           },
         ]
       }
+      weekly_reports: {
+        Row: {
+          comparison_json: string
+          created_at: string
+          deleted_at: string | null
+          generated_at: string
+          id: string
+          legacy_id: string | null
+          trends: string
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          comparison_json: string
+          created_at?: string
+          deleted_at?: string | null
+          generated_at: string
+          id?: string
+          legacy_id?: string | null
+          trends: string
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          comparison_json?: string
+          created_at?: string
+          deleted_at?: string | null
+          generated_at?: string
+          id?: string
+          legacy_id?: string | null
+          trends?: string
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       video_idea_account_stats: {
@@ -2066,6 +2099,8 @@ export type Database = {
     Functions: {
       current_user_role: { Args: never; Returns: string }
       current_user_status: { Args: never; Returns: string }
+      generate_daily_report: { Args: { target_date: string }; Returns: string }
+      generate_weekly_report: { Args: { target_date: string }; Returns: string }
       has_any_role: { Args: { required_roles: string[] }; Returns: boolean }
       invalidate_import_history: {
         Args: { target_id: string }
@@ -2075,10 +2110,16 @@ export type Database = {
         Args: { target_account: string }
         Returns: undefined
       }
+      recompute_blog_article_viral_flags: {
+        Args: { target_account: string }
+        Returns: undefined
+      }
       refresh_event_phase_completion: {
         Args: { target_phase_id: string }
         Returns: undefined
       }
+      run_deadline_checks: { Args: never; Returns: Json }
+      sweep_overdue_event_tasks: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
