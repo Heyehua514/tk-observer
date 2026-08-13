@@ -1,10 +1,12 @@
 /**
  * 全局搜索结果详情抽屉。
- * @description 根据 URL 中的 recordType/recordId 加载对应 PocketBase 记录。
+ * @description 根据 URL 中的 recordType/recordId 加载对应记录。
  */
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate } from '@tanstack/react-router'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import {
   Sheet,
   SheetContent,
@@ -13,6 +15,10 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import type { GlobalSearchKind } from '@/components/shared/global-search'
+import {
+  getSupabaseRecordDetailSelect,
+  supabaseTableByKind,
+} from './global-record-detail-supabase'
 
 const collectionByKind = {
   creator: 'creators',
@@ -51,6 +57,18 @@ function isSearchKind(value: unknown): value is GlobalSearchKind {
   )
 }
 
+function readDetailField(record: Record<string, unknown>, field: string) {
+  if (field !== 'creator_name') return String(record[field] || '暂无')
+  const expand = record.expand
+  if (typeof expand === 'object' && expand && 'creator' in expand) {
+    const creator = expand.creator
+    if (typeof creator === 'object' && creator && 'nickname' in creator) {
+      return String(creator.nickname || record[field] || '暂无')
+    }
+  }
+  return String(record[field] || '暂无')
+}
+
 export function GlobalRecordDetail() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -59,21 +77,43 @@ export function GlobalRecordDetail() {
   const id = typeof rawSearch.recordId === 'string' ? rawSearch.recordId : ''
   const detail = useQuery({
     queryKey: ['global-record-detail', kind, id],
-    queryFn: () =>
-      pb
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase' && kind) {
+        const table = supabaseTableByKind[kind]
+        const { data, error } = await getSupabaseClient()
+          .from(table)
+          .select(getSupabaseRecordDetailSelect(kind))
+          .eq('id', id)
+          .single()
+        if (error) throw error
+        return data as unknown as Record<string, unknown>
+      }
+      return pb
         .collection(collectionByKind[kind || 'creator'])
-        .getOne(id, { expand: 'creator' }),
+        .getOne(id, { expand: 'creator' })
+    },
     enabled: !!kind && !!id,
   })
   const productName =
     kind === 'product' && detail.data ? String(detail.data.name || '') : ''
   const relatedVideos = useQuery({
     queryKey: ['global-product-videos', productName],
-    queryFn: async () =>
-      pb.collection('videos').getFullList({
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('videos')
+          .select('id,title,creator_name,region')
+          .ilike('product_name', `%${productName.replace(/[%_]/g, '')}%`)
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return data || []
+      }
+      return pb.collection('videos').getFullList({
         filter: pb.filter('product_name ~ {:productName}', { productName }),
         sort: '-updated',
-      }),
+      })
+    },
     enabled: kind === 'product' && !!productName,
   })
 
@@ -103,13 +143,10 @@ export function GlobalRecordDetail() {
                   <div key={field} className='contents'>
                     <dt className='text-muted-foreground'>{label}</dt>
                     <dd className='break-all'>
-                      {field === 'creator_name'
-                        ? String(
-                            detail.data.expand?.creator?.nickname ||
-                              detail.data[field] ||
-                              '暂无'
-                          )
-                        : String(detail.data[field] || '暂无')}
+                      {readDetailField(
+                        detail.data as Record<string, unknown>,
+                        field
+                      )}
                     </dd>
                   </div>
                 ))}

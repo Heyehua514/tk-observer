@@ -33,13 +33,14 @@
 - 市场选品库开始切 Supabase：新增 `products` Supabase schema；市场首页商品卡片、搜索和毛利模型默认读取 Supabase，PocketBase 保留显式回退。
 - 商务公司/供应商名录开始切 Supabase：新增 `companies` Supabase schema；公司列表、筛选、搜索、新增、编辑、软删除默认走 Supabase，PocketBase 保留显式回退。
 - 全局搜索开始切 Supabase：达人、公司/供应商、商品和视频跨工作台搜索默认查询 Supabase，PocketBase 保留显式回退。
+- 全局搜索详情抽屉开始切 Supabase：达人、公司/供应商、商品和视频详情读取，以及商品关联视频读取默认走 Supabase，PocketBase 保留显式回退。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，81 个测试文件，195 个测试。
+- `pnpm test`：通过，82 个测试文件，196 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 
 ## 提交
@@ -68,7 +69,8 @@
 - `26f30bb feat(supabase): cut over overview dashboard`
 - `8401465 feat(supabase): cut over product catalog`
 - `6b9cd11 feat(supabase): cut over companies`
-- 待提交：Supabase 全局搜索切换。
+- `0628ff0 feat(supabase): cut over global search`
+- 待提交：Supabase 全局搜索详情切换。
 
 ## 外部状态
 
