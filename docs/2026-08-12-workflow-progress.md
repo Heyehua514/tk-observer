@@ -280,3 +280,11 @@
 - `pnpm lint`：通过。
 - `pnpm test`：通过，97 个测试文件，213 个测试。
 - `pnpm --dir apps/web build`：生产构建通过。
+
+## 跨工作台全链路验收（2026-08-13 傍晚）
+
+- 新增 `supabase/tests/acceptance_full_loop.eval.test.sql`（38 断言）：一次事务内跑通「韩素云建活动 → 自动种 7 条财务模板 → 5 阶段任务与进度 → 场地绑定 → 报名 → 招商意向到签约 → 董雨辰商机概率/成交审计 → 流失沉淀 → 公众号爆款 → 逾期沉淀 → 截止提醒 → 日报/周报」完整闭环。
+- 本地 Supabase pgTAP 全量 22 个文件 / 389 断言全过（原 21/351 + 新文件 38）。
+- 前端门禁：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 97 文件 / 213 测试全过；脚本测试 13/13。
+- 本地验收账号（测试库 profiles，幂等创建）：磊哥 boss、董雨辰 business、杨振康 business、孙铭泽 design、谢洁 editing、韩素云 market。
+- 提交：`feat(supabase): add cross-workbench acceptance loop test`（见 Git 最新记录）。
