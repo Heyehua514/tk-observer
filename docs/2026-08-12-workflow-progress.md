@@ -153,3 +153,19 @@
 - `cf8b1ef feat(ui): 液态玻璃科技风 token 与基础组件质感重构`
 - `64c8269 feat(ui): 工作台核心页面液态玻璃视觉包装`
 - `6d6e364 feat(ui): 设置页玻璃化与硬编码色收敛为 token`
+
+## 数据对账（Supabase 迁移收口，2026-08-13）
+
+- 新增只读对账工具 `scripts/supabase/reconcile-pb-export.mjs`：对比 PocketBase `data.db` 与 `supabase/migrations` 建表清单，输出表映射、行数、列覆盖与导入建议。
+- 对账结果：44 张 PB 表 vs 39 张 Supabase 表；12 张映射表仅 28 行业务数据；真实列缺口 1 个（`event_materials.designer`，0 行）。
+- PB-only 7 张表逐张给出处置建议：`users` 映射 Supabase Auth + `profiles`，其余为空表或系统缓存跳过。
+- 修复对账工具的 id 列误报：PB `id` 优先匹配 Supabase 同名列，`legacy_id` 仅为候选别名，不再对无 legacy 列的表误报缺口。
+- 新增第 3 个测试覆盖真实缺口场景（`event_materials.designer`），工具测试 3/3 通过。
+- 报告详情见 `docs/2026-08-13-reconcile-report.md`。
+
+### 验证（数据对账）
+
+- `node --test scripts/supabase/reconcile-pb-export.test.mjs scripts/supabase/schema-inventory.test.mjs`：5/5 通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
