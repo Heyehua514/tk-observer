@@ -16,7 +16,6 @@ import {
   UsersRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { pb } from '@/lib/pocketbase'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -25,7 +24,6 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import {
-  opportunityStagePatch,
   opportunityStages,
   type OpportunityStage,
 } from '../opportunities'
@@ -34,6 +32,7 @@ import {
   businessDashboardKey,
   useBusinessDashboard,
 } from './use-business-dashboard'
+import { updateDashboardOpportunityStage } from './dashboard-stage-update'
 
 export type BusinessDashboardTarget =
   'clients' | 'opportunities' | 'orders' | 'social'
@@ -76,9 +75,11 @@ export function BusinessDashboard({
     }) => {
       let reason = ''
       if (stage === 'lost') reason = window.prompt('请输入流失原因') || ''
-      await pb
-        .collection('opportunities')
-        .update(id, opportunityStagePatch(stage, reason))
+      await updateDashboardOpportunityStage(undefined, {
+        id,
+        stage,
+        lostReason: reason,
+      })
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: businessDashboardKey })
@@ -100,7 +101,7 @@ export function BusinessDashboard({
     return (
       <EmptyState
         title='经营数据暂时无法加载'
-        description='请检查 PocketBase 服务后重试，客户和商机数据不会受到影响。'
+        description='请检查数据服务和当前账号权限，客户和商机数据不会受到影响。'
         action={
           <Button onClick={() => void dashboard.refetch()}>重新加载</Button>
         }
@@ -195,7 +196,7 @@ export function BusinessDashboardContent({
                 </span>
                 <span className='mt-1 flex items-center gap-1 text-xs text-muted-foreground'>
                   <TrendingUp className='size-3.5' />
-                  暂无对比
+                  等待对比数据
                 </span>
               </button>
             </CardContent>
