@@ -71,7 +71,7 @@
 
 ## 提交
 
-- `feat(supabase): add team memory automation triggers and cron`
+- `a2e5c72 feat(supabase): add team memory automation triggers and cron`
 
 - `6d6757d test(supabase): align pgTAP suites with current RLS and realtime scope`
 - `7021c96 feat(business): cut over creator detail and videos`
