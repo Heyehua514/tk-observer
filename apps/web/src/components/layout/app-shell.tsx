@@ -45,8 +45,8 @@ export function AppShell() {
           <AppSidebar />
           <SidebarInset>
             <WorkspaceAtmosphere />
-            <Header className='bg-background/85' fixed>
-              <div className='text-sm font-medium'>
+            <Header fixed>
+              <div className='text-[11px] font-medium tracking-[0.16em] text-foreground/50 uppercase'>
                 {breadcrumbs[section] || 'TK观察工作台'}
               </div>
               <div className='ml-auto flex items-center gap-2'>
@@ -58,7 +58,7 @@ export function AppShell() {
               </div>
             </Header>
             <LoginGreeting />
-            <main className='relative z-10 min-w-0 flex-1 p-6'>
+            <main className='content-shell relative z-10 min-w-0 flex-1 p-7'>
               <PageTransition transitionKey={pathname}>
                 <Outlet />
               </PageTransition>

@@ -17,8 +17,8 @@ export function EmptyState({
 }) {
   return (
     <div className='flex min-h-56 flex-col items-center justify-center rounded-lg border border-dashed px-6 py-12 text-center'>
-      <div className='relative mb-4 flex size-14 items-center justify-center rounded-lg border bg-background'>
-        <Inbox className='size-6 text-muted-foreground' strokeWidth={1.5} />
+      <div className='relative mb-4 flex size-14 items-center justify-center rounded-xl border border-primary/15 bg-primary/5 shadow-[0_0_28px_color-mix(in_oklab,var(--primary)_16%,transparent)]'>
+        <Inbox className='size-6 text-primary/70' strokeWidth={1.5} />
         <ArrowUpRight className='absolute top-1.5 right-1.5 size-3.5 text-primary' />
       </div>
       <h3 className='text-sm font-medium'>{title}</h3>

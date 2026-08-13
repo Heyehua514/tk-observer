@@ -9,8 +9,9 @@ import overviewDashboardSource from '@/features/overview/components/overview-das
 it('keeps dark tabs legible and the fixed header above workspace content', () => {
   expect(tabsSource).toContain('dark:data-[state=active]:text-foreground')
   expect(appShellSource).toContain(
-    "<Header className='bg-background/85' fixed>"
+    'text-[11px] font-medium tracking-[0.16em] text-foreground/50 uppercase'
   )
+  expect(appShellSource).toContain("content-shell relative z-10 min-w-0 flex-1 p-7")
 })
 
 it('renders KPI signal bars instead of incomplete pseudo-elements', () => {

@@ -63,6 +63,87 @@
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--success) 18%, transparent);
 }
 
+/* ============================================================
+ * 液态玻璃科技商业风 · 通用质感工具类
+ * 卡片三档 / aurora 背景 / Logo 呼吸光 / 内容容器
+ * 仅视觉层，不影响业务布局结构。
+ * ============================================================ */
+@layer components {
+  .glass-card {
+    @apply rounded-2xl border bg-background/60 backdrop-blur-xl;
+    border-color: var(--glass-border);
+  }
+
+  .bento-card {
+    @apply rounded-2xl border bg-card/80;
+    border-color: var(--border);
+  }
+
+  .solid-card {
+    @apply rounded-xl border bg-card;
+    border-color: var(--border);
+  }
+
+  .content-shell {
+    @apply mx-auto w-full max-w-[1440px];
+  }
+
+  /* 侧边栏激活项左侧亮条 */
+  [data-slot='sidebar-menu-button'][data-active='true'] {
+    position: relative;
+  }
+  [data-slot='sidebar-menu-button'][data-active='true']::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    width: 3px;
+    height: 16px;
+    border-radius: 9999px;
+    background: var(--primary);
+    transform: translateY(-50%);
+  }
+}
+
+/* aurora 背景：深空蓝 + 科技蓝 + 青绿三色低亮度漂移（仅暗色优先场景） */
+.aurora {
+  background:
+    radial-gradient(44rem 34rem at 12% -10%, var(--aurora-1), transparent 62%),
+    radial-gradient(40rem 32rem at 90% 6%, var(--aurora-2), transparent 60%),
+    radial-gradient(54rem 42rem at 50% 118%, var(--aurora-3), transparent 72%);
+}
+
+.aurora-animated {
+  animation: aurora-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2rem, -1.5rem, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-1.5rem, 1rem, 0) scale(0.98);
+  }
+}
+
+/* Logo 轻微呼吸光 */
+.logo-glow {
+  animation: logo-breathe 4s ease-in-out infinite;
+}
+
+@keyframes logo-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--sidebar-primary) 12%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--sidebar-primary) 24%, transparent);
+  }
+}
+
 @keyframes signal-scan {
   0%,
   100% {
@@ -83,6 +164,10 @@
   .signal-scan {
     animation: none;
     opacity: 0;
+  }
+  .aurora-animated,
+  .logo-glow {
+    animation: none;
   }
 }
 

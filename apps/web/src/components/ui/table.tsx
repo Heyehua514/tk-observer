@@ -5,7 +5,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot='table-container'
-      className='relative w-full overflow-x-auto'
+      className='relative w-full overflow-x-auto rounded-xl'
     >
       <table
         data-slot='table'
@@ -21,7 +21,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
     <thead
       data-slot='table-header'
       className={cn(
-        'bg-muted/55 [&_th]:tracking-[0.12em] [&_tr]:border-b',
+        'bg-muted/50 [&_th]:uppercase [&_th]:tracking-[0.12em] [&_tr]:border-b',
         className
       )}
       {...props}
@@ -60,7 +60,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     <tr
       data-slot='table-row'
       className={cn(
-        'origin-center border-b transition-[background-color,transform] duration-150 hover:relative hover:z-[1] hover:scale-[1.002] hover:bg-accent/45 data-[state=selected]:bg-muted motion-reduce:hover:scale-100',
+        'origin-center border-b transition-[background-color,transform] duration-150 hover:relative hover:z-[1] hover:scale-[1.002] hover:bg-primary/5 data-[state=selected]:bg-muted motion-reduce:hover:scale-100',
         className
       )}
       {...props}
