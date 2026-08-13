@@ -1,7 +1,8 @@
 // 商务工作台活动招商协作面板；权限：business 只更新跟进阶段，market 与 boss 管理完整记录。
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { RecordModel } from 'pocketbase'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import {
   Select,
   SelectContent,
@@ -17,15 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { mapSponsorshipRecord } from './sponsorship-mapper'
 
-type Sponsorship = {
-  id: string
-  eventName: string
-  company: string
-  amount: number
-  stage: string
-  contact: string
-}
 const stages = [
   ['intent', '意向'],
   ['negotiating', '洽谈中'],
@@ -36,25 +30,35 @@ export function SponsorshipsWorkbench() {
   const cache = useQueryClient()
   const records = useQuery({
     queryKey: ['business', 'sponsorships'],
-    queryFn: async () =>
-      (
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('event_sponsorships')
+          .select('*, events(name), clients(name)')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapSponsorshipRecord)
+      }
+      return (
         await pb
           .collection('event_sponsorships')
           .getFullList({ sort: '-updated', expand: 'event,client' })
-      ).map((r: RecordModel): Sponsorship => ({
-        id: r.id,
-        eventName: String(r.expand?.event?.name || '—'),
-        company: String(
-          r.expand?.client?.company_name || r.expand?.client?.name || '—'
-        ),
-        amount: Number(r.amount || 0),
-        stage: String(r.stage),
-        contact: String(r.contact_name || '—'),
-      })),
+      ).map(mapSponsorshipRecord)
+    },
   })
   const update = useMutation({
-    mutationFn: ({ id, stage }: { id: string; stage: string }) =>
-      pb.collection('event_sponsorships').update(id, { stage }),
+    mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('event_sponsorships')
+          .update({ stage })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('event_sponsorships').update(id, { stage })
+    },
     onSuccess: () =>
       void cache.invalidateQueries({ queryKey: ['business', 'sponsorships'] }),
   })
