@@ -1,0 +1,65 @@
+# 前端与脚本门禁 CI；所属工作台：全局（质量门禁）。
+# 权限：CI 只读仓库并在隔离环境运行测试，不访问生产、不持有任何密钥。
+# pgTAP 作业依赖 Docker，默认仅手动触发（workflow_dispatch）。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  web-gates:
+    name: Web typecheck · lint · test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test
+        run: pnpm test
+
+  scripts:
+    name: Script unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Script tests
+        run: node --test scripts/*.test.mjs scripts/supabase/*.test.mjs
+
+  # 本地 pgTAP：在装有 Docker 的机器上运行 supabase start 后执行
+  #   pnpm supabase:reset && pnpm supabase:test
+  # CI 上如需执行，请改用支持 Docker 的 self-hosted runner。
+  supabase-pgtap:
+    name: Supabase pgTAP（需 Docker，手动触发）
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: 提示本地执行
+        run: |
+          echo "pgTAP 需要在本地 Supabase 栈运行："
+          echo "  supabase start && supabase db reset && supabase test db"
+          echo "本作业不自动执行，避免无 Docker 环境的 runner 误报。"
