@@ -27,13 +27,14 @@
 - 市场资源表开始切 Supabase：场地库、文案模板、活动物料、活动财务新增 Supabase schema；场地列表/保存/历史活动、模板列表/保存/使用记录、物料列表/上传/保存、财务列表/保存默认走 Supabase，PocketBase 保留显式回退。
 - 设计工作台开始切 Supabase：新增 `design_assets`、`design_tasks`、`design_requirements`、`design_references`、`design_deliverables` Supabase schema；素材上传/审批、需求接收/状态流转/参考/交付、任务看板默认走 Supabase，PocketBase 保留显式回退。
 - 总览团队记忆开始切 Supabase：新增 `daily_reports`、`weekly_reports`、`failed_cases`、`audit_logs` Supabase schema；今日简报、本月教训、闭环仪表默认读取 Supabase，PocketBase 保留显式回退。
+- 通知铃铛开始切 Supabase：新增 `notifications` Supabase schema；当前用户通知列表、Realtime 失效和已读更新默认走 Supabase，PocketBase 保留显式回退。
 
 ## 验证
 
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，75 个测试文件，189 个测试。
+- `pnpm test`：通过，76 个测试文件，190 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 
 ## 提交
@@ -56,7 +57,8 @@
 - `5883cf2 feat(supabase): cut over market activities`
 - `5b537e1 feat(supabase): cut over design workspace`
 - `f56ece3 feat(supabase): cut over market resources`
-- 待提交：Supabase 总览团队记忆切换。
+- `96c0745 feat(supabase): cut over team memory overview`
+- 待提交：Supabase 通知铃铛切换。
 
 ## 外部状态
 

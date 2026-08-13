@@ -1283,6 +1283,56 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_read: boolean
+          legacy_id: string | null
+          link: string | null
+          recipient_id: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_read?: boolean
+          legacy_id?: string | null
+          link?: string | null
+          recipient_id: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_read?: boolean
+          legacy_id?: string | null
+          link?: string | null
+          recipient_id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_recipient_id_fkey'
+            columns: ['recipient_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       opportunities: {
         Row: {
           amount: number

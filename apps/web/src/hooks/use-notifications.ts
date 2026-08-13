@@ -6,7 +6,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AppNotification } from '@/types/notification'
 import type { RecordModel } from 'pocketbase'
 import { useAuthStore } from '@/stores/auth-store'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
+import { mapSupabaseNotification } from './notification-supabase-mapper'
 
 export const notificationKeys = {
   all: ['notifications'] as const,
@@ -33,6 +36,28 @@ export function useNotifications() {
 
   useEffect(() => {
     if (!recipient) return
+    if (getDataProvider() === 'supabase') {
+      const channel = getSupabaseClient()
+        .channel(`notifications:${recipient}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `recipient_id=eq.${recipient}`,
+          },
+          () => {
+            void queryClient.invalidateQueries({
+              queryKey: notificationKeys.list(recipient),
+            })
+          }
+        )
+        .subscribe()
+      return () => {
+        void getSupabaseClient().removeChannel(channel)
+      }
+    }
     let unsubscribe: (() => void) | undefined
     let disposed = false
     void pb
@@ -55,6 +80,17 @@ export function useNotifications() {
   return useQuery({
     queryKey: notificationKeys.list(recipient),
     queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('notifications')
+          .select('*')
+          .eq('recipient_id', recipient)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .limit(30)
+        if (error) throw error
+        return (data || []).map(mapSupabaseNotification)
+      }
       const records = await pb.collection('notifications').getList(1, 30, {
         sort: '-created',
       })
