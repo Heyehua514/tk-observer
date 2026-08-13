@@ -19,7 +19,9 @@ import {
   YAxis,
 } from 'recharts'
 import { formatMoney } from '@/lib/format'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
@@ -27,6 +29,14 @@ import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import { TeamMemory } from '../team-memory'
+import {
+  mapSupabaseAuditLog,
+  mapSupabaseGmvMetric,
+  mapSupabaseTeamTask,
+  type OverviewAuditLog,
+  type OverviewGmvMetric,
+  type OverviewTeamTask,
+} from './overview-dashboard-supabase-mapper'
 
 const fallbackTrend = [
   { date: '08-01', value: 126000 },
@@ -36,11 +46,68 @@ const fallbackTrend = [
   { date: '08-29', value: 278000 },
 ]
 const team = ['磊哥', '董雨辰', '韩素云', '孙铭泽', '谢洁']
+type OverviewDashboardData = {
+  gmv: OverviewGmvMetric[]
+  creators: number
+  tasks: number
+  videos: number
+  logs: OverviewAuditLog[]
+  teamTasks: OverviewTeamTask[]
+}
 
 export function OverviewDashboard() {
   const data = useQuery({
     queryKey: ['overview-dashboard'],
-    queryFn: async () => {
+    queryFn: async (): Promise<OverviewDashboardData> => {
+      if (getDataProvider() === 'supabase') {
+        const [gmv, creators, tasks, videos, logs, teamTasks] =
+          await Promise.all([
+            getSupabaseClient()
+              .from('gmv_metrics')
+              .select('id,metric_date,amount_minor')
+              .is('deleted_at', null)
+              .order('metric_date'),
+            getSupabaseClient()
+              .from('creators')
+              .select('id', { count: 'exact', head: true })
+              .eq('cooperation_status', 'signed')
+              .is('deleted_at', null),
+            getSupabaseClient()
+              .from('team_tasks')
+              .select('id', { count: 'exact', head: true })
+              .lt('progress', 100)
+              .is('deleted_at', null),
+            getSupabaseClient()
+              .from('videos')
+              .select('id', { count: 'exact', head: true })
+              .is('deleted_at', null),
+            getSupabaseClient()
+              .from('audit_logs')
+              .select('id,actor_name,action,created_at')
+              .is('deleted_at', null)
+              .order('created_at', { ascending: false })
+              .limit(8),
+            getSupabaseClient()
+              .from('team_tasks')
+              .select('id,assignee_name,progress')
+              .is('deleted_at', null)
+              .order('assignee_name'),
+          ])
+        if (gmv.error) throw gmv.error
+        if (creators.error) throw creators.error
+        if (tasks.error) throw tasks.error
+        if (videos.error) throw videos.error
+        if (logs.error) throw logs.error
+        if (teamTasks.error) throw teamTasks.error
+        return {
+          gmv: (gmv.data || []).map(mapSupabaseGmvMetric),
+          creators: creators.count || 0,
+          tasks: tasks.count || 0,
+          videos: videos.count || 0,
+          logs: (logs.data || []).map(mapSupabaseAuditLog),
+          teamTasks: (teamTasks.data || []).map(mapSupabaseTeamTask),
+        }
+      }
       const [gmv, creators, tasks, videos, logs, teamTasks] = await Promise.all(
         [
           pb.collection('gmv_metrics').getFullList({ sort: 'metric_date' }),
@@ -56,29 +123,39 @@ export function OverviewDashboard() {
         ]
       )
       return {
-        gmv,
+        gmv: gmv.map((item) => ({
+          id: item.id,
+          metricDate: String(item.metric_date || ''),
+          amountMinor: Number(item.amount_minor || 0),
+        })),
         creators: creators.totalItems,
         tasks: tasks.totalItems,
         videos: videos.totalItems,
-        logs: logs.items,
-        teamTasks,
+        logs: logs.items.map((item) => ({
+          id: item.id,
+          actorName: String(item.actor_name || ''),
+          action: String(item.action || ''),
+          created: String(item.created || ''),
+        })),
+        teamTasks: teamTasks.map((item) => ({
+          id: item.id,
+          assigneeName: String(item.assignee_name || ''),
+          progress: Number(item.progress || 0),
+        })),
       }
     },
   })
   const trend = data.data?.gmv.length
     ? data.data.gmv.map((item) => ({
-        date: String(item.metric_date).slice(5, 10),
-        value: Number(item.amount_minor),
+        date: item.metricDate.slice(5, 10),
+        value: item.amountMinor,
       }))
     : fallbackTrend
   const totalGmv =
-    data.data?.gmv.reduce((sum, item) => sum + Number(item.amount_minor), 0) ||
-    987600
+    data.data?.gmv.reduce((sum, item) => sum + item.amountMinor, 0) || 987600
   const gmvRecords = data.data?.gmv || []
-  const latestGmv = Number(gmvRecords[gmvRecords.length - 1]?.amount_minor || 0)
-  const previousGmv = Number(
-    gmvRecords[gmvRecords.length - 2]?.amount_minor || 0
-  )
+  const latestGmv = gmvRecords[gmvRecords.length - 1]?.amountMinor || 0
+  const previousGmv = gmvRecords[gmvRecords.length - 2]?.amountMinor || 0
   const gmvDelta = previousGmv
     ? ((latestGmv - previousGmv) / previousGmv) * 100
     : null
@@ -194,10 +271,10 @@ export function OverviewDashboard() {
                     className='border-b pb-3 text-sm last:border-0'
                   >
                     <div className='font-medium'>
-                      {String(log.actor_name)} · {String(log.action)}
+                      {log.actorName} · {log.action}
                     </div>
                     <div className='mt-1 text-xs text-muted-foreground'>
-                      {String(log.created).replace('Z', ' UTC')}
+                      {log.created.replace('Z', ' UTC')}
                     </div>
                   </div>
                 ))}
@@ -219,7 +296,7 @@ export function OverviewDashboard() {
         <CardContent className='space-y-4'>
           {team.map((name, index) => {
             const task = data.data?.teamTasks.find(
-              (item) => item.assignee_name === name
+              (item) => item.assigneeName === name
             )
             const progress = Number(
               task?.progress ?? [82, 68, 54, 76, 61][index]

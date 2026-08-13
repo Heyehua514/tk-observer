@@ -1244,6 +1244,42 @@ export type Database = {
         }
         Relationships: []
       }
+      gmv_metrics: {
+        Row: {
+          amount_minor: number
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          id: string
+          legacy_id: string | null
+          metric_date: string
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          metric_date: string
+          region?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          metric_date?: string
+          region?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       member_invitations: {
         Row: {
           accepted_at: string | null
@@ -1528,6 +1564,45 @@ export type Database = {
           reference_url?: string | null
           source?: string | null
           topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_tasks: {
+        Row: {
+          assignee_name: string
+          created_at: string
+          deleted_at: string | null
+          due_at: string | null
+          id: string
+          legacy_id: string | null
+          progress: number
+          region: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_name: string
+          created_at?: string
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          progress?: number
+          region?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_name?: string
+          created_at?: string
+          deleted_at?: string | null
+          due_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          progress?: number
+          region?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
