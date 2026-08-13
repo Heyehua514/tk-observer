@@ -48,6 +48,7 @@
 - 商务活动招商面板空态改为共享引导组件，不再使用纯文字占位。
 - 全局业务审计开始切 Supabase：mutation 成功后的 `recordAudit` 默认写入 Supabase `audit_logs`，失败仍不阻断主业务流程，PocketBase 保留显式回退。
 - 商务公众号文章分析开始切 Supabase：新增 `blog_articles` Supabase schema、RLS、Realtime、爆款自动计算触发器；第 9 Tab 文章列表默认读取 Supabase，PocketBase 保留显式回退。
+- 商务达人详情与关联视频已切 Supabase-first：达人详情单条读取、详情页关联成片列表默认走 Supabase，PocketBase 保留显式回退。
 - 系统设置页文案改为“PocketBase 回退服务器”，避免与当前 Supabase-first 方向冲突。
 
 ## 验证
@@ -55,12 +56,13 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，95 个测试文件，210 个测试。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
 
 ## 提交
 
+- `7021c96 feat(business): cut over creator detail and videos`
 - `77e865e feat(workbench): tighten market and business workflows`
 - `cffa562 feat(business): add client relation detail panel`
 - `f617e99 feat(business): enrich client and opportunity context`
