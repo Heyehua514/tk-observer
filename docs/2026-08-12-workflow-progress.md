@@ -359,7 +359,24 @@
 - `pnpm test`：99 文件 / 224 测试通过。
 - 本地 Supabase psql 实际导入成功，外键无悬空。
 
-### 待办
+## 前端截图回归 + E2E 客户 CRUD + RLS 软删除修复（2026-08-13 夜间 B6/B7）
 
-- B6：`vite preview` + Playwright 截图回归（登录/总览/商务/市场/设计/剪辑）。
-- B7：`apps/web/playwright.config.ts` + `e2e/business-crud.spec.ts` + `test:e2e` 脚本。
+- 截图回归（B6）：新增 `apps/web/scripts/capture-screenshots.mjs` + `verify-screenshot-pages.mjs`，产出 6 张页面截图（登录/总览/商务/市场/设计/剪辑）到桌面 PRD 交付包 `前端截图回归-2026-08-13/`，标题内容自检 5/5 PASS。
+- E2E 回归（B7）：新增 `apps/web/playwright.config.ts` + `apps/web/e2e/business-crud.spec.ts` + `test:e2e` 脚本（密码经 `TK_OBSERVER_TEST_PASSWORD` 注入，不落仓库），跑通「登录 → 新增客户 → 检索命中 → 删除回收」闭环。
+- 根因修复 1（登录 403）：新增 migration `20260813001300_table_grants.sql`，补齐 authenticated / service_role 表级 GRANT。此前本地库只有 RLS 策略缺表级授权，PostgREST 登录后 profiles 等查询返回 403（「登陆不了」根因）。
+- 根因修复 2（软删除 403）：新增 migration `20260813001500_soft_delete_select_rls.sql`。PostgreSQL 对 UPDATE 产生的新行会应用 SELECT 策略可见性检查；前端统一用 `update({deleted_at})` 软删除时，新行不再满足旧策略的 `deleted_at is null`，非 owner 角色删除被 RLS 拒绝。已对 clients / creators / channel_orders / social_plans / companies / video_ideas / events 7 张软删除业务表的 SELECT 策略放宽为按角色可见，删除行仍由应用层 `.is('deleted_at', null)` 过滤，业务展示不受影响。
+- 顺带对齐：`20260813001400_client_delete_policy.sql` 将 clients 硬删除策略从仅 owner 扩展为 owner/boss/business（与增改权限一致）。
+- vitest 配置排除 `e2e/**`：E2E 由 Playwright 独立运行，避免 vitest 误收 spec 并触发依赖优化报错。
+- E2E 遗留测试客户行已软删除清理（可恢复）。
+
+### 验证（B6/B7）
+
+- 本地 Supabase SQL 层验证：磊哥（boss）、董雨辰（business）软删除 UPDATE 均通过。
+- Playwright E2E：1/1 通过。
+- `pnpm typecheck`、`pnpm lint`：零错误零警告。
+- `pnpm test`：99 文件 / 224 测试通过。
+- `node --test scripts/*.test.mjs scripts/supabase/*.test.mjs`：34/34 通过。
+
+### 提交
+
+- `feat(e2e): business client crud regression + soft-delete RLS harden`（Playwright 配置/E2E/截图脚本/3 个 RLS migration/vitest 排除/gitignore）。

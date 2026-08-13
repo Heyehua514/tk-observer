@@ -16,6 +16,7 @@
     "test:eval": "vitest run --browser.headless eval.test",
     "test:watch": "vitest --browser.headless",
     "test:ui": "vitest --ui --browser.headless",
+    "test:e2e": "playwright test",
     "test:browser": "vitest",
     "test:coverage": "vitest run --coverage --browser.headless",
     "test:browser:install": "playwright install chromium --with-deps"
