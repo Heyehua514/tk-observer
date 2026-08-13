@@ -7,7 +7,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { FileVideo, PackageSearch, Store, UserRoundSearch } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { useSearch } from '@/context/search-provider'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import {
@@ -18,10 +20,16 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import {
+  mapSupabaseCompanySearch,
+  mapSupabaseCreatorSearch,
+  mapSupabaseProductSearch,
+  mapSupabaseVideoSearch,
+} from './global-search-supabase-mapper'
 
 export type GlobalSearchKind = 'creator' | 'product' | 'video' | 'company'
 
-type SearchResult = {
+export type SearchResult = {
   id: string
   kind: GlobalSearchKind
   label: string
@@ -39,6 +47,7 @@ async function runGlobalSearch(
   query: string,
   role: string
 ): Promise<SearchGroup[]> {
+  if (getDataProvider() === 'supabase') return runSupabaseGlobalSearch(query, role)
   const tasks: Promise<SearchGroup>[] = []
   if (role === 'boss' || role === 'business') {
     tasks.push(
@@ -124,6 +133,106 @@ async function runGlobalSearch(
             description: `${String(item.creator_name || '未关联达人')} · ${String(item.product_name || '未关联商品')}`,
           })),
         }))
+    )
+  }
+  return (await Promise.all(tasks)).filter((group) => group.total > 0)
+}
+
+const safeSearch = (value: string) =>
+  value.trim().replace(/[%_,]/g, '').slice(0, 80)
+
+const asPromise = <T,>(value: PromiseLike<T>): Promise<T> =>
+  Promise.resolve(value)
+
+async function runSupabaseGlobalSearch(
+  query: string,
+  role: string
+): Promise<SearchGroup[]> {
+  const keyword = safeSearch(query)
+  if (!keyword) return []
+  const tasks: Promise<SearchGroup>[] = []
+  if (role === 'boss' || role === 'business') {
+    tasks.push(
+      asPromise(
+        getSupabaseClient()
+          .from('creators')
+          .select('id,nickname,region,followers', { count: 'exact' })
+          .is('deleted_at', null)
+          .or(
+            `nickname.ilike.%${keyword}%,tiktok_url.ilike.%${keyword}%,region.ilike.%${keyword}%`
+          )
+          .limit(5)
+      ).then(({ data, error, count }) => {
+        if (error) throw error
+        return {
+          kind: 'creator' as const,
+          title: '达人',
+          total: count || 0,
+          items: (data || []).map(mapSupabaseCreatorSearch),
+        }
+      }),
+      asPromise(
+        getSupabaseClient()
+          .from('companies')
+          .select('id,company_name,contact_name', { count: 'exact' })
+          .is('deleted_at', null)
+          .or(
+            `company_name.ilike.%${keyword}%,contact_name.ilike.%${keyword}%,contact_email.ilike.%${keyword}%`
+          )
+          .limit(5)
+      ).then(({ data, error, count }) => {
+          if (error) throw error
+          return {
+            kind: 'company' as const,
+            title: '客户 / 供应商',
+            total: count || 0,
+            items: (data || []).map(mapSupabaseCompanySearch),
+          }
+        })
+    )
+  }
+  if (role === 'boss' || role === 'market') {
+    tasks.push(
+      asPromise(
+        getSupabaseClient()
+          .from('products')
+          .select('id,name,category,region', { count: 'exact' })
+          .is('deleted_at', null)
+          .or(
+            `name.ilike.%${keyword}%,category.ilike.%${keyword}%,region.ilike.%${keyword}%`
+          )
+          .limit(5)
+      ).then(({ data, error, count }) => {
+          if (error) throw error
+          return {
+            kind: 'product' as const,
+            title: '商品',
+            total: count || 0,
+            items: (data || []).map(mapSupabaseProductSearch),
+          }
+        })
+    )
+  }
+  if (role === 'boss' || role === 'editing') {
+    tasks.push(
+      asPromise(
+        getSupabaseClient()
+          .from('videos')
+          .select('id,title,creator_name,product_name', { count: 'exact' })
+          .is('deleted_at', null)
+          .or(
+            `title.ilike.%${keyword}%,creator_name.ilike.%${keyword}%,product_name.ilike.%${keyword}%`
+          )
+          .limit(5)
+      ).then(({ data, error, count }) => {
+          if (error) throw error
+          return {
+            kind: 'video' as const,
+            title: '视频',
+            total: count || 0,
+            items: (data || []).map(mapSupabaseVideoSearch),
+          }
+        })
     )
   }
   return (await Promise.all(tasks)).filter((group) => group.total > 0)
