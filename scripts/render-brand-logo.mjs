@@ -24,6 +24,11 @@ export const LOGO_EXPORTS = [
   },
 ]
 
+export const PWA_ICONS = [
+  { source: 'tk-observer-mark-symbol.svg', size: 192, output: 'pwa-192.png' },
+  { source: 'tk-observer-mark-symbol.svg', size: 512, output: 'pwa-512.png' },
+]
+
 function svgDataUrl(source) {
   return `data:image/svg+xml;base64,${Buffer.from(source).toString('base64')}`
 }
@@ -92,6 +97,34 @@ export async function renderBrandLogos() {
   }
 }
 
+async function renderPwaIcon(page, source, size, output) {
+  await page.setViewportSize({ width: size, height: size })
+  await page.setContent(`
+    <!doctype html>
+    <html>
+      <head><style>html,body{margin:0;width:${size}px;height:${size}px}img{display:block;width:${size}px;height:${size}px}</style></head>
+      <body><img alt="" src="${svgDataUrl(source)}"></body>
+    </html>
+  `)
+  await page.screenshot({ path: output, omitBackground: true })
+}
+
+export async function renderPwaIcons() {
+  const outputDir = `${root}/apps/web/public/images`
+  await mkdir(outputDir, { recursive: true })
+  const browser = await chromium.launch({ headless: true })
+  const page = await browser.newPage({ deviceScaleFactor: 1 })
+  try {
+    for (const icon of PWA_ICONS) {
+      const source = await readFile(`${sourceDir}/${icon.source}`, 'utf8')
+      await renderPwaIcon(page, source, icon.size, `${outputDir}/${icon.output}`)
+    }
+  } finally {
+    await browser.close()
+  }
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  await renderBrandLogos()
+  if (process.argv.includes('--pwa')) await renderPwaIcons()
+  else await renderBrandLogos()
 }

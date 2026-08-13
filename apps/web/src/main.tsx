@@ -14,6 +14,7 @@ import { getRequestErrorMessage } from '@/lib/errors'
 import { DirectionProvider } from '@/context/direction-provider'
 import { FontProvider } from '@/context/font-provider'
 import { ThemeProvider } from '@/context/theme-provider'
+import { registerServiceWorker } from '@/lib/register-sw'
 import { routeTree } from './routeTree.gen'
 import './styles/index.css'
 
@@ -77,3 +78,5 @@ if (!rootElement.innerHTML) {
     </StrictMode>
   )
 }
+
+registerServiceWorker()

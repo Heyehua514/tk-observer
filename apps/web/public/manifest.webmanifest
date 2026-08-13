@@ -1,0 +1,16 @@
+{
+  "name": "TK观察工作台",
+  "short_name": "TK工作台",
+  "description": "TK观察内部多角色协作工作台：达人、商务、市场、设计与剪辑全流程管理。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1478d7",
+  "background_color": "#f8fafc",
+  "icons": [
+    { "src": "/images/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/images/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/images/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

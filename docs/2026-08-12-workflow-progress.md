@@ -311,3 +311,20 @@
 - `node --test scripts/supabase/*.test.mjs`：18/18 通过。
 - `pnpm typecheck`、`pnpm lint`：零错误零警告。
 - `pnpm test`：98 文件 / 217 测试通过。
+
+## PWA 应用外壳离线化（2026-08-13 夜间 B2）
+
+- 新增 `apps/web/public/manifest.webmanifest`：应用名「TK观察工作台」、standalone 展示、主题色 `#1478d7`、浅色背景、192/512 图标（含 maskable）。
+- 新增 `apps/web/public/sw.js`：预缓存应用外壳（`/`、`/login`、manifest、favicon、PWA 图标），运行时 Network First、导航回退外壳；显式跳过 `/rest/` 与 `/storage/` 数据接口，离线不缓存业务数据。
+- `apps/web/index.html`：装配 manifest link、theme-color、apple-touch-icon、mobile-web-app-capable 与 apple-mobile-web-app-capable 元信息。
+- 新增 `apps/web/src/lib/register-sw.ts`：仅生产构建注册 `/sw.js`，dev 跳过；注册失败静默降级，不影响业务。
+- `scripts/render-brand-logo.mjs` 新增 `PWA_ICONS` 渲染能力，已产出 `pwa-192.png` / `pwa-512.png`。
+- 新增 `apps/web/src/lib/manifest-sw.test.ts`（7 个测试）：manifest 字段/图标可访问、index.html 装配、sw.js 外壳缓存与 Network First 策略、注册逻辑（dev 跳过 / prod 注册 / 无 SW 静默）。
+
+### 验证（PWA B2）
+
+- `pnpm typecheck`：通过，零错误。
+- `pnpm lint`：通过，零错误零警告。
+- `pnpm test`：99 文件 / 224 测试通过。
+- `pnpm build`：生产构建通过，dist 含 manifest.webmanifest、sw.js、pwa 图标，index.html 已装配 PWA 标签。
+- `node --test scripts/*.test.mjs scripts/supabase/*.test.mjs`：20/20 通过。

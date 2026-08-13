@@ -18,3 +18,14 @@ test('logo renderer defines the three canonical 1024px exports', async () => {
     ]
   )
 })
+
+test('pwa icon renderer defines 192 and 512 app icons', async () => {
+  const { PWA_ICONS } = await import(scriptUrl.href)
+  assert.deepEqual(
+    PWA_ICONS.map(({ size, output }) => [size, output]),
+    [
+      [192, 'pwa-192.png'],
+      [512, 'pwa-512.png'],
+    ]
+  )
+})
