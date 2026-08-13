@@ -281,7 +281,7 @@ export function OverviewDashboard() {
               </div>
             ) : (
               <EmptyState
-                title='暂无团队动态'
+                title='等待团队动态沉淀'
                 description='成员开始维护业务数据后，操作记录会显示在这里。'
               />
             )}
@@ -335,7 +335,7 @@ export function OverviewDashboard() {
 
 function MetricTrend({ delta }: { delta: number | null }) {
   if (delta === null)
-    return <p className='mt-1 text-xs text-muted-foreground'>暂无对比</p>
+    return <p className='mt-1 text-xs text-muted-foreground'>等待下一条数据</p>
   const positive = delta >= 0
   const Icon = positive ? ArrowUpRight : ArrowDownRight
   return (
