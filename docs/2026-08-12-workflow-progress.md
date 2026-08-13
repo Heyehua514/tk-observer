@@ -339,3 +339,27 @@
 ### 验证（B3）
 
 - `node --test scripts/*.test.mjs scripts/supabase/*.test.mjs`：26/26 通过。
+
+## 商务业务数据幂等导入 Supabase（2026-08-13 夜间 B5）
+
+- 新增 `scripts/supabase/import-business-data.mjs`（12 张父表优先、legacy_id 幂等 upsert、外键子查询翻译）：
+  - `TABLE_ORDER`：creators / clients / companies / competitor_accounts / products / gmv_metrics / weekly_reports / audit_logs / notifications / competitor_style_analysis / design_assets / videos。
+  - `FK_MAP` 翻译 legacy 外键；`REQUIRED_PROFILE_FKS`（notifications.recipient_id）按行 select-where 守卫，profile 解析不到整行跳过。
+  - `BOOLEAN_COLUMNS` 白名单：PocketBase 以 0/1 落盘的布尔列统一转 true/false（creators.is_biz_available、notifications.is_read、venues.is_verified、design_deliverables.checklist_ok、blog_articles.is_viral、editing_research_records.is_viral/converted_to_idea）。
+  - CLI：`--dry-run` / `--sql-only` / `--export` / `--url` / `--service-role-key`；无 key 时只出计划不写库。
+- 新增 `scripts/supabase/import-business-data.test.mjs`（9 个测试）：父表顺序、计划输出、布尔归一、空串清理、FK 翻译、profile 缺失置空、参数解析、幂等 upsert SQL、notifications 守卫。
+- 实跑导入：由 `pb-business-export.json` 生成 SQL 后走 psql 写入本地 Supabase，12 张表核对无悬空外键：
+  - audit_logs 4 / clients 1 / companies 1 / competitor_accounts 6 / competitor_style_analysis 1 / creators 1 / design_assets 1 / gmv_metrics 1 / notifications 0（3 条因 profile 引用未命中按设计跳过）/ products 1 / videos 1 / weekly_reports 1。
+- 首跑发现并修复：PocketBase 布尔列导出为 0/1 整数，Postgres boolean 拒绝；增加 BOOLEAN_COLUMNS 归一后重跑成功（`INSERT 0 N` 全过）。
+
+### 验证（B5）
+
+- `node --test scripts/*.test.mjs scripts/supabase/*.test.mjs`：34/34 通过。
+- `pnpm typecheck`、`pnpm lint`：零错误零警告。
+- `pnpm test`：99 文件 / 224 测试通过。
+- 本地 Supabase psql 实际导入成功，外键无悬空。
+
+### 待办
+
+- B6：`vite preview` + Playwright 截图回归（登录/总览/商务/市场/设计/剪辑）。
+- B7：`apps/web/playwright.config.ts` + `e2e/business-crud.spec.ts` + `test:e2e` 脚本。
