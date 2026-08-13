@@ -30,7 +30,7 @@ export function TeamMemory() {
     return (
       <EmptyState
         title='团队记忆暂时无法加载'
-        description='请确认 PocketBase 已应用团队记忆 migration 后重试。'
+        description='请检查数据服务和当前账号权限后重试。'
         action={
           <Button variant='outline' onClick={() => void memory.refetch()}>
             重新加载

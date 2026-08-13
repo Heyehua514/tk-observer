@@ -29,6 +29,7 @@
 - 市场资源表开始切 Supabase：场地库、文案模板、活动物料、活动财务新增 Supabase schema；场地列表/保存/历史活动、模板列表/保存/使用记录、物料列表/上传/保存、财务列表/保存默认走 Supabase，PocketBase 保留显式回退。
 - 设计工作台开始切 Supabase：新增 `design_assets`、`design_tasks`、`design_requirements`、`design_references`、`design_deliverables` Supabase schema；素材上传/审批、需求接收/状态流转/参考/交付、任务看板默认走 Supabase，PocketBase 保留显式回退。
 - 总览团队记忆开始切 Supabase：新增 `daily_reports`、`weekly_reports`、`failed_cases`、`audit_logs` Supabase schema；今日简报、本月教训、闭环仪表默认读取 Supabase，PocketBase 保留显式回退。
+- 总览团队记忆错误态文案改为中性数据服务提示，不再绑定 PocketBase migration 语义。
 - 通知铃铛开始切 Supabase：新增 `notifications` Supabase schema；当前用户通知列表、Realtime 失效和已读更新默认走 Supabase，PocketBase 保留显式回退。
 - 总览团队日历开始切 Supabase：活动、活动任务、设计需求、朋友圈计划、渠道商单排期默认聚合 Supabase 数据，PocketBase 保留显式回退。
 - 总览首页开始切 Supabase：新增 `gmv_metrics`、`team_tasks` Supabase schema；GMV 趋势、签约达人数、待办任务、出片数量、团队动态和成员进度默认读取 Supabase，PocketBase 保留显式回退。
@@ -48,7 +49,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，89 个测试文件，204 个测试。
+- `pnpm test`：通过，90 个测试文件，205 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
 
@@ -87,6 +88,7 @@
 - `f04331b feat(overview): guide dashboard empty states`
 - `bc81a02 chore(settings): label pocketbase fallback server`
 - `a58c873 feat(market): cut over competitor monitoring`
+- `26926f5 feat(business): cut over dashboard stage updates`
 
 ## 外部状态
 
