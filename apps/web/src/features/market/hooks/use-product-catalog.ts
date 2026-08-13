@@ -1,8 +1,11 @@
-/** 市场工作台选品库数据访问：只读读取已有 products 表。 */
+/** 市场工作台选品库数据访问，Supabase-first，PocketBase 保留回退。 */
 import { useQuery } from '@tanstack/react-query'
 import type { RecordModel } from 'pocketbase'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { buildProductRows, type ProductRow } from '../components/product-model'
+import { mapSupabaseProduct } from './product-supabase-mapper'
 
 export const productCatalogKeys = {
   all: ['market', 'products'] as const,
@@ -19,6 +22,9 @@ type ProductRecord = {
   region: string
 }
 
+const escapeSearch = (value: string) =>
+  value.trim().replace(/[%_,]/g, '').slice(0, 80)
+
 const mapProduct = (record: RecordModel): ProductRecord => ({
   id: record.id,
   name: String(record.name || ''),
@@ -34,6 +40,22 @@ export function useProductCatalog(query = '') {
   return useQuery({
     queryKey: [...productCatalogKeys.all, query],
     queryFn: async (): Promise<ProductRow[]> => {
+      if (getDataProvider() === 'supabase') {
+        let request = getSupabaseClient()
+          .from('products')
+          .select('*')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        const keyword = escapeSearch(query)
+        if (keyword) {
+          request = request.or(
+            `name.ilike.%${keyword}%,category.ilike.%${keyword}%,region.ilike.%${keyword}%`
+          )
+        }
+        const { data, error } = await request
+        if (error) throw error
+        return buildProductRows((data || []).map(mapSupabaseProduct))
+      }
       const records = await pb.collection('products').getFullList({
         sort: '-updated',
         filter: query

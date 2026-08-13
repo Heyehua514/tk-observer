@@ -1467,6 +1467,51 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          cost_minor: number
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          id: string
+          legacy_id: string | null
+          name: string
+          price_minor: number
+          region: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cost_minor: number
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          name: string
+          price_minor: number
+          region?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost_minor?: number
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          name?: string
+          price_minor?: number
+          region?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_plans: {
         Row: {
           actual_result: string | null
