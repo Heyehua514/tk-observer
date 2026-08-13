@@ -264,3 +264,19 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+
+## 剪辑/市场空态收口与页面品牌元信息（2026-08-13 晚）
+
+- 剪辑工作台「发布排期」由单行占位改为结构化引导空态（统一文案 `editingEmptyTitles.schedule` + 禁用入口按钮），与任务/归档空态风格一致。
+- 市场选品库搜索无结果时给出专门引导（“没有匹配的商品 / 换个关键词试试”），无搜索时保持原有商品库空态。
+- 新增 UI 测试：剪辑发布排期空态文案与禁用按钮、市场搜索无结果引导；门禁从 96 文件 211 测试升至 97 文件 213 测试。
+- 清理 `apps/web/index.html` 模板残留：`lang` 改 zh-CN、标题/描述/OG/Twitter 改为项目品牌、移除外部 shadcn-admin 链接与重复 theme-color。
+- 提交：`267faa1 feat(ui): guided search empty state and structured schedule empty state`、`808f7dd chore(web): replace template meta with project branding for zh-CN`。
+
+### 验证（空态收口与品牌元信息）
+
+- `git diff --check`：通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，97 个测试文件，213 个测试。
+- `pnpm --dir apps/web build`：生产构建通过。
