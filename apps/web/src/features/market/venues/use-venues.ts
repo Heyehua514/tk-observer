@@ -1,10 +1,13 @@
-/** 市场工作台场地数据访问。权限：market、boss；照片使用 PocketBase 文件存储。 */
+/** 市场工作台场地数据访问，Supabase-first，PocketBase 保留回退。 */
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { RecordModel } from 'pocketbase'
 import { toast } from 'sonner'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
 import type { Venue, VenueInput } from './types'
+import { mapSupabaseVenue, serializeSupabaseVenue } from './venue-supabase-mapper'
 
 const key = ['market', 'venue-resources'] as const
 const mapVenue = (r: RecordModel): Venue => ({
@@ -35,6 +38,7 @@ const mapVenue = (r: RecordModel): Venue => ({
 export function useVenueResources() {
   const qc = useQueryClient()
   useEffect(() => {
+    if (getDataProvider() === 'supabase') return
     let stop: (() => void) | undefined
     void pb
       .collection('venues')
@@ -46,12 +50,23 @@ export function useVenueResources() {
   }, [qc])
   return useQuery({
     queryKey: key,
-    queryFn: async () =>
-      (
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('venues')
+          .select('*')
+          .is('deleted_at', null)
+          .order('is_verified', { ascending: false })
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapSupabaseVenue)
+      }
+      return (
         await pb
           .collection('venues')
           .getFullList({ sort: '-is_verified,-updated' })
-      ).map(mapVenue),
+      ).map(mapVenue)
+    },
   })
 }
 
@@ -59,12 +74,23 @@ export function useVenueEvents(venueId?: string) {
   return useQuery({
     queryKey: [...key, venueId, 'events'],
     enabled: Boolean(venueId),
-    queryFn: () =>
-      pb.collection('events').getFullList({
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('events')
+          .select('id,name,start_date,status')
+          .eq('venue_id', String(venueId || ''))
+          .is('deleted_at', null)
+          .order('start_date', { ascending: false })
+        if (error) throw error
+        return data || []
+      }
+      return pb.collection('events').getFullList({
         filter: pb.filter('venue = {:id}', { id: venueId }),
         sort: '-start_date',
         fields: 'id,name,start_date,status',
-      }),
+      })
+    },
   })
 }
 
@@ -102,6 +128,27 @@ export function useSaveVenueResource() {
       input: VenueInput
       files: File[]
     }) => {
+      if (getDataProvider() === 'supabase') {
+        const supabase = getSupabaseClient()
+        const photoPaths: string[] = []
+        for (const file of files) {
+          const filePath = `${id || 'new'}/${Date.now()}-${file.name.replace(/[^\w.-]+/g, '-')}`
+          const upload = await supabase.storage
+            .from('venue-photos')
+            .upload(filePath, file, { upsert: false })
+          if (upload.error) throw upload.error
+          photoPaths.push(filePath)
+        }
+        const payload = {
+          ...serializeSupabaseVenue(input),
+          ...(photoPaths.length ? { photo_paths: photoPaths } : {}),
+        }
+        const { error } = id
+          ? await supabase.from('venues').update(payload).eq('id', id)
+          : await supabase.from('venues').insert(payload)
+        if (error) throw error
+        return
+      }
       const form = new FormData()
       append(form, input)
       files.forEach((file) => form.append('photos', file))

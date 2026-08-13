@@ -23,7 +23,8 @@
 - 商务核心链路继续切 Supabase：商机 Pipeline、渠道商单、朋友圈计划默认走 Supabase，PocketBase 保留显式回退。
 - 商务驾驶舱已切 Supabase：总客户数、本月新增、进行中商机、预计成交金额、本月商单默认读取 Supabase。
 - 剪辑工作台核心链路开始切 Supabase：选题 CRUD、CSV 导入/导出、分析视图、导入历史、视频任务、成片归档、对标账号、对标视频、热点话题和风格分析默认走 Supabase，PocketBase 保留显式回退。
-- 市场活动共享表开始切 Supabase：活动列表/保存/软删除、活动详情的阶段/任务/报名/招商读取、活动任务状态更新默认走 Supabase；场地、模板、物料、财务资源表因当前 Supabase generated schema 缺表，继续走 PocketBase fallback。
+- 市场活动共享表开始切 Supabase：活动列表/保存/软删除、活动详情的阶段/任务/报名/招商读取、活动任务状态更新默认走 Supabase。
+- 市场资源表开始切 Supabase：场地库、文案模板、活动物料、活动财务新增 Supabase schema；场地列表/保存/历史活动、模板列表/保存/使用记录、物料列表/上传/保存、财务列表/保存默认走 Supabase，PocketBase 保留显式回退。
 - 设计工作台开始切 Supabase：新增 `design_assets`、`design_tasks`、`design_requirements`、`design_references`、`design_deliverables` Supabase schema；素材上传/审批、需求接收/状态流转/参考/交付、任务看板默认走 Supabase，PocketBase 保留显式回退。
 
 ## 验证
@@ -31,7 +32,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，72 个测试文件，182 个测试。
+- `pnpm test`：通过，74 个测试文件，187 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 
 ## 提交
@@ -52,7 +53,8 @@
 - `5e0ec06 feat(supabase): cut over business dashboard`
 - `bc56395 feat(supabase): cut over editing workspace`
 - `5883cf2 feat(supabase): cut over market activities`
-- 待提交：Supabase 设计工作台切换。
+- `5b537e1 feat(supabase): cut over design workspace`
+- 待提交：Supabase 市场资源表切换。
 
 ## 外部状态
 

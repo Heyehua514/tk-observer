@@ -892,6 +892,7 @@ export type Database = {
           total_budget: number
           type: string
           updated_at: string
+          venue_id: string | null
         }
         Insert: {
           created_at?: string
@@ -909,6 +910,7 @@ export type Database = {
           total_budget?: number
           type: string
           updated_at?: string
+          venue_id?: string | null
         }
         Update: {
           created_at?: string
@@ -926,6 +928,7 @@ export type Database = {
           total_budget?: number
           type?: string
           updated_at?: string
+          venue_id?: string | null
         }
         Relationships: [
           {
@@ -936,6 +939,157 @@ export type Database = {
             referencedColumns: ['id']
           },
         ]
+      }
+      event_finances: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          deleted_at: string | null
+          description: string
+          event_id: string
+          id: string
+          legacy_id: string | null
+          paid_at: string | null
+          paid_by: string | null
+          receipt_path: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          deleted_at?: string | null
+          description: string
+          event_id: string
+          id?: string
+          legacy_id?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          receipt_path?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          event_id?: string
+          id?: string
+          legacy_id?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          receipt_path?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'event_finances_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      event_materials: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          event_id: string | null
+          file_path: string | null
+          id: string
+          legacy_id: string | null
+          name: string
+          notes: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          event_id?: string | null
+          file_path?: string | null
+          id?: string
+          legacy_id?: string | null
+          name: string
+          notes?: string | null
+          status: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          event_id?: string | null
+          file_path?: string | null
+          id?: string
+          legacy_id?: string | null
+          name?: string
+          notes?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'event_materials_event_id_fkey'
+            columns: ['event_id']
+            isOneToOne: false
+            referencedRelation: 'events'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      event_templates: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          event_type: string
+          id: string
+          last_used_at: string | null
+          legacy_id: string | null
+          name: string
+          tags: string | null
+          type: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          event_type: string
+          id?: string
+          last_used_at?: string | null
+          legacy_id?: string | null
+          name: string
+          tags?: string | null
+          type: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          event_type?: string
+          id?: string
+          last_used_at?: string | null
+          legacy_id?: string | null
+          name?: string
+          tags?: string | null
+          type?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
       }
       import_history: {
         Row: {
@@ -1214,6 +1368,81 @@ export type Database = {
           source?: string | null
           topic?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      venues: {
+        Row: {
+          address: string | null
+          capacity_max: number
+          capacity_min: number
+          city: string
+          cons: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_verified: boolean
+          legacy_id: string | null
+          name: string
+          photo_paths: string[]
+          price_range: string | null
+          pros: string | null
+          scene_tags: string | null
+          site_visit_date: string | null
+          site_visit_notes: string | null
+          type: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          address?: string | null
+          capacity_max?: number
+          capacity_min?: number
+          city: string
+          cons?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_verified?: boolean
+          legacy_id?: string | null
+          name: string
+          photo_paths?: string[]
+          price_range?: string | null
+          pros?: string | null
+          scene_tags?: string | null
+          site_visit_date?: string | null
+          site_visit_notes?: string | null
+          type: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          address?: string | null
+          capacity_max?: number
+          capacity_min?: number
+          city?: string
+          cons?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_verified?: boolean
+          legacy_id?: string | null
+          name?: string
+          photo_paths?: string[]
+          price_range?: string | null
+          pros?: string | null
+          scene_tags?: string | null
+          site_visit_date?: string | null
+          site_visit_notes?: string | null
+          type?: string
+          updated_at?: string
+          usage_count?: number
         }
         Relationships: []
       }
