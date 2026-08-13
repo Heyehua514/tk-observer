@@ -22,6 +22,7 @@
 - 商务商单表格抽出展示模型，统一状态、平台、内容类型、日期和金额的显示口径。
 - Supabase 迁移第一刀完成：默认数据提供者切为 Supabase，Auth 支持 Supabase 登录/注册/退出分流。
 - 商务基础数据开始切 Supabase：客户 CRUD 与达人列表/新增/编辑/删除默认走 Supabase，PocketBase 保留显式回退。
+- 商务客户详情关联面板已切 Supabase-first，商机和渠道商单关联读取不再只查 PocketBase。
 - 商务达人批量合作状态更新已切 Supabase-first，保留 PocketBase 显式回退。
 - 商务核心链路继续切 Supabase：商机 Pipeline、渠道商单、朋友圈计划默认走 Supabase，PocketBase 保留显式回退。
 - 商务驾驶舱已切 Supabase：总客户数、本月新增、进行中商机、预计成交金额、本月商单默认读取 Supabase。
@@ -54,7 +55,7 @@
 - `git diff --check`：通过。
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
-- `pnpm test`：通过，94 个测试文件，209 个测试。
+- `pnpm test`：通过，95 个测试文件，210 个测试。
 - `pnpm supabase:schema:test`：通过，2 个 Node schema 测试。
 - `pnpm supabase:test`：当前本地 Supabase 测试库未应用 20260813 之后的多张既有 migration，导致 companies、design、market_resources、notifications、overview、products、team_memory 和 blog_articles pgTAP 找不到表；未执行 reset，避免越过安全红线。
 
@@ -99,6 +100,7 @@
 - `2cf2c07 chore(market): guide resource empty states`
 - `6596430 chore(editing): guide production empty states`
 - `c60e461 chore(market): guide core empty states`
+- `6451f53 feat(business): cut over creator bulk updates`
 
 ## 外部状态
 
