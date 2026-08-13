@@ -128,12 +128,11 @@ function ProductionSkeleton() {
         )}
       </TabsContent>
       <TabsContent value='schedule' className='mt-5'>
-        <div className='glass-card relative min-h-64 p-6'>
-          <div className='absolute top-8 bottom-8 left-10 w-px bg-border' />
-          <div className='ml-8 text-sm text-muted-foreground'>
-            等待发布排期沉淀，后续按北京时间和站点当地时间双重标注。
-          </div>
-        </div>
+        <EmptyState
+          title={editingEmptyTitles.schedule}
+          description='后续按北京时间和站点当地时间双重标注，按账号展示周排期日历。'
+          action={<Button disabled>新建排期</Button>}
+        />
       </TabsContent>
     </Tabs>
   )

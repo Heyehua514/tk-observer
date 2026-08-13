@@ -15,6 +15,7 @@ describe('editing empty and error copy', () => {
     expect(Object.values(editingEmptyTitles)).toEqual([
       '等待视频任务创建',
       '等待热点话题沉淀',
+      '等待发布排期沉淀',
     ])
     for (const title of Object.values(editingEmptyTitles)) {
       expect(title).not.toContain('暂无')

@@ -9,22 +9,25 @@ vi.mock('../hooks/use-market-workbench', () => ({
 }))
 
 vi.mock('../hooks/use-product-catalog', () => ({
-  useProductCatalog: () => ({
-    data: [
-      {
-        id: 'p1',
-        name: '海景蓝牙音箱',
-        category: 'electronics',
-        priceMinor: 19900,
-        costMinor: 9200,
-        marginMinor: 10700,
-        marginRate: 53.8,
-        currency: 'CNY',
-        status: 'active',
-        region: 'US',
-      },
-    ],
-  }),
+  useProductCatalog: (query: string) =>
+    query.trim()
+      ? { data: [] }
+      : {
+          data: [
+            {
+              id: 'p1',
+              name: '海景蓝牙音箱',
+              category: 'electronics',
+              priceMinor: 19900,
+              costMinor: 9200,
+              marginMinor: 10700,
+              marginRate: 53.8,
+              currency: 'CNY',
+              status: 'active',
+              region: 'US',
+            },
+          ],
+        },
 }))
 
 vi.mock('../competitors', () => ({
@@ -74,4 +77,20 @@ it('shows competitor monitoring and ad overview instead of empty placeholders', 
   await expect.element(screen.getByText('按站点投放数据')).toBeInTheDocument()
   await expect.element(screen.getByText('本月投放')).toBeInTheDocument()
   await expect.element(screen.getByText('8 条')).toBeInTheDocument()
+})
+
+it('shows guided empty state when product search has no match', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <MarketWorkbench query='蓝牙音箱' onQueryChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await expect.element(screen.getByText('没有匹配的商品')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('换个关键词试试，确认商品名称、类目或站点拼写。'))
+    .toBeInTheDocument()
 })

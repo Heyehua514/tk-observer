@@ -4,4 +4,5 @@ export const editingPermissionErrorDescription = '请检查数据服务和当前
 export const editingEmptyTitles = {
   tasks: '等待视频任务创建',
   trends: '等待热点话题沉淀',
+  schedule: '等待发布排期沉淀',
 } as const

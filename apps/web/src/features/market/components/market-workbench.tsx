@@ -193,8 +193,12 @@ export function MarketWorkbench({
             </div>
           ) : (
             <EmptyState
-              title={marketEmptyTitles.products}
-              description='商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
+              title={activeQuery ? '没有匹配的商品' : marketEmptyTitles.products}
+              description={
+                activeQuery
+                  ? '换个关键词试试，确认商品名称、类目或站点拼写。'
+                  : '商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
+              }
             />
           )}
         </TabsContent>
