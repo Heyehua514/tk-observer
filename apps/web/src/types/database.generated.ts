@@ -70,6 +70,57 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_articles: {
+        Row: {
+          account: string
+          analysis_notes: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_viral: boolean
+          legacy_id: string | null
+          likes: number
+          publish_date: string
+          shares: number
+          source_url: string | null
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          account: string
+          analysis_notes?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_viral?: boolean
+          legacy_id?: string | null
+          likes?: number
+          publish_date: string
+          shares?: number
+          source_url?: string | null
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          account?: string
+          analysis_notes?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_viral?: boolean
+          legacy_id?: string | null
+          likes?: number
+          publish_date?: string
+          shares?: number
+          source_url?: string | null
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
       channel_orders: {
         Row: {
           actual_views: number | null

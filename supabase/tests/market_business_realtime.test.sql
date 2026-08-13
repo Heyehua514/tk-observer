@@ -9,10 +9,11 @@ select is(
       and schemaname = 'public'
       and tablename = any(array[
         'creators','clients','opportunities','channel_orders','social_plans',
-        'events','event_phases','event_tasks','event_registrations','event_sponsorships'
+        'events','event_phases','event_tasks','event_registrations','event_sponsorships',
+        'blog_articles'
       ])
   ),
-  10::bigint,
+  11::bigint,
   'all market and business core tables are published to Realtime'
 );
 
@@ -25,6 +26,7 @@ select is(
       and tablename not in (
         'creators','clients','opportunities','channel_orders','social_plans',
         'events','event_phases','event_tasks','event_registrations','event_sponsorships',
+        'blog_articles',
         'video_tasks','videos','video_ideas','import_history',
         'competitor_accounts','competitor_videos','trending_topics','competitor_style_analysis'
       )
@@ -41,11 +43,12 @@ select is(
     where n.nspname = 'public'
       and c.relname = any(array[
         'creators','clients','opportunities','channel_orders','social_plans',
-        'events','event_phases','event_tasks','event_registrations','event_sponsorships'
+        'events','event_phases','event_tasks','event_registrations','event_sponsorships',
+        'blog_articles'
       ])
       and c.relreplident = 'f'
   ),
-  10::bigint,
+  11::bigint,
   'all market and business core tables expose full old rows to Realtime'
 );
 

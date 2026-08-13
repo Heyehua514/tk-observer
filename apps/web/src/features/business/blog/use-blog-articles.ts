@@ -1,7 +1,10 @@
-/** 商务工作台公众号文章查询；只读展示，爆款标记由 PocketBase Hook 计算。 */
+/** 商务工作台公众号文章查询；Supabase-first，PocketBase 保留回退。 */
 import { useQuery } from '@tanstack/react-query'
 import type { RecordModel } from 'pocketbase'
+import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { getSupabaseClient } from '@/lib/supabase'
+import { mapSupabaseBlogArticle } from './blog-article-supabase-mapper'
 import type { BlogArticle } from './types'
 
 export const blogArticleKeys = { all: ['business', 'blog-articles'] as const }
@@ -22,11 +25,19 @@ const mapArticle = (record: RecordModel): BlogArticle => ({
 export function useBlogArticles() {
   return useQuery({
     queryKey: blogArticleKeys.all,
-    queryFn: async () =>
-      (
-        await pb
-          .collection('blog_articles')
-          .getFullList({ sort: '-publish_date' })
-      ).map(mapArticle),
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('blog_articles')
+          .select('*')
+          .is('deleted_at', null)
+          .order('publish_date', { ascending: false })
+        if (error) throw error
+        return (data || []).map(mapSupabaseBlogArticle)
+      }
+      return (
+        await pb.collection('blog_articles').getFullList({ sort: '-publish_date' })
+      ).map(mapArticle)
+    },
   })
 }

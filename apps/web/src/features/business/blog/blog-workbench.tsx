@@ -90,7 +90,7 @@ export function BlogWorkbench() {
     return (
       <EmptyState
         title='公众号数据暂时无法加载'
-        description='请检查 PocketBase 服务后重试。'
+        description='请检查数据服务和当前账号权限后重试。'
       />
     )
   }
