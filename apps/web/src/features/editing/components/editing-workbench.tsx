@@ -25,6 +25,7 @@ import type {
   VideoIdeaInput,
 } from '../types'
 import { CompetitorWorkbench } from './competitor-workbench'
+import { editingEmptyTitles } from './editing-empty-copy'
 import { IdeaAnalytics } from './idea-analytics'
 import { TrendingWorkbench } from './trending-workbench'
 import { VideoIdeaFormDialog } from './video-idea-form'
@@ -81,7 +82,7 @@ function ProductionSkeleton() {
           </div>
         ) : (
           <EmptyState
-            title='暂无视频任务'
+            title={editingEmptyTitles.tasks}
             description='任务将展示标题、关联商品、关联达人、目标站点、状态、截止日期和负责人。'
           />
         )}
@@ -118,7 +119,7 @@ function ProductionSkeleton() {
         ) : (
           <EmptyState
             title='还没有归档成片'
-            description='后续上传的视频文件会存入 PocketBase，并在此支持浏览器内预览。'
+            description='后续上传的视频文件会存入当前数据服务，并在此支持浏览器内预览。'
             action={<Button disabled>上传成片</Button>}
           />
         )}
@@ -127,7 +128,7 @@ function ProductionSkeleton() {
         <div className='relative min-h-64 rounded-lg border p-6'>
           <div className='absolute top-8 bottom-8 left-10 w-px bg-border' />
           <div className='ml-8 text-sm text-muted-foreground'>
-            暂无排期，后续按北京时间和站点当地时间双重标注。
+            等待发布排期沉淀，后续按北京时间和站点当地时间双重标注。
           </div>
         </div>
       </TabsContent>

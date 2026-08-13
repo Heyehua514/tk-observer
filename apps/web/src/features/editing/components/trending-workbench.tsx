@@ -32,7 +32,10 @@ import type {
   TrendingTopicInput,
   VideoIdeaInput,
 } from '../types'
-import { editingPermissionErrorDescription } from './editing-empty-copy'
+import {
+  editingEmptyTitles,
+  editingPermissionErrorDescription,
+} from './editing-empty-copy'
 
 function parseTopicBlocks(text: string): TrendingTopicInput[] {
   const blocks = text
@@ -264,7 +267,7 @@ export function TrendingWorkbench({
         </div>
       ) : (
         <EmptyState
-          title='暂无热点话题'
+          title={editingEmptyTitles.trends}
           description='点击“调研趋势”，把行业调研结果粘贴回来并保存。'
           action={
             <Button onClick={() => setResearchOpen(true)}>
