@@ -2,8 +2,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { recordAudit } from '@/lib/audit'
-import { pb } from '@/lib/pocketbase'
 import type { CooperationStatus } from '../types'
+import { bulkUpdateCreatorStatus } from './bulk-update-creators'
 import { creatorKeys } from './use-creators'
 
 export function useBulkUpdateCreators() {
@@ -16,11 +16,7 @@ export function useBulkUpdateCreators() {
       ids: string[]
       status: CooperationStatus
     }) => {
-      await Promise.all(
-        ids.map((id) =>
-          pb.collection('creators').update(id, { cooperation_status: status })
-        )
-      )
+      await bulkUpdateCreatorStatus(undefined, { ids, status })
     },
     onSuccess: (_, variables) => {
       variables.ids.forEach((id) =>
