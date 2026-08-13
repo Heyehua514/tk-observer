@@ -1,5 +1,5 @@
 begin;
-select plan(19);
+select plan(21);
 
 select has_table('public', 'venues', 'venues table exists');
 select has_table('public', 'event_templates', 'event templates table exists');
@@ -59,6 +59,16 @@ select lives_ok($$
     now() + interval '10 days', '厦门', '71000000-0000-0000-0000-000000000001'
   )
 $$, 'market can create event with venue');
+select is(
+  (select count(*) from public.event_finances where event_id = '72000000-0000-0000-0000-000000000001'),
+  7::bigint,
+  'creating event seeds 7 finance templates'
+);
+select is(
+  (select min(amount) from public.event_finances where event_id = '72000000-0000-0000-0000-000000000001'),
+  0::bigint,
+  'finance templates start with amount 0'
+);
 select lives_ok($$
   insert into public.event_templates (
     name, type, event_type, content, tags

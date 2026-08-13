@@ -223,3 +223,18 @@
 - `pnpm typecheck`：通过。
 - `pnpm lint`：通过。
 - `pnpm test`：通过，96 个测试文件，211 个测试。
+
+## 自动化对齐：财务模板触发器（Supabase）
+
+- 新增 Supabase migration `20260813001100_event_finance_templates.sql`：活动创建后自动生成 7 条标准收支模板（赞助收入/票务收入/场地/布置/餐饮/物料印刷/嘉宾差旅，金额 0 占位），与 PB `event_finance_templates.pb.js` 对齐。
+- `event_finances.amount` 约束从 `> 0` 放宽为 `>= 0`（新 migration 只加不改，与 PocketBase `min: 0` 对齐）；手动录入校验不变。
+- pgTAP `market_resources.test.sql` 计划数 21：新增 2 个断言（建活动自动种 7 条模板、模板金额为 0）。
+- 新增自动化对齐矩阵 `docs/2026-08-13-automation-parity.md`：13 个 PB hook 逐一比对，9 类已对齐、4 类属外部服务/账号策略待决策。
+
+### 验证（财务模板触发器）
+
+- `node --test scripts/supabase/*.test.mjs`：7/7 通过。
+- `pnpm typecheck`：通过。
+- `pnpm lint`：通过。
+- `pnpm test`：通过，96 个测试文件，211 个测试。
+- pgTAP 需要 Docker，本轮环境未运行；断言与迁移同步提交，待本地 `pnpm supabase:test` 回归。
