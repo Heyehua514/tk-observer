@@ -5,9 +5,10 @@ import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import type { EditingSearchParams } from '../types'
 import { EditingWorkbench } from './editing-workbench'
-import type { PublishScheduleItem } from './production-model'
+import type { PublishScheduleItem, VideoArchiveItem } from './production-model'
 
 const schedulesState = vi.hoisted(() => ({ value: [] as PublishScheduleItem[] }))
+const archiveState = vi.hoisted(() => ({ value: [] as VideoArchiveItem[] }))
 
 vi.mock('@/features/editing/hooks/use-video-idea-analytics', () => ({
   useVideoIdeaAnalytics: () => ({ data: undefined }),
@@ -18,7 +19,8 @@ vi.mock('@/features/editing/hooks/use-video-tasks', () => ({
 }))
 
 vi.mock('@/features/editing/hooks/use-video-archive', () => ({
-  useVideoArchive: () => ({ data: [] }),
+  videoArchiveKeys: { all: ['video-archive'] },
+  useVideoArchive: () => ({ data: archiveState.value }),
 }))
 
 vi.mock('@/features/editing/hooks/use-publish-schedules', () => ({
@@ -63,6 +65,50 @@ const params: EditingSearchParams = {
 
 beforeEach(() => {
   schedulesState.value = []
+  archiveState.value = []
+})
+
+it('成片归档空态提供可用的上传入口', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <EditingWorkbench params={params} onParamsChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await userEvent.click(screen.getByRole('tab', { name: '成片归档' }))
+  await expect.element(screen.getByText('还没有归档成片')).toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '上传成片' }))
+    .toBeEnabled()
+})
+
+it('成片归档有数据时以内联 video 预览展示', async () => {
+  archiveState.value = [
+    {
+      id: 'archive-1',
+      title: '厦门闭门沙龙正片',
+      subtitle: 'TK 陪跑 · 磊哥',
+      publishAt: '2026-08-12',
+      fileUrl: 'https://example.com/video.mp4',
+    },
+  ]
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <EditingWorkbench params={params} onParamsChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await userEvent.click(screen.getByRole('tab', { name: '成片归档' }))
+  await expect.element(screen.getByText('厦门闭门沙龙正片')).toBeInTheDocument()
+  const video = document.querySelector('video')
+  expect(video).not.toBeNull()
+  expect(video?.getAttribute('src')).toBe('https://example.com/video.mp4')
 })
 
 it('发布排期 Tab 展示引导式空态', async () => {

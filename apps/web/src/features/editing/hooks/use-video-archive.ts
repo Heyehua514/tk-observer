@@ -2,6 +2,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
+import { resolveStorageUrls } from '@/lib/storage-url'
 import { createSupabasePageQuery } from '@/lib/supabase-table'
 import {
   buildVideoArchiveItems,
@@ -36,7 +37,15 @@ export function useVideoArchive() {
           sort: 'publish_at.desc',
           mapRow: mapSupabaseVideoArchiveRecord,
         })
-        return page.items
+        const urls = await resolveStorageUrls(
+          'video-files',
+          page.items.map((item) => item.fileUrl)
+        )
+        return page.items.map((item) =>
+          item.fileUrl && urls[item.fileUrl]
+            ? { ...item, fileUrl: urls[item.fileUrl] }
+            : item
+        )
       }
       const records = await pb.collection('videos').getFullList({
         sort: '-publish_at',

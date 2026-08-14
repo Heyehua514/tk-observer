@@ -31,6 +31,7 @@ import { IdeaAnalytics } from './idea-analytics'
 import { PublishScheduleFormDialog } from './publish-schedule-form'
 import { PublishScheduleTable } from './publish-schedule-table'
 import { TrendingWorkbench } from './trending-workbench'
+import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
 
@@ -39,6 +40,7 @@ function ProductionSkeleton() {
   const archive = useVideoArchive()
   const schedules = usePublishSchedules()
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false)
+  const [archiveUploadOpen, setArchiveUploadOpen] = useState(false)
 
   return (
     <Tabs defaultValue='tasks'>
@@ -108,14 +110,12 @@ function ProductionSkeleton() {
                   发布日期 {item.publishAt || '未填'}
                 </div>
                 {item.fileUrl ? (
-                  <a
-                    className='mt-3 inline-flex text-sm text-primary hover:underline'
-                    href={item.fileUrl}
-                    target='_blank'
-                    rel='noreferrer'
-                  >
-                    打开成片
-                  </a>
+                  <video
+                    className='mt-3 aspect-video w-full rounded-lg bg-muted'
+                    controls
+                    preload='metadata'
+                    src={item.fileUrl}
+                  />
                 ) : (
                   <div className='mt-3 text-sm text-muted-foreground'>
                     未配置文件链接
@@ -127,10 +127,14 @@ function ProductionSkeleton() {
         ) : (
           <EmptyState
             title='还没有归档成片'
-            description='后续上传的视频文件会存入当前数据服务，并在此支持浏览器内预览。'
-            action={<Button disabled>上传成片</Button>}
+            description='上传后视频文件会存入当前数据服务，并在此支持浏览器内预览。'
+            action={<Button onClick={() => setArchiveUploadOpen(true)}>上传成片</Button>}
           />
         )}
+        <VideoArchiveUploadDialog
+          open={archiveUploadOpen}
+          onOpenChange={setArchiveUploadOpen}
+        />
       </TabsContent>
       <TabsContent value='schedule' className='mt-5'>
         {schedules.data?.length ? (

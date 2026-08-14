@@ -89,6 +89,15 @@ export type PublishScheduleInput = Omit<
   'id' | 'created' | 'updated'
 >
 
+export type VideoArchiveInput = {
+  title: string
+  region: string
+  publishAt: string
+  productName: string
+  creatorName: string
+  file: File
+}
+
 export type MetricSnapshot = {
   totalVideos: number
   monthlyNew: number
