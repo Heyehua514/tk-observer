@@ -3,7 +3,7 @@
 -- 权限：自动化函数仅服务端调用；本测试以 postgres 角色验证触发器与函数行为。
 
 begin;
-select plan(51);
+select plan(58);
 
 -- 隔离本地残留：E2E 或手工运行可能向这些表写入过数据，事务内清理保证计数断言稳定。
 truncate table public.daily_reports, public.weekly_reports, public.failed_cases,
@@ -175,6 +175,58 @@ select is(
   (select usage_count from public.social_plans where id = '76000000-0000-0000-0000-000000000001'),
   2,
   'linking an opportunity bumps usage again'
+);
+
+-- ---------- 朋友圈复盘：关联商机自动追加来源笔记 ----------
+select trigger_is(
+  'public', 'social_plans', 'social_plans_link_opportunity_notes',
+  'public', 'social_plan_link_opportunity_notes',
+  'linking a plan to an opportunity appends the source note'
+);
+select ok(
+  (
+    select position('来源：朋友圈 ' in notes) > 0
+    from public.opportunities
+    where id = '74000000-0000-0000-0000-000000000001'
+  ),
+  'linking an opportunity stamps the source note'
+);
+select lives_ok($$
+  update public.social_plans
+  set linked_opportunity_id = null
+  where id = '76000000-0000-0000-0000-000000000001'
+$$, 'social plan can be unlinked');
+select lives_ok($$
+  update public.social_plans
+  set linked_opportunity_id = '74000000-0000-0000-0000-000000000001'
+  where id = '76000000-0000-0000-0000-000000000001'
+$$, 'social plan can be re-linked');
+select is(
+  (
+    select (length(notes) - length(replace(notes, '来源：朋友圈 ', ''))) / length('来源：朋友圈 ')
+    from public.opportunities
+    where id = '74000000-0000-0000-0000-000000000001'
+  ),
+  1,
+  're-linking the same plan does not duplicate the source note'
+);
+select lives_ok($$
+  insert into public.social_plans (
+    id, date, content, status, linked_opportunity_id
+  ) values (
+    '76000000-0000-0000-0000-000000000002',
+    now() + interval '2 days', '自动化朋友圈第二条', 'reviewed',
+    '74000000-0000-0000-0000-000000000001'
+  )
+$$, 'a second plan can link the same opportunity');
+select is(
+  (
+    select (length(notes) - length(replace(notes, '来源：朋友圈 ', ''))) / length('来源：朋友圈 ')
+    from public.opportunities
+    where id = '74000000-0000-0000-0000-000000000001'
+  ),
+  2,
+  'a second plan appends its own source note'
 );
 
 -- ---------- 招商客户重要度校验 ----------

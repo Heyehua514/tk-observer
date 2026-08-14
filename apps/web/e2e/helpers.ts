@@ -87,6 +87,40 @@ export async function softDeleteOpportunity(
 }
 
 /**
+ * 用当前页面登录态读取商机跟进备注（business 对 opportunities 可读）。
+ * 用途：验证朋友圈复盘后触发器自动追加「来源：朋友圈」。
+ */
+export async function readOpportunityNotes(
+  page: Page,
+  title: string
+): Promise<string> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return ''
+  return page.evaluate(
+    async ({ url, anonKey, title }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return ''
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/opportunities?title=eq.${encodeURIComponent(title)}&select=notes`,
+        {
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      if (!res.ok) return ''
+      const rows = (await res.json()) as Array<{ notes: string | null }>
+      return rows[0]?.notes ?? ''
+    },
+    { url, anonKey, title }
+  )
+}
+
+/**
  * 用当前页面登录态软删除测试设计素材（design 有 update 权限）。
  */
 export async function softDeleteDesignAsset(

@@ -5,6 +5,8 @@ export type SocialPlan = {
   content: string
   target: string
   status: string
+  actualResult: string
+  linkedOpportunityId: string
 }
 
 export type SocialPlanDraft = {
@@ -21,6 +23,8 @@ export function mapSocialPlanRecord(record: Record<string, unknown>): SocialPlan
     content: String(record.content || ''),
     target: String(record.target_audience || ''),
     status: String(record.status || ''),
+    actualResult: String(record.actual_result || ''),
+    linkedOpportunityId: String(record.linked_opportunity_id || ''),
   }
 }
 

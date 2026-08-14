@@ -1,7 +1,7 @@
 // 商务工作台朋友圈计划 CRUD；权限：business 与 boss 可操作。
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { ClipboardCheck, Plus, Trash2 } from 'lucide-react'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -47,6 +47,11 @@ export function SocialWorkbench() {
     target_audience: '',
     expected_outcome: '',
   })
+  const [reviewPlan, setReviewPlan] = useState<SocialPlan | null>(null)
+  const [reviewDraft, setReviewDraft] = useState({
+    actualResult: '',
+    linkedOpportunityId: '',
+  })
   const plans = useQuery({
     queryKey: ['business', 'social-plans'],
     queryFn: async () => {
@@ -64,6 +69,70 @@ export function SocialWorkbench() {
       ).map(mapSocialPlanRecord)
     },
   })
+  const opportunities = useQuery({
+    queryKey: ['business', 'opportunities'],
+    queryFn: async () => {
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('opportunities')
+          .select('id, title, clients(name)')
+          .is('deleted_at', null)
+          .order('updated_at', { ascending: false })
+        if (error) throw error
+        return (data || []) as Array<{
+          id: string
+          title: string
+          clients: { name?: string } | null
+        }>
+      }
+      return (
+        await pb.collection('opportunities').getFullList({ expand: 'client' })
+      ).map((r: Record<string, unknown>) => ({
+        id: String(r.id || ''),
+        title: String(r.title || ''),
+        clients: ((r.expand as Record<string, unknown> | undefined)?.client as { name?: string } | undefined)
+          ? { name: String(((r.expand as Record<string, unknown> | undefined)?.client as { name?: string }).name || '') }
+          : null,
+      }))
+    },
+  })
+  const review = useMutation({
+    mutationFn: async ({
+      id,
+      actualResult,
+      linkedOpportunityId,
+    }: {
+      id: string
+      actualResult: string
+      linkedOpportunityId: string
+    }) => {
+      const patch = {
+        actual_result: actualResult,
+        linked_opportunity_id: linkedOpportunityId || null,
+        status: 'reviewed',
+      }
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('social_plans')
+          .update(patch)
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      await pb.collection('social_plans').update(id, patch)
+    },
+    onSuccess: () => {
+      refresh()
+      setReviewPlan(null)
+    },
+  })
+  const openReview = (plan: SocialPlan) => {
+    setReviewDraft({
+      actualResult: plan.actualResult,
+      linkedOpportunityId: plan.linkedOpportunityId,
+    })
+    setReviewPlan(plan)
+  }
   const week = useMemo(
     () => buildSocialWeek(new Date(), plans.data || []),
     [plans.data]
@@ -165,6 +234,7 @@ export function SocialWorkbench() {
             isLoading={plans.isLoading}
             onStatusChange={(id, status) => update.mutate({ id, status })}
             onDelete={(id) => remove.mutate(id)}
+            onReview={(plan) => openReview(plan)}
           />
         </TabsContent>
       </Tabs>
@@ -210,6 +280,54 @@ export function SocialWorkbench() {
           </Button>
         </DialogContent>
       </Dialog>
+      <Dialog open={!!reviewPlan} onOpenChange={(open) => !open && setReviewPlan(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>复盘朋友圈计划</DialogTitle>
+          </DialogHeader>
+          <Field label='实际效果'>
+            <Textarea
+              value={reviewDraft.actualResult}
+              placeholder='发布后回填实际转化结果'
+              onChange={(e) =>
+                setReviewDraft({ ...reviewDraft, actualResult: e.target.value })
+              }
+            />
+          </Field>
+          <Field label='转化商机'>
+            <Select
+              value={reviewDraft.linkedOpportunityId}
+              onValueChange={(value) =>
+                setReviewDraft({ ...reviewDraft, linkedOpportunityId: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='选择由此产生的商机' />
+              </SelectTrigger>
+              <SelectContent>
+                {(opportunities.data || []).map((option) => (
+                  <SelectItem key={option.id} value={option.id}>
+                    {option.title}
+                    {option.clients?.name ? `（${option.clients.name}）` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Button
+            disabled={!reviewPlan}
+            onClick={() =>
+              review.mutate({
+                id: reviewPlan!.id,
+                actualResult: reviewDraft.actualResult,
+                linkedOpportunityId: reviewDraft.linkedOpportunityId,
+              })
+            }
+          >
+            保存复盘
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -233,11 +351,13 @@ function SocialPlanTable({
   isLoading,
   onStatusChange,
   onDelete,
+  onReview,
 }: {
   plans: SocialPlan[]
   isLoading: boolean
   onStatusChange: (id: string, status: string) => void
   onDelete: (id: string) => void
+  onReview: (plan: SocialPlan) => void
 }) {
   return (
     <div className='overflow-hidden rounded-lg border'>
@@ -248,6 +368,7 @@ function SocialPlanTable({
             <TableHead>内容</TableHead>
             <TableHead>目标受众</TableHead>
             <TableHead>状态</TableHead>
+            <TableHead>复盘</TableHead>
             <TableHead className='w-12' />
           </TableRow>
         </TableHeader>
@@ -272,7 +393,18 @@ function SocialPlanTable({
                   </SelectContent>
                 </Select>
               </TableCell>
+              <TableCell className='max-w-xs truncate'>
+                {item.actualResult || '—'}
+              </TableCell>
               <TableCell>
+                <Button
+                  size='icon'
+                  variant='ghost'
+                  aria-label='复盘计划'
+                  onClick={() => onReview(item)}
+                >
+                  <ClipboardCheck className='size-4' />
+                </Button>
                 <Button
                   size='icon'
                   variant='ghost'
@@ -286,7 +418,7 @@ function SocialPlanTable({
           ))}
           {!isLoading && plans.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className='p-0'>
+              <TableCell colSpan={6} className='p-0'>
                 <EmptyState
                   title='还没有朋友圈计划'
                   description='安排第一条内容，开始记录私域获客与转化。'

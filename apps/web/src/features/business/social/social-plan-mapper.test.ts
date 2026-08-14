@@ -10,14 +10,18 @@ describe('social plan mapper', () => {
         date: '2026-08-12T00:00:00Z',
         content: '发布商单案例',
         target_audience: '品牌方',
-        status: 'planned',
+        status: 'published',
+        actual_result: '收获 2 条私信咨询',
+        linked_opportunity_id: 'opp-1',
       })
     ).toEqual({
       id: 's1',
       date: '2026-08-12T00:00:00Z',
       content: '发布商单案例',
       target: '品牌方',
-      status: 'planned',
+      status: 'published',
+      actualResult: '收获 2 条私信咨询',
+      linkedOpportunityId: 'opp-1',
     })
   })
 

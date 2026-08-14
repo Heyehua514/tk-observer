@@ -629,3 +629,18 @@
 ### 提交
 
 - `feat(e2e): 市场资源库模板/物料/财务导出闭环`
+
+## 2026-08-14 下午续八：朋友圈复盘回填闭环（回填交互 + 商机来源自动追加 + E2E）
+
+- 新增 migration `supabase/migrations/20260814000500_social_plan_review_notes.sql`：`social_plans` 关联商机（`linked_opportunity_id`）时由触发器 `social_plan_link_opportunity_notes` 自动在商机 notes 追加「来源：朋友圈 M月D日 内容」；同一行内容幂等不重复追加，另一条朋友圈再追加新行，目标商机必须未软删除。
+- pgTAP `team_memory_automation.test.sql` 追加 7 条断言（plan 51→58）：触发器存在、关联后 notes 含来源、断开重连不重复（次数=1）、第二条朋友圈追加（次数=2）。
+- 前端 `social-workbench.tsx` 补齐复盘闭环：列表新增「复盘」列（显示 actualResult 或 —）与复盘按钮；「复盘朋友圈计划」弹窗回填实际效果 + 选择转化商机（Supabase 展开客户名，PocketBase `expand: 'client'`）→ 保存写 `actual_result` / `linked_opportunity_id` / status=reviewed。
+- `social-plan-mapper.ts` 补 `actualResult` / `linkedOpportunityId` 映射 + 单测。
+- 新增 E2E `e2e/social-plan-review.spec.ts`：董雨辰建客户+商机 → 新增朋友圈计划 → 发布 → 复盘弹窗填实际效果并选商机 → 列表显示已复盘与效果 → 商机 notes 被触发器追加「来源：朋友圈」→ 软删商机/朋友圈计划 + UI 删客户回收。
+- 本地测试账号密码统一重置为 `yzk3305802`（GoTrue admin API，6 个账号），E2E 密码注入恢复可用。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试；pgTAP 25 文件 / 457 断言 PASS；`pnpm --dir apps/web build` 通过；E2E 19/19 全过（新增复盘用例后 18→19）；残留验证 social_plans / opportunities / clients 的 `E2E%` live 计数全为 0。
+- 验收清单商务「朋友圈计划：发布后回填结果/转化商机与 notes 自动追加」从部分覆盖改为全勾。
+
+### 提交
+
+- `feat(business): 朋友圈复盘回填 + 商机来源自动追加闭环`
