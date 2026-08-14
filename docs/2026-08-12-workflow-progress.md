@@ -461,3 +461,21 @@
 ### 提交
 
 - `3515038 feat(e2e): 设计素材审核闭环 + 列表排序映射修复`
+
+## 2026-08-14 上午续六：软删除 RLS 第四轮全表排查收口
+
+- 全量排查 pg_policies：仍有 21 张软删除表的 SELECT 策略带旧模式 `(deleted_at IS NULL) OR owner`，且存在非 owner 角色可 UPDATE/ALL（同 403 根因）。新增 migration `supabase/migrations/20260814000300_soft_delete_select_rls_round4.sql`，对 20 张表 SELECT 策略放宽为按角色可见：
+  - 商务：blog_articles
+  - 剪辑：competitor_accounts / competitor_style_analysis / competitor_videos / import_history / trending_topics / video_tasks / videos
+  - 市场：venues / event_phases / event_tasks / event_registrations / event_sponsorships / event_templates / event_materials / event_finances / products
+  - 总览：gmv_metrics / team_tasks
+  - 通知：notifications（recipient 本人）
+- 排查结论（本轮不改）：audit_logs / daily_reports / failed_cases / weekly_reports 仅 owner 可写，boss 只读，无软删除 403 路径；event_tasks 的 assigned 角色策略保持原样——触发器 `enforce_event_task_collaborator_update` 已禁止 business/design/editing 修改 deleted_at，不存在软删除路径，不放宽（新增 pgTAP 断言验证其策略仍带 deleted_at 门槛）。
+- 新增 `supabase/tests/soft_delete_select_rls_round4.test.sql`：37 个断言（21 策略层 + 16 角色实测），覆盖 market/business/editing/boss/recipient 五类角色软删除（venues / products / blog_articles / videos / competitor_accounts / event_tasks / gmv_metrics / team_tasks / notifications），并验证软删行可查看、活行被 `.is('deleted_at', null)` 过滤。
+- 清理本地 dev 库 6 条 E2E/DBG 测试残留（file_name 前缀 E2E素材/DBG素材，已软删后物理清除），恢复 design_workspace 测试计数断言。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 100 文件 / 229 测试；pgTAP 24 文件 / 442 断言 PASS。
+- 验收清单无需新增勾选（基础设施修复，不改变验收项）。
+
+### 提交
+
+- 待提交：`feat(supabase): 软删除 RLS 第四轮全表收口 + pgTAP 442`
