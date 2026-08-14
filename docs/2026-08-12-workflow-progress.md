@@ -731,3 +731,25 @@
 ### 提交
 
 - `feat(business): 商机成交自动通知磊哥 + Realtime 到达 E2E`
+
+## 2026-08-14 续十六：Storage 文件本体迁移 + 抽样验证
+
+- 新增 `scripts/supabase/migrate-files.mjs`：PocketBase → Supabase Storage 文件本体迁移工具。
+  - `FILE_MAP` 覆盖 6 张文件承载表：design_assets.file_path→design-assets、videos.file_path→video-files、venues.photo_paths→venue-photos（数组列拆平）、event_materials.file_path→event-materials、event_finances.receipt_path→finance-receipts、profiles.avatar_path→avatars；
+  - 幂等：已存在对象跳过（按 bucket 列表核对），软删行不处理；
+  - 源文件发现：递归扫描 `backend/pb_data/storage/**`（忽略 .attrs），按文件名（不区分大小写）匹配 DB 路径；
+  - MIME 校验：按扩展名推断类型并与 `storage.buckets.allowed_mime_types` 对齐（BUCKET_ALLOWED_MIMES），bucket 不允许的类型标为 rejected（mime_not_allowed），不强行上传；
+  - `--verify` 模式：核对「活跃行文件路径 ↔ Storage 对象」一致性（MIME 不符为已知例外，不计失败），并每个有活跃文件的 bucket 抽 1 个对象做签名 URL 读取（HTTP 200 判定）；
+  - 报告写入 `/tmp/tk-observer-supabase/file-migration-report.json`；无 service key 时自动降级 dry-run，不访问网络。
+- 新增 `scripts/supabase/migrate-files.test.mjs`（8 个测试）：表映射、数组拆平、PB 文件递归发现、计划分类（已存在/缺源）、MIME 拒绝（PNG 进 video-files）、dry-run 汇总、verify 缺数据源降级。
+- 实跑迁移（本地 Supabase）：活跃设计素材 1 个（favicon_hxrhielkec.png）已上传到 design-assets（metadata mimetype=image/png、494B）；活跃视频行 1 个（favicon_zcn4kmtcq6.png，导入的测试数据）因 MIME 不符被拒绝并记录在案；其余活跃文件路径 0 缺口（E2E 遗留大量软删行不处理）。最终缺对象 0。
+- 抽样验证（真实角色令牌）：
+  - design 角色读 design-assets → 签名 URL fetch 200；
+  - editing / business 角色读 design-assets → 签名接口 400 拒绝（RLS 生效）；
+  - 一致性核对：活跃路径 2，缺对象 0，MIME 不符 1（已知例外）。
+- 说明：本地 `ENABLE_IMAGE_TRANSFORMATION=false`，前端缩略图沿用签名 URL 原图渲染（浏览器缩放），生产远程部署如需图片变换再开启；Storage 策略矩阵已由 pgTAP storage_access 12 断言覆盖。
+- 验证：`node --test scripts/supabase/*.test.mjs` 44/44；`migrate-files.mjs --verify` FILE_VERIFY_PASSED。
+
+### 提交
+
+- `feat(data): Storage 文件本体迁移脚本与抽样验证`
