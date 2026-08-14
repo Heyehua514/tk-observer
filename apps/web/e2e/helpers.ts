@@ -421,7 +421,11 @@ export async function softDeleteRowsByFieldPrefix(
   table:
     | 'design_requirements'
     | 'design_references'
-    | 'design_deliverables',
+    | 'design_deliverables'
+    | 'competitor_accounts'
+    | 'competitor_videos'
+    | 'competitor_style_analysis'
+    | 'trending_topics',
   field: string,
   prefix: string
 ): Promise<boolean> {
@@ -465,8 +469,103 @@ export async function softDeleteRowsByFieldPrefix(
   )
 }
 
+/**
+ * 用当前页面登录态按字段精确值软删除指定表记录（调用方需持有该表的 update 权限）。
+ * 用途：按 uuid 外键清理子表（uuid 不支持 like 通配），如风格分析按对标账号 id 回收。
+ */
+export async function softDeleteRowsByFieldValue(
+  page: Page,
+  table: string,
+  field: string,
+  value: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, table, field, value }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+      }
+      const list = await fetch(
+        `${url}/rest/v1/${table}?${field}=eq.${encodeURIComponent(
+          value
+        )}&deleted_at=is.null&select=id`,
+        { headers }
+      )
+      if (!list.ok) return false
+      const rows = (await list.json()) as Array<{ id: string }>
+      let cleaned = 0
+      for (const row of rows) {
+        const res = await fetch(`${url}/rest/v1/${table}?id=eq.${row.id}`, {
+          method: 'PATCH',
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        })
+        if (res.ok) cleaned += 1
+      }
+      return cleaned > 0
+    },
+    { url, anonKey, table, field, value }
+  )
+}
+
 /** 1x1 透明 PNG，E2E 文件上传用。 */
 export const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64'
 )
+
+/**
+ * 用当前页面登录态插入对标账号（editing 有 insert 权限）。
+ * 用途：剪辑工作台对标录入 E2E 前置数据，测试后软删回收。
+ */
+export async function insertCompetitorAccount(
+  page: Page,
+  fields: {
+    name: string
+    platform?: string
+    category?: string
+    followerCount?: number
+    avgViews?: number
+  }
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, fields }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(`${url}/rest/v1/competitor_accounts`, {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          name: fields.name,
+          platform: fields.platform ?? '视频号',
+          category: fields.category ?? '出海跨境',
+          follower_count: fields.followerCount ?? 10000,
+          avg_views: fields.avgViews ?? 2000,
+        }),
+      })
+      return res.ok
+    },
+    { url, anonKey, fields }
+  )
+}
