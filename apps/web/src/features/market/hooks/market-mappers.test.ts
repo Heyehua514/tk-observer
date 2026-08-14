@@ -69,6 +69,7 @@ describe('market mappers', () => {
         amount: 200000,
         completion_pct: 80,
         title: '确认嘉宾名单',
+        clients: { company_name: '星图科技', name: '星图' },
       })
     ).toMatchObject({
       id: 'task-1',
@@ -77,6 +78,36 @@ describe('market mappers', () => {
       amount: 200000,
       completionPct: 80,
       title: '确认嘉宾名单',
+      company: '星图科技',
+    })
+  })
+
+  it('maps supabase client company column in sponsorship joins', () => {
+    expect(
+      mapMarketRelatedRecord({
+        id: 'sponsor-1',
+        stage: 'intent',
+        amount: 200000,
+        clients: { company: '星图科技', name: '星图' },
+      })
+    ).toMatchObject({
+      id: 'sponsor-1',
+      stage: 'intent',
+      amount: 200000,
+      company: '星图科技',
+    })
+  })
+
+  it('falls back to client name when company is empty', () => {
+    expect(
+      mapMarketRelatedRecord({
+        id: 'sponsor-2',
+        stage: 'intent',
+        clients: { company: '', name: '星图' },
+      })
+    ).toMatchObject({
+      id: 'sponsor-2',
+      company: '星图',
     })
   })
 

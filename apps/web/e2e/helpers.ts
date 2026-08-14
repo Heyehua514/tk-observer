@@ -26,7 +26,10 @@ export async function login(page: Page, email: string) {
 }
 
 export async function switchAccount(page: Page, email: string) {
-  await page.evaluate(() => localStorage.clear())
+  await page.evaluate(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
   await page.context().clearCookies()
   await login(page, email)
 }
@@ -150,6 +153,119 @@ export async function softDeleteVenue(
       return res.ok
     },
     { url, anonKey, name }
+  )
+}
+
+/**
+ * 用当前页面登录态按唯一名查询行 id（表须对当前角色可见）。
+ */
+export async function findRowId(
+  page: Page,
+  table: string,
+  column: string,
+  value: string
+): Promise<string> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return ''
+  return page.evaluate(
+    async ({ url, anonKey, table, column, value }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return ''
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/${table}?${column}=eq.${encodeURIComponent(value)}&select=id`,
+        {
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      if (!res.ok) return ''
+      const rows = (await res.json()) as Array<{ id: string }>
+      return rows[0]?.id ?? ''
+    },
+    { url, anonKey, table, column, value }
+  )
+}
+
+/**
+ * 用当前页面登录态插入一条活动招商意向（market 有插入权限）。
+ */
+export async function insertEventSponsorship(
+  page: Page,
+  fields: {
+    eventId: string
+    clientId: string
+    contactName: string
+    amount: number
+  }
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, fields }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(`${url}/rest/v1/event_sponsorships`, {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          event_id: fields.eventId,
+          client_id: fields.clientId,
+          contact_name: fields.contactName,
+          amount: fields.amount,
+          stage: 'intent',
+        }),
+      })
+      return res.ok
+    },
+    { url, anonKey, fields }
+  )
+}
+
+/**
+ * 用当前页面登录态软删除活动招商记录（business 有 update 权限）。
+ */
+export async function softDeleteSponsorship(
+  page: Page,
+  eventId: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, eventId }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/event_sponsorships?event_id=eq.${eventId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        }
+      )
+      return res.ok
+    },
+    { url, anonKey, eventId }
   )
 }
 

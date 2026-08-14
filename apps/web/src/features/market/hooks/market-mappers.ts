@@ -88,6 +88,10 @@ export function serializeMarketVenue(input: VenueInput) {
 export function mapMarketRelatedRecord(
   item: Record<string, unknown>
 ): ActivityRelatedRecord {
+  const clients =
+    item.clients && typeof item.clients === 'object'
+      ? (item.clients as Record<string, unknown>)
+      : undefined
   return {
     id: String(item.id || ''),
     status: typeof item.status === 'string' ? item.status : undefined,
@@ -100,7 +104,16 @@ export function mapMarketRelatedRecord(
         : undefined,
     title: typeof item.title === 'string' ? item.title : undefined,
     name: typeof item.name === 'string' ? item.name : undefined,
-    company: typeof item.company === 'string' ? item.company : undefined,
+    company:
+      typeof item.company === 'string'
+        ? item.company
+        : typeof clients?.company === 'string' && clients.company
+          ? clients.company
+          : typeof clients?.company_name === 'string' && clients.company_name
+            ? clients.company_name
+            : typeof clients?.name === 'string' && clients.name
+              ? clients.name
+              : undefined,
     position: typeof item.position === 'string' ? item.position : undefined,
     category: typeof item.category === 'string' ? item.category : undefined,
     notes: typeof item.notes === 'string' ? item.notes : undefined,

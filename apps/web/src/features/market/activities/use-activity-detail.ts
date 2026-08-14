@@ -43,7 +43,7 @@ export function useActivityDetail(eventId: string) {
               .order('created_at', { ascending: true }),
             supabase
               .from('event_sponsorships')
-              .select('*')
+              .select('*, clients(company, name)')
               .eq('event_id', eventId)
               .is('deleted_at', null)
               .order('created_at', { ascending: true }),

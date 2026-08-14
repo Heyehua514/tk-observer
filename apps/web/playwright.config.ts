@@ -13,15 +13,19 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'http://localhost:4173',
+    baseURL: 'http://127.0.0.1:4173',
     viewport: { width: 1440, height: 900 },
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'pnpm exec vite preview --port 4173 --strictPort',
-    port: 4173,
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  // 沙箱环境下 Playwright 派生的预览服务监听会被拒绝；外部已起服务时跳过 webServer。
+  webServer: process.env.E2E_USE_EXTERNAL_SERVER
+    ? undefined
+    : {
+        command:
+          'pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort',
+        port: 4173,
+        reuseExistingServer: true,
+        timeout: 30_000,
+      },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
 })
