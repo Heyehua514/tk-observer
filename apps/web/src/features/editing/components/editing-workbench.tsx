@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
+import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoTasks } from '../hooks/use-video-tasks'
 import type {
   EditingSearchParams,
@@ -27,6 +28,8 @@ import type {
 import { CompetitorWorkbench } from './competitor-workbench'
 import { editingEmptyTitles } from './editing-empty-copy'
 import { IdeaAnalytics } from './idea-analytics'
+import { PublishScheduleFormDialog } from './publish-schedule-form'
+import { PublishScheduleTable } from './publish-schedule-table'
 import { TrendingWorkbench } from './trending-workbench'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
@@ -34,6 +37,8 @@ import { VideoIdeaTable } from './video-idea-table'
 function ProductionSkeleton() {
   const tasks = useVideoTasks()
   const archive = useVideoArchive()
+  const schedules = usePublishSchedules()
+  const [scheduleFormOpen, setScheduleFormOpen] = useState(false)
 
   return (
     <Tabs defaultValue='tasks'>
@@ -128,10 +133,30 @@ function ProductionSkeleton() {
         )}
       </TabsContent>
       <TabsContent value='schedule' className='mt-5'>
-        <EmptyState
-          title={editingEmptyTitles.schedule}
-          description='后续按北京时间和站点当地时间双重标注，按账号展示周排期日历。'
-          action={<Button disabled>新建排期</Button>}
+        {schedules.data?.length ? (
+          <div className='space-y-4'>
+            <div className='flex justify-end'>
+              <Button onClick={() => setScheduleFormOpen(true)}>
+                新建排期
+              </Button>
+            </div>
+            <PublishScheduleTable items={schedules.data} />
+          </div>
+        ) : (
+          <EmptyState
+            title={editingEmptyTitles.schedule}
+            description='后续按北京时间和站点当地时间双重标注，按账号展示周排期日历。'
+            action={
+              <Button onClick={() => setScheduleFormOpen(true)}>
+                新建排期
+              </Button>
+            }
+          />
+        )}
+        <PublishScheduleFormDialog
+          open={scheduleFormOpen}
+          onOpenChange={setScheduleFormOpen}
+          schedule={null}
         />
       </TabsContent>
     </Tabs>

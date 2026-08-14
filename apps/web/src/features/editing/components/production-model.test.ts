@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildVideoArchiveItems, buildVideoTaskItems } from './production-model'
+import {
+  buildPublishScheduleItems,
+  buildVideoArchiveItems,
+  buildVideoTaskItems,
+} from './production-model'
 
 describe('production model', () => {
   it('maps video tasks into display rows with stable labels', () => {
@@ -54,5 +58,40 @@ describe('production model', () => {
       publishAt: '2026-08-12',
       fileUrl: '',
     })
+  })
+
+  it('maps publish schedules into rows sorted by publish time and merged subtitle', () => {
+    const result = buildPublishScheduleItems([
+      {
+        id: 'schedule-1',
+        title: '厦门沙龙切片',
+        account: 'TK观察磊哥',
+        platform: '微信视频号',
+        region: 'CN',
+        publishAt: '2026-08-11T10:00:00Z',
+        status: 'published',
+      },
+      {
+        id: 'schedule-2',
+        title: '专访正片',
+        account: '跨境TK磊哥',
+        platform: 'TikTok',
+        region: 'US',
+        publishAt: '2026-08-12T10:00:00Z',
+        status: 'scheduled',
+      },
+    ])
+
+    expect(result.map((item) => item.id)).toEqual(['schedule-2', 'schedule-1'])
+    expect(result[0]).toEqual({
+      id: 'schedule-2',
+      title: '专访正片',
+      subtitle: 'TikTok · US',
+      account: '跨境TK磊哥',
+      platform: 'TikTok',
+      publishAt: '2026-08-12',
+      status: 'scheduled',
+    })
+    expect(result[1].subtitle).toBe('微信视频号 · CN')
   })
 })

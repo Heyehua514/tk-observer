@@ -16,6 +16,24 @@ export type VideoArchiveItem = {
   fileUrl: string
 }
 
+export type PublishScheduleItem = {
+  id: string
+  title: string
+  subtitle: string
+  account: string
+  platform: string
+  publishAt: string
+  status: string
+}
+
+export const publishScheduleStatusLabels: Record<string, string> = {
+  scheduled: '已排期',
+  publishing: '发布中',
+  published: '已发布',
+  failed: '发布失败',
+  cancelled: '已取消',
+}
+
 type VideoTaskRecord = {
   id: string
   title: string
@@ -33,6 +51,16 @@ type VideoArchiveRecord = {
   creatorName: string
   publishAt: string
   fileUrl: string
+}
+
+type PublishScheduleRecord = {
+  id: string
+  title: string
+  account: string
+  platform: string
+  region: string
+  publishAt: string
+  status: string
 }
 
 const dateOnly = (value: string) => String(value || '').slice(0, 10)
@@ -66,5 +94,22 @@ export function buildVideoArchiveItems(
         .join(' · '),
       publishAt: dateOnly(record.publishAt),
       fileUrl: record.fileUrl,
+    }))
+}
+
+export function buildPublishScheduleItems(
+  records: PublishScheduleRecord[]
+): PublishScheduleItem[] {
+  return records
+    .slice()
+    .sort((left, right) => right.publishAt.localeCompare(left.publishAt))
+    .map((record) => ({
+      id: record.id,
+      title: record.title,
+      subtitle: [record.platform, record.region].filter(Boolean).join(' · '),
+      account: record.account,
+      platform: record.platform,
+      publishAt: dateOnly(record.publishAt),
+      status: record.status,
     }))
 }

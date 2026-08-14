@@ -1,9 +1,11 @@
 /** 剪辑工作台 Supabase 映射自检：保证迁移后 UI 模型不变。 */
 import { describe, expect, it } from 'vitest'
 import {
+  mapSupabasePublishScheduleRecord,
   mapSupabaseVideoArchiveRecord,
   mapSupabaseVideoIdeaRecord,
   mapSupabaseVideoTaskRecord,
+  serializeSupabasePublishSchedule,
   serializeSupabaseVideoIdea,
   toSupabaseVideoIdeaSort,
 } from './editing-supabase-mappers'
@@ -105,5 +107,49 @@ describe('editing Supabase mappers', () => {
     expect(toSupabaseVideoIdeaSort('-completion_rate')).toBe(
       'completion_rate.desc'
     )
+  })
+
+  it('maps publish schedule rows to display items and serializes partial updates', () => {
+    expect(
+      mapSupabasePublishScheduleRecord({
+        id: 'schedule-1',
+        title: '厦门沙龙切片',
+        account: 'TK观察磊哥',
+        platform: '微信视频号',
+        region: 'CN',
+        publish_at: '2026-08-12T10:00:00Z',
+        status: 'scheduled',
+      })
+    ).toMatchObject({
+      id: 'schedule-1',
+      title: '厦门沙龙切片',
+      subtitle: '微信视频号 · CN',
+      publishAt: '2026-08-12',
+      status: 'scheduled',
+    })
+
+    expect(
+      serializeSupabasePublishSchedule({
+        videoId: 'video-1',
+        videoTaskId: 'task-1',
+        title: '专访正片',
+        account: '跨境TK磊哥',
+        region: 'US',
+        platform: 'TikTok',
+        publishAt: '2026-08-13T02:00:00Z',
+        status: 'publishing',
+        notes: '配合海外时段',
+      })
+    ).toEqual({
+      video_id: 'video-1',
+      video_task_id: 'task-1',
+      title: '专访正片',
+      account: '跨境TK磊哥',
+      region: 'US',
+      platform: 'TikTok',
+      publish_at: '2026-08-13T02:00:00Z',
+      status: 'publishing',
+      notes: '配合海外时段',
+    })
   })
 })

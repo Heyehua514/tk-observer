@@ -1,40 +1,48 @@
-/** 剪辑工作台 UI 测试：发布排期空态必须是引导式结构。 */
+/** 剪辑工作台 UI 测试：发布排期空态必须是引导式结构，有数据时展示列表。 */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { expect, it, vi } from 'vitest'
+import { beforeEach, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import type { EditingSearchParams } from '../types'
 import { EditingWorkbench } from './editing-workbench'
+import type { PublishScheduleItem } from './production-model'
 
-vi.mock('../hooks/use-video-idea-analytics', () => ({
+const schedulesState = vi.hoisted(() => ({ value: [] as PublishScheduleItem[] }))
+
+vi.mock('@/features/editing/hooks/use-video-idea-analytics', () => ({
   useVideoIdeaAnalytics: () => ({ data: undefined }),
 }))
 
-vi.mock('../hooks/use-video-tasks', () => ({
+vi.mock('@/features/editing/hooks/use-video-tasks', () => ({
   useVideoTasks: () => ({ data: [] }),
 }))
 
-vi.mock('../hooks/use-video-archive', () => ({
+vi.mock('@/features/editing/hooks/use-video-archive', () => ({
   useVideoArchive: () => ({ data: [] }),
 }))
 
-vi.mock('./video-idea-form', () => ({
+vi.mock('@/features/editing/hooks/use-publish-schedules', () => ({
+  publishScheduleKeys: { all: ['publish-schedules'] },
+  usePublishSchedules: () => ({ data: schedulesState.value }),
+}))
+
+vi.mock('@/features/editing/components/video-idea-form', () => ({
   VideoIdeaFormDialog: () => null,
 }))
 
-vi.mock('./video-idea-table', () => ({
+vi.mock('@/features/editing/components/video-idea-table', () => ({
   VideoIdeaTable: () => <div>选题表格占位</div>,
 }))
 
-vi.mock('./idea-analytics', () => ({
+vi.mock('@/features/editing/components/idea-analytics', () => ({
   IdeaAnalytics: () => <div>数据分析占位</div>,
 }))
 
-vi.mock('./competitor-workbench', () => ({
+vi.mock('@/features/editing/components/competitor-workbench', () => ({
   CompetitorWorkbench: () => <div>对标分析占位</div>,
 }))
 
-vi.mock('./trending-workbench', () => ({
+vi.mock('@/features/editing/components/trending-workbench', () => ({
   TrendingWorkbench: () => <div>热点追踪占位</div>,
 }))
 
@@ -53,6 +61,10 @@ const params: EditingSearchParams = {
   tab: 'list',
 }
 
+beforeEach(() => {
+  schedulesState.value = []
+})
+
 it('发布排期 Tab 展示引导式空态', async () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -70,5 +82,34 @@ it('发布排期 Tab 展示引导式空态', async () => {
     .toBeInTheDocument()
   await expect
     .element(screen.getByRole('button', { name: '新建排期' }))
-    .toBeDisabled()
+    .toBeEnabled()
+})
+
+it('发布排期有数据时展示列表与新建入口', async () => {
+  schedulesState.value = [
+    {
+      id: 'schedule-1',
+      title: '厦门切片',
+      subtitle: '微信视频号 · CN',
+      account: 'TK观察磊哥',
+      platform: '微信视频号',
+      publishAt: '2026-08-12',
+      status: 'scheduled',
+    },
+  ]
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <EditingWorkbench params={params} onParamsChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await userEvent.click(screen.getByRole('tab', { name: '发布排期' }))
+  await expect.element(screen.getByText('厦门切片')).toBeInTheDocument()
+  await expect.element(screen.getByText('微信视频号 · CN')).toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '新建排期' }))
+    .toBeEnabled()
 })

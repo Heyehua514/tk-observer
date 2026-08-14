@@ -6,6 +6,7 @@ import type {
   CompetitorVideo,
   ImportHistory,
   MetricSnapshot,
+  PublishScheduleInput,
   RankedViralFeature,
   TrendingTopic,
   VideoIdea,
@@ -15,6 +16,7 @@ import type {
 } from '../types'
 import {
   buildVideoArchiveItems,
+  buildPublishScheduleItems,
   buildVideoTaskItems,
 } from '../components/production-model'
 
@@ -22,6 +24,9 @@ type PublicDb = Database['public']['Tables']
 
 type VideoTaskRow = PublicDb['video_tasks']['Row']
 type VideoArchiveRow = PublicDb['videos']['Row']
+type PublishScheduleRow = PublicDb['publish_schedules']['Row']
+type PublishScheduleInsert = PublicDb['publish_schedules']['Insert']
+type PublishScheduleUpdate = PublicDb['publish_schedules']['Update']
 type VideoIdeaRow = PublicDb['video_ideas']['Row']
 type ImportHistoryRow = PublicDb['import_history']['Row']
 type CompetitorAccountRow = PublicDb['competitor_accounts']['Row']
@@ -66,6 +71,55 @@ export function mapSupabaseVideoArchiveRecord(
       fileUrl: String(record.file_path || ''),
     },
   ])[0]
+}
+
+export function mapSupabasePublishScheduleRecord(
+  record: PartialRecord<PublishScheduleRow>
+) {
+  return buildPublishScheduleItems([
+    {
+      id: String(record.id || ''),
+      title: String(record.title || ''),
+      account: String(record.account || ''),
+      platform: String(record.platform || ''),
+      region: String(record.region || ''),
+      publishAt: String(record.publish_at || ''),
+      status: String(record.status || ''),
+    },
+  ])[0]
+}
+
+export function serializeSupabasePublishSchedule(
+  input: PublishScheduleInput
+): PublishScheduleInsert {
+  return {
+    video_id: input.videoId || null,
+    video_task_id: input.videoTaskId || null,
+    title: input.title,
+    account: input.account,
+    region: input.region,
+    platform: input.platform,
+    publish_at: input.publishAt,
+    status: input.status,
+    notes: input.notes || null,
+  }
+}
+
+export function buildSupabasePublishScheduleUpdate(
+  input: Partial<PublishScheduleInput>
+): PublishScheduleUpdate {
+  const payload: PublishScheduleUpdate = {}
+  if (input.videoId !== undefined) payload.video_id = input.videoId || null
+  if (input.videoTaskId !== undefined)
+    payload.video_task_id = input.videoTaskId || null
+  if (input.title !== undefined) payload.title = input.title
+  if (input.account !== undefined) payload.account = input.account
+  if (input.region !== undefined) payload.region = input.region
+  if (input.platform !== undefined) payload.platform = input.platform
+  if (input.publishAt !== undefined) payload.publish_at = input.publishAt
+  if (input.status !== undefined) payload.status = input.status
+  if (input.notes !== undefined) payload.notes = input.notes || null
+  return payload
 }
 
 export function mapSupabaseVideoIdeaRecord(

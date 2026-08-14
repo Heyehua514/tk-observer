@@ -60,6 +60,35 @@ export type VideoIdeaListResult = Omit<ListResult<VideoIdea>, 'items'> & {
   items: VideoIdea[]
 }
 
+export type PublishScheduleStatus =
+  | 'scheduled'
+  | 'publishing'
+  | 'published'
+  | 'failed'
+  | 'cancelled'
+
+export type PublishPlatform = '微信视频号' | 'TikTok' | '抖音' | 'YouTube'
+
+export type PublishSchedule = {
+  id: string
+  videoId: string
+  videoTaskId: string
+  title: string
+  account: VideoAccount
+  region: string
+  platform: PublishPlatform
+  publishAt: string
+  status: PublishScheduleStatus
+  notes: string
+  created: string
+  updated: string
+}
+
+export type PublishScheduleInput = Omit<
+  PublishSchedule,
+  'id' | 'created' | 'updated'
+>
+
 export type MetricSnapshot = {
   totalVideos: number
   monthlyNew: number

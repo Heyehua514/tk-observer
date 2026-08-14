@@ -1632,6 +1632,72 @@ export type Database = {
         }
         Relationships: []
       }
+      publish_schedules: {
+        Row: {
+          account: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          legacy_id: string | null
+          notes: string | null
+          platform: string
+          publish_at: string
+          region: string
+          status: string
+          title: string
+          updated_at: string
+          video_id: string | null
+          video_task_id: string | null
+        }
+        Insert: {
+          account: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          notes?: string | null
+          platform?: string
+          publish_at: string
+          region?: string
+          status?: string
+          title: string
+          updated_at?: string
+          video_id?: string | null
+          video_task_id?: string | null
+        }
+        Update: {
+          account?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          legacy_id?: string | null
+          notes?: string | null
+          platform?: string
+          publish_at?: string
+          region?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          video_id?: string | null
+          video_task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'publish_schedules_video_id_fkey'
+            columns: ['video_id']
+            isOneToOne: false
+            referencedRelation: 'videos'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'publish_schedules_video_task_id_fkey'
+            columns: ['video_task_id']
+            isOneToOne: false
+            referencedRelation: 'video_tasks'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       social_plans: {
         Row: {
           actual_result: string | null
