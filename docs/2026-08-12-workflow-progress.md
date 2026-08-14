@@ -522,3 +522,32 @@
 ### 提交
 
 - `7d6f93c feat(business): 渠道商单取消原因必填 + E2E 闭环`
+
+## 2026-08-14 下午续：活动招商跨工作台 E2E（录入-跟进闭环）
+
+- 新增 E2E 用例 `e2e/sponsorship-flow.spec.ts`：董雨辰在商务工作台录入赞助意向 → 韩素云在市场工作台活动详情「招商跟进」Tab 看到同一数据 → 更新状态为已确认 → 董雨辰侧只读看到状态变化，完成跨工作台共享数据闭环。
+- 修复 `switchAccount` 切换登录失效根因：Supabase 会话在 localStorage、用户态在 sessionStorage，只清前者会导致旧用户态残留、`/login` 路由守卫误重定向。修复为同时 `sessionStorage.clear()`。
+- 修复赞助公司名不显示：`clients` 表列名为 `company`（非 `company_name`），Supabase join 返回 `clients: { company, name }`。活动详情查询改 `clients(company, name)`，`market-mappers` 映射优先 `company`、空值回退 `company_name`/`name`（补 2 个单测）。
+- 修复 REST 直写不触发 react-query 失效：用例改为插入后 `page.reload()` 再断言，避免空态假失败。
+- `playwright.config.ts`：baseURL/webServer 固定 IPv4 `127.0.0.1`；支持 `E2E_USE_EXTERNAL_SERVER=1` 跳过内置 webServer（沙箱 EPERM 兼容）。
+- `e2e/helpers.ts` 新增 `findRowId` / `insertEventSponsorship` / `softDeleteSponsorship`。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 101 文件 / 234 测试；pgTAP 25 文件 / 450 断言 PASS；E2E 11/11 通过（新增活动招商跨工作台用例）；build 通过。
+- 本地 dev 库物理清理历史 E2E 残留（events/event_sponsorships/event_finances/clients/opportunities/channel_orders/social_plans/venues/video_ideas/design_* 等），验证全部 `E2E%` 计数为 0，仅保留种子达人 `E2E可商务达人`（order-status.spec.ts 依赖）。
+- 验收清单市场「活动详情招商跟进 Tab（与商务共享数据）」勾选。
+
+### 提交
+
+- `7662882 feat(e2e): 活动招商跨工作台录入-跟进闭环`
+
+## 2026-08-14 下午续二：活动财务模板种子 Supabase-first（读取 + 新增 + E2E）
+
+- `use-activity-detail.ts` Supabase 分支补齐 `event_finances` 读取（`is('deleted_at', null)` + `paid_at` 排序），`finances` 不再硬编码空数组；`useCreateActivityFinance` 改为 Supabase-first（insert `event_id/category/type/amount/description/paid_at`），PocketBase 保留显式回退。
+- `ActivityRelatedRecord` 新增 `description` 字段，`market-mappers` 映射 `description`（财务模板行描述），`RecordList` 显示回退链补 `description`（财务行显示「赞助收入/场地费」等模板名而非「未命名记录」）。
+- `market-mappers.test.ts` 补财务模板行映射用例（gate tests 235 个）。
+- `e2e/market-events.spec.ts` 财务复盘 Tab 断言新建活动后自动种出的 7 条模板行可见（赞助收入/票务收入/场地费/布置费/餐饮费/物料印刷/嘉宾差旅）。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 101 文件 / 235 测试；pgTAP 25 文件 / 450 断言 PASS；E2E 11/11 通过；build 通过；E2E 残留（events/event_finances/design/venues/videos/social/orders/opps/clients）已物理清理，仅保留 `E2E可商务达人`。
+- 验收清单市场「活动财务模板自动创建并展示」勾选。
+
+### 提交
+
+- `62fcff7 feat(market): 活动财务模板种子 Supabase-first 读取+新增+E2E`
