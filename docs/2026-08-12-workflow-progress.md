@@ -505,4 +505,4 @@
 
 ### 提交
 
-- 待提交：`feat(business): 渠道商单取消原因必填 + E2E 闭环`
+- `7d6f93c feat(business): 渠道商单取消原因必填 + E2E 闭环`
