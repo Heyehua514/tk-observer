@@ -37,6 +37,10 @@ export function DesignRequirements() {
   const [formOpen, setFormOpen] = useState(false)
   const [selected, setSelected] = useState<DesignRequirement | null>(null)
   const requirements = useDesignRequirements(status)
+  const latestSelected =
+    selected && requirements.data
+      ? requirements.data.find((item) => item.id === selected.id) ?? selected
+      : selected
   return (
     <div className='space-y-4'>
       <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -138,7 +142,7 @@ export function DesignRequirements() {
         requester={user?.id || ''}
       />
       <RequirementDetail
-        requirement={selected}
+        requirement={latestSelected}
         open={Boolean(selected)}
         onOpenChange={(open) => {
           if (!open) setSelected(null)

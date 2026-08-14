@@ -255,7 +255,7 @@ export function OverviewDashboard() {
                   axisLine={false}
                   width={70}
                   tickFormatter={(value: number) =>
-                    `$${Math.round(value / 100 / 1000)}k`
+                    `¥${Math.round(value / 100 / 1000)}k`
                   }
                 />
                 <Tooltip

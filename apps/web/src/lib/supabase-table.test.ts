@@ -1,5 +1,9 @@
 /** Supabase 分页查询包装自检；保持与现有 ListResult 语义一致。 */
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 const select = vi.fn()
 const order = vi.fn()
@@ -8,45 +12,29 @@ const is = vi.fn()
 const eq = vi.fn()
 const or = vi.fn()
 
+const chain = { select, order, range, is, eq, or }
+select.mockReturnValue(chain)
+is.mockReturnValue(chain)
+eq.mockReturnValue(chain)
+or.mockReturnValue(chain)
+order.mockReturnValue(chain)
+range.mockResolvedValue({
+  data: [
+    { id: '1', name: 'A' },
+    { id: '2', name: 'B' },
+  ],
+  count: 12,
+  error: null,
+})
+
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: () => ({
-    from: () => ({
-      select,
-      order,
-      range,
-      is,
-      eq,
-      or,
-    }),
+    from: () => ({ select }),
   }),
 }))
 
 describe('createSupabasePageQuery', () => {
   it('maps rows and pagination metadata from a Supabase table query', async () => {
-    select.mockReturnValue({
-      is,
-    })
-    is.mockReturnValue({
-      eq,
-    })
-    eq.mockReturnValue({
-      or,
-    })
-    or.mockReturnValue({
-      order,
-    })
-    order.mockReturnValue({
-      range,
-    })
-    range.mockResolvedValue({
-      data: [
-        { id: '1', name: 'A' },
-        { id: '2', name: 'B' },
-      ],
-      count: 12,
-      error: null,
-    })
-
     const { createSupabasePageQuery } = await import('./supabase-table')
     const result = await createSupabasePageQuery({
       table: 'clients',
@@ -62,7 +50,9 @@ describe('createSupabasePageQuery', () => {
     })
 
     expect(select).toHaveBeenCalledWith('*', { count: 'exact' })
-    expect(is).toHaveBeenCalledWith('deleted_at', null)
+    expect(is).toHaveBeenCalledTimes(2)
+    expect(is).toHaveBeenNthCalledWith(1, 'deleted_at', null)
+    expect(is).toHaveBeenNthCalledWith(2, 'deleted_at', null)
     expect(eq).toHaveBeenCalledWith('region', 'US')
     expect(or).toHaveBeenCalledWith('name.ilike.%A%')
     expect(order).toHaveBeenCalledWith('updated_at', { ascending: false })
@@ -77,5 +67,18 @@ describe('createSupabasePageQuery', () => {
         { id: '2', name: 'B' },
       ],
     })
+  })
+
+  it('always appends soft-delete filter even without explicit deleted_at filter', async () => {
+    const { createSupabasePageQuery } = await import('./supabase-table')
+    await createSupabasePageQuery({
+      table: 'video_ideas',
+      page: 1,
+      perPage: 20,
+      sort: '-views',
+      mapRow: (row) => ({ id: String(row.id) }),
+    })
+    expect(is).toHaveBeenCalledTimes(1)
+    expect(is).toHaveBeenCalledWith('deleted_at', null)
   })
 })

@@ -40,6 +40,8 @@ export async function createSupabasePageQuery<T>({
     if (filter.kind === 'lte') query = query.lte(filter.column, filter.value)
     if (filter.kind === 'or') query = query.or(filter.expression)
   }
+  // 业务表统一软删除：分页列表只返回未删除行。当前所有使用该函数的表均含 deleted_at。
+  query = query.is('deleted_at', null)
   const sorted = query.order(column, {
     ascending: direction !== 'desc',
   })
