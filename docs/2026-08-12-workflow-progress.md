@@ -395,3 +395,20 @@
 ### 提交
 
 - `6fa9a09 fix(supabase): restore video_ideas column grants and harden pgtap assertions`
+
+## 2026-08-14 上午 审计修复 + E2E 扩面（中午前收口）
+
+- 币种统一：`formatMoney` 默认参数从 USD 改为 CNY，总览 GMV 图表 Y 轴 `$k` → `¥k`；新增 format 单测（默认 CNY、显式 USD 不受影响）。全项目仅总览两处使用默认参数，商务/市场已显式 CNY，现全部人民币口径。
+- PocketBase 冻结：新增 `scripts/supabase/pocketbase-freeze-check.mjs` + 3 个单测（冻结线 15 个 migration），`pnpm check:pb-freeze` 可校验；README 与部署文档声明「只读回退、不再加业务功能」。
+- CI 落地：仓库无 remote，GitHub Actions 无法远端执行；本地等效验证已跑通（typecheck/lint/test 228/build/E2E 4 条/pgTAP 401）。待用户提供私有仓库 remote 后 CI 即可生效。
+- E2E 扩面：新增 3 条（市场活动新增-删除、剪辑选题新增-删除、设计需求提交-接单闭环），与既有商务客户 CRUD 共 4 条全过。E2E 暴露并修复 2 个真实 bug：
+  - `createSupabasePageQuery` 未自动过滤 `deleted_at`，软删除行仍出现在分页列表（影响所有使用该 helper 的列表）；现统一 `is('deleted_at', null)`，补 2 个单测。
+  - 设计需求详情弹窗持有静态快照，设计师接单后状态按钮不刷新；现从最新列表数据派生选中项，接单后可立即看到「已交付」流转。
+- 验证：`pnpm test` 100 文件 / 228 测试；`pnpm --dir apps/web build` 通过；`pnpm test:e2e` 4/4；`node --test` 38/38（新增冻结 3 个）；pgTAP 23 文件 / 401 断言 PASS。
+
+### 提交
+
+- `00781aa fix(web): 统一人民币口径 + 列表软删除过滤 + 设计需求状态实时刷新`
+- `0b6745f feat(e2e): 市场/剪辑/设计三条工作台 E2E 闭环`
+- `e290d5b test(pg): 事务内隔离本地残留数据 稳定计数断言`
+- `c502b46 chore(pb): 冻结 PocketBase 只读回退 + check:pb-freeze 校验`
