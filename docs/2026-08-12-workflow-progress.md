@@ -753,3 +753,17 @@
 ### 提交
 
 - `feat(data): Storage 文件本体迁移脚本与抽样验证`
+
+## 2026-08-14 续十七：PWA 离线壳 + 移动端视口自动化验证
+
+- 新增 `apps/web/e2e/pwa-mobile-shell.spec.ts`（4 条用例，无需登录）：
+  1. manifest 元数据可访问且图标可加载：`/manifest.webmanifest` 返回 name=「TK观察工作台」/ short_name=「TK工作台」/ start_url=/ / display=standalone，每个图标 HTTP 200；
+  2. service worker 注册并被接管：生产 preview 下 `/sw.js` 注册达到 activated，reload 后 `navigator.serviceWorker.controller` 接管页面；
+  3. 离线状态应用外壳仍可渲染：在线热身后 `context.setOffline(true)`，reload 仍渲染登录页标题与邮箱输入框（SW 外壳缓存 + 运行时资源缓存回退）；
+  4. 移动端视口（iPhone 13 仿真）登录页无横向溢出：`scrollWidth <= clientWidth`。
+- 说明：真机仍需人工点验，但 PWA 三要素（manifest / SW 注册 / 离线壳）与移动端布局溢出已转自动覆盖；e2e tsconfig 无 DOM lib，回调内用结构化类型收窄浏览器全局，不引入 `any`。
+- 验证：全量 E2E 扩至 30/30 全过（1.5m）；`pnpm lint` 零错误；`tsc -b --force` 零错误；`pnpm test` 103 文件 / 240 测试全过。
+
+### 提交
+
+- `test(e2e): PWA 离线壳与移动端视口自动化验证`
