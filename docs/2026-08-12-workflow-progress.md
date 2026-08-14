@@ -612,3 +612,20 @@
 ### 提交
 
 - `2a00558 feat(e2e): 剪辑工作台对标/热点录入交互 E2E 闭环`
+
+## 2026-08-14 下午续七：市场资源库 E2E 闭环（模板/物料/财务导出）
+
+- 新增 E2E `e2e/market-resources.spec.ts`：登录韩素云 → 新建活动 `E2E资源活动-${ts}` → 覆盖三个资源子模块：
+  - 文案模板：录入含 `{{活动名称}}` 占位符正文 → 新增 → 列表「使用 0 次」→ 预览保留占位符 → 「套用到活动」后预览替换实际值 → 「使用 1 次」；
+  - 物料管理：海报类型 + 上传 TINY_PNG + 备注 → 卡片显示名称/类型/「预览文件」链接；
+  - 财务明细：收入/赞助收入 + 金额（元）→ 新增 → 表格显示 `¥120,000.00` → 下载 `event-finances.csv` 与 `event-finances.md` 并读取文件内容断言；
+  - finally 按依赖顺序软删模板/物料/财务/活动回收。
+- 修复 `useMarkTemplateUsed` Supabase 双重计数：Supabase 已有 `bump_event_template_usage` 触发器按 `last_used_at` 自动 +1，原前端同时写 `usage_count` 与 `last_used_at` 导致实际「使用 2 次」；改为只写 `last_used_at`（PocketBase 分支保留原逻辑）。
+- 修复市场资源库财务表格金额显示 bug：`{row.amount}`（分）→ `formatFinanceCny(row.amount)`（元）。
+- `e2e/helpers.ts` 清理上一轮遗留的重复 `TINY_PNG` 定义段，当前文件仅一组助手。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试全过；`pnpm --dir apps/web build` 通过；E2E 18/18 全过（51.2s，新增市场资源库用例后 17→18）；残留验证 events/templates/materials/finances `E2E%` live 计数全为 0。
+- 验收清单市场第 3 条「录入场地、文案模板、物料与财务明细，验证筛选/搜索/导出」勾选（导出与录入由本用例自动覆盖；筛选/搜索交互留待真机）。
+
+### 提交
+
+- `feat(e2e): 市场资源库模板/物料/财务导出闭环`

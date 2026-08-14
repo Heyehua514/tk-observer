@@ -161,12 +161,11 @@ export function useMarkTemplateUsed() {
   return useMutation({
     mutationFn: async ({ id, usageCount }: { id: string; usageCount: number }) => {
       if (getDataProvider() === 'supabase') {
+        // Supabase 由 bump_event_template_usage 触发器按 last_used_at 自动 +1，
+        // 前端只写 last_used_at，避免与触发器双重计数。
         const { error } = await getSupabaseClient()
           .from('event_templates')
-          .update({
-            usage_count: usageCount + 1,
-            last_used_at: new Date().toISOString(),
-          })
+          .update({ last_used_at: new Date().toISOString() })
           .eq('id', id)
         if (error) throw error
         return

@@ -507,7 +507,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
                       {row.type === 'income' ? '收入' : '支出'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{row.amount}</TableCell>
+                  <TableCell>{formatFinanceCny(row.amount)}</TableCell>
                   <TableCell>{row.description}</TableCell>
                   <TableCell>
                     {row.receipt ? (
