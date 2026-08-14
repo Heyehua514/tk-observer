@@ -5,6 +5,10 @@
 begin;
 select plan(38);
 
+-- 隔离本地残留：E2E 或手工运行可能向这些表写入过数据，事务内清理保证计数断言稳定。
+truncate table public.daily_reports, public.weekly_reports, public.failed_cases,
+  public.notifications, public.audit_logs;
+
 -- ---------- 准备 5 个角色账号 ----------
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password,

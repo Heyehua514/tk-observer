@@ -5,6 +5,10 @@
 begin;
 select plan(51);
 
+-- 隔离本地残留：E2E 或手工运行可能向这些表写入过数据，事务内清理保证计数断言稳定。
+truncate table public.daily_reports, public.weekly_reports, public.failed_cases,
+  public.notifications, public.audit_logs;
+
 -- ---------- 结构与触发器存在性 ----------
 select has_extension('pg_cron', 'pg_cron extension is available');
 select has_column('public', 'social_plans', 'usage_count', 'social plans track usage count');

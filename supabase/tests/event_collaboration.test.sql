@@ -136,8 +136,8 @@ select set_config(
   '{"sub":"30000000-0000-0000-0000-000000000002","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.events), 1::bigint, 'business can read event names');
-select is((select count(*) from public.event_sponsorships), 1::bigint, 'business can read sponsorships');
+select is((select count(*) from public.events where id = '32000000-0000-0000-0000-000000000001'), 1::bigint, 'business can read event names');
+select is((select count(*) from public.event_sponsorships where id = '35000000-0000-0000-0000-000000000001'), 1::bigint, 'business can read sponsorships');
 select lives_ok($$
   update public.event_sponsorships set stage = 'negotiating'
   where id = '35000000-0000-0000-0000-000000000001'
@@ -175,7 +175,8 @@ select lives_ok($$
   where id = '32000000-0000-0000-0000-000000000001'
 $$, 'owner can soft delete events');
 select is(
-  (select count(*) from public.events where deleted_at is not null),
+  (select count(*) from public.events
+   where id = '32000000-0000-0000-0000-000000000001' and deleted_at is not null),
   1::bigint,
   'owner can inspect soft-deleted events'
 );
