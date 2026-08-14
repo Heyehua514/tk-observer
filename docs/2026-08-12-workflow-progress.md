@@ -701,3 +701,17 @@
 ### 提交
 
 - `test(e2e): 场地快速匹配城市/人数/类型组合筛选闭环`
+
+## 2026-08-14 下午续十四：客户详情关联商机/商单点击跳转闭环
+
+- 前端业务改动（直达路由 + 自动定位）：客户详情「关联商机/关联商单」面板条目由静态展示改为可点击按钮（ArrowUpRight 图标），点击后：
+  - 跳转商务工作台对应 Tab，`business/index.tsx` 的 `recordType` 扩为 `'creator' | 'company' | 'opportunity' | 'order'`，`onFocus` 把 `recordType/recordId/tab` 写进 URL；
+  - `OpportunitiesWorkbench` 支持 `focusId`：数据加载后自动打开对应商机详情（consumedFocus 防重复）；`OrdersWorkbench` 支持 `focusId`：目标行 `bg-primary/5` 高亮并 `scrollIntoView` 定位。
+- `RelationBlock` 从 `clients-workbench.tsx` 导出，支持 `onOpenRelated` 回调；新增 UI 测试 `relation-block.test.tsx`（3 条：点击回调传类型+ID、空态无按钮）。
+- `e2e/helpers.ts` 新增 `softDeleteChannelOrder`、`softDeleteRowsByFieldLike`；新增 E2E `client-relation-jump.spec.ts`：建客户+商机+商单 → 详情点「关联商机」→ 跳商机 Pipeline 自动开详情 → Esc 关闭 → 点「关联商单」→ 跳渠道商单并断言高亮 → 软删回收。修复过程：Dialog 关闭按钮 role 不可靠导致上一版卡住，改用 `page.keyboard.press('Escape')` 后通过。
+- 验收清单商务新增「客户详情关联面板：商机/商单点击跳转自动覆盖」。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 103 文件 / 240 测试；`pnpm --dir apps/web build` 通过；单跑新用例 6.9s 通过；全量 E2E 25/25 全过（1.4m，24→25）；残留验证 clients / opportunities / channel_orders `E2E关联%` live=0。
+
+### 提交
+
+- `feat(business): 客户详情关联商机/商单点击跳转闭环`

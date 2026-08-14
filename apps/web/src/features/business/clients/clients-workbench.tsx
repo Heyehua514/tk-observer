@@ -1,6 +1,6 @@
 // 商务工作台客户 CRUD；权限：business 与 boss 可操作。
 import { useMemo, useState } from 'react'
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowUpRight, Eye, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -61,7 +61,11 @@ const empty: ClientInput = {
   level: 'C',
   notes: '',
 }
-export function ClientsWorkbench() {
+export function ClientsWorkbench({
+  onOpenRelated,
+}: {
+  onOpenRelated?: (type: 'opportunity' | 'order', id: string) => void
+}) {
   const clients = useClients()
   const create = useCreateClient()
   const update = useUpdateClient()
@@ -354,6 +358,7 @@ export function ClientsWorkbench() {
       <ClientDetailDialog
         client={viewing}
         open={Boolean(viewing)}
+        onOpenRelated={onOpenRelated}
         onOpenChange={(nextOpen) => {
           if (!nextOpen) setViewing(null)
         }}
@@ -365,10 +370,12 @@ export function ClientsWorkbench() {
 function ClientDetailDialog({
   client,
   open,
+  onOpenRelated,
   onOpenChange,
 }: {
   client: Client | null
   open: boolean
+  onOpenRelated?: (type: 'opportunity' | 'order', id: string) => void
   onOpenChange: (open: boolean) => void
 }) {
   const relations = useClientRelations(client?.id)
@@ -398,6 +405,7 @@ function ClientDetailDialog({
           </section>
           <section className='space-y-4'>
             <RelationBlock
+              type='opportunity'
               title='关联商机'
               empty='该客户还没有商机'
               items={(relations.data?.opportunities || []).map((item) => ({
@@ -406,8 +414,10 @@ function ClientDetailDialog({
                 meta: `${formatOrderAmount(item.amount)} · ${item.probability}% · ${item.stage}`,
               }))}
               loading={relations.isLoading}
+              onOpenRelated={onOpenRelated}
             />
             <RelationBlock
+              type='order'
               title='关联商单'
               empty='该客户还没有商单'
               items={(relations.data?.orders || []).map((item) => ({
@@ -418,6 +428,7 @@ function ClientDetailDialog({
                 }`,
               }))}
               loading={relations.isLoading}
+              onOpenRelated={onOpenRelated}
             />
           </section>
         </div>
@@ -435,16 +446,20 @@ function Info({ label, value }: { label: string; value: string }) {
   )
 }
 
-function RelationBlock({
+export function RelationBlock({
+  type,
   title,
   empty,
   items,
   loading,
+  onOpenRelated,
 }: {
+  type: 'opportunity' | 'order'
   title: string
   empty: string
   items: { id: string; title: string; meta: string }[]
   loading: boolean
+  onOpenRelated?: (type: 'opportunity' | 'order', id: string) => void
 }) {
   return (
     <div className='rounded-lg border p-4'>
@@ -457,12 +472,20 @@ function RelationBlock({
       ) : items.length ? (
         <div className='space-y-2'>
           {items.map((item) => (
-            <div key={item.id} className='rounded-md bg-muted/40 p-3'>
-              <div className='text-sm font-medium'>{item.title}</div>
-              <div className='mt-1 text-xs text-muted-foreground'>
-                {item.meta}
+            <button
+              key={item.id}
+              type='button'
+              onClick={() => onOpenRelated?.(type, item.id)}
+              className='group flex w-full items-center justify-between gap-2 rounded-md bg-muted/40 p-3 text-left transition-colors hover:bg-muted'
+            >
+              <div className='min-w-0'>
+                <div className='truncate text-sm font-medium'>{item.title}</div>
+                <div className='mt-1 truncate text-xs text-muted-foreground'>
+                  {item.meta}
+                </div>
               </div>
-            </div>
+              <ArrowUpRight className='size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground' />
+            </button>
           ))}
         </div>
       ) : (

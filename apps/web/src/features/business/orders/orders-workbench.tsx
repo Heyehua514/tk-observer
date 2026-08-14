@@ -49,7 +49,11 @@ import {
   orderStatusOptions,
 } from './order-options'
 
-export function OrdersWorkbench() {
+export function OrdersWorkbench({
+  focusId,
+}: {
+  focusId?: string
+}) {
   const cache = useQueryClient()
   const clients = useClients()
   const [open, setOpen] = useState(false)
@@ -253,6 +257,7 @@ export function OrdersWorkbench() {
               <OrderRow
                 key={item.id}
                 item={item}
+                highlighted={item.id === focusId}
                 onStatusChange={(status) => {
                   if (status === 'cancelled') {
                     setCancelReason('')
@@ -433,16 +438,22 @@ export function OrdersWorkbench() {
 
 function OrderRow({
   item,
+  highlighted,
   onStatusChange,
   onRemove,
 }: {
   item: OrderRow
+  highlighted: boolean
   onStatusChange: (status: string) => void
   onRemove: () => void
 }) {
   const display = buildOrderDisplay(item)
   return (
-    <TableRow>
+    <TableRow
+      data-order-id={item.id}
+      className={highlighted ? 'bg-primary/5' : undefined}
+      ref={highlighted ? (el) => el?.scrollIntoView({ block: 'center' }) : undefined}
+    >
       <TableCell className='font-medium'>{item.title}</TableCell>
       <TableCell>{item.clientName}</TableCell>
       <TableCell>{item.creatorName}</TableCell>

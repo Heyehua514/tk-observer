@@ -40,6 +40,9 @@ export function BusinessWorkbench({
   onCompanyParamsChange,
   tab,
   onTabChange,
+  focusType,
+  focusId,
+  onFocus,
 }: {
   params: CreatorListParams
   companyParams: CompanyListParams
@@ -47,6 +50,9 @@ export function BusinessWorkbench({
   onCompanyParamsChange: (patch: Partial<CompanyListParams>) => void
   tab: BusinessTab
   onTabChange: (tab: BusinessTab) => void
+  focusType?: 'opportunity' | 'order'
+  focusId?: string
+  onFocus?: (type: 'opportunity' | 'order', id: string) => void
 }) {
   return (
     <div className='space-y-6'>
@@ -109,13 +115,15 @@ export function BusinessWorkbench({
           />
         </TabsContent>
         <TabsContent value='clients' className='mt-5'>
-          <ClientsWorkbench />
+          <ClientsWorkbench onOpenRelated={onFocus} />
         </TabsContent>
         <TabsContent value='opportunities' className='mt-5'>
-          <OpportunitiesWorkbench />
+          <OpportunitiesWorkbench
+            focusId={focusType === 'opportunity' ? focusId : undefined}
+          />
         </TabsContent>
         <TabsContent value='orders' className='mt-5'>
-          <OrdersWorkbench />
+          <OrdersWorkbench focusId={focusType === 'order' ? focusId : undefined} />
         </TabsContent>
         <TabsContent value='social' className='mt-5'>
           <SocialWorkbench />

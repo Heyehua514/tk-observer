@@ -87,6 +87,41 @@ export async function softDeleteOpportunity(
 }
 
 /**
+ * 用当前页面登录态软删除测试渠道商单（business 有 update 权限）。
+ */
+export async function softDeleteChannelOrder(
+  page: Page,
+  title: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, title }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/channel_orders?title=eq.${encodeURIComponent(title)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        }
+      )
+      return res.ok
+    },
+    { url, anonKey, title }
+  )
+}
+
+/**
  * 用当前页面登录态读取商机跟进备注（business 对 opportunities 可读）。
  * 用途：验证朋友圈复盘后触发器自动追加「来源：朋友圈」。
  */
@@ -601,6 +636,56 @@ export async function softDeleteRowsByFieldValue(
       return cleaned > 0
     },
     { url, anonKey, table, field, value }
+  )
+}
+
+/**
+ * 用当前页面登录态按字段前缀软删除任意软删表记录（调用方需持有该表的 update 权限）。
+ * 用途：E2E 历史失败残留清理，避免同名前缀脏数据污染断言。
+ */
+export async function softDeleteRowsByFieldLike(
+  page: Page,
+  table: string,
+  field: string,
+  prefix: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, table, field, prefix }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+      }
+      const list = await fetch(
+        `${url}/rest/v1/${table}?${field}=like.${encodeURIComponent(
+          `${prefix}%`
+        )}&deleted_at=is.null&select=id`,
+        { headers }
+      )
+      if (!list.ok) return false
+      const rows = (await list.json()) as Array<{ id: string }>
+      let cleaned = 0
+      for (const row of rows) {
+        const res = await fetch(`${url}/rest/v1/${table}?id=eq.${row.id}`, {
+          method: 'PATCH',
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        })
+        if (res.ok) cleaned += 1
+      }
+      return cleaned > 0
+    },
+    { url, anonKey, table, field, prefix }
   )
 }
 

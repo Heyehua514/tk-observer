@@ -1,5 +1,5 @@
 // 商务工作台商机 Pipeline；权限：business 与 boss 可操作。
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Plus } from 'lucide-react'
@@ -50,7 +50,11 @@ const labels: Record<OpportunityStage, string> = {
   lost: '已流失',
 }
 
-export function OpportunitiesWorkbench() {
+export function OpportunitiesWorkbench({
+  focusId,
+}: {
+  focusId?: string
+}) {
   const queryClient = useQueryClient()
   const clients = useClients()
   const opportunities = useQuery({
@@ -165,6 +169,15 @@ export function OpportunitiesWorkbench() {
   const [client, setClient] = useState('')
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const reduceMotion = useReducedMotion()
+  const consumedFocus = useRef<string | null>(null)
+  useEffect(() => {
+    if (!focusId || focusId === consumedFocus.current) return
+    const item = opportunities.data?.find((row) => row.id === focusId)
+    if (item) {
+      consumedFocus.current = focusId
+      setSelected(item)
+    }
+  }, [focusId, opportunities.data])
   return (
     <div className='space-y-4'>
       <div className='flex justify-end'>

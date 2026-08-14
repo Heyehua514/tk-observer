@@ -28,7 +28,7 @@ type BusinessSearch = CreatorListParams & {
   companyRegion: CompanyListParams['region']
   companyKind: CompanyListParams['kind']
   companySort: CompanyListParams['sort']
-  recordType?: 'creator' | 'company'
+  recordType?: 'creator' | 'company' | 'opportunity' | 'order'
   recordId?: string
 }
 
@@ -99,7 +99,10 @@ function parseSearch(search: Record<string, unknown>): BusinessSearch {
         ? search.companySort
         : '-updated',
     recordType:
-      search.recordType === 'creator' || search.recordType === 'company'
+      search.recordType === 'creator' ||
+      search.recordType === 'company' ||
+      search.recordType === 'opportunity' ||
+      search.recordType === 'order'
         ? search.recordType
         : undefined,
     recordId: typeof search.recordId === 'string' ? search.recordId : undefined,
@@ -152,6 +155,18 @@ function BusinessRoute() {
       onTabChange={(tab) =>
         void navigate({
           search: (previous) => ({ ...previous, tab }),
+          replace: true,
+        })
+      }
+      focusType={
+        params.recordType === 'opportunity' || params.recordType === 'order'
+          ? params.recordType
+          : undefined
+      }
+      focusId={params.recordId}
+      onFocus={(type, id) =>
+        void navigate({
+          search: (previous) => ({ ...previous, recordType: type, recordId: id, tab: type === 'opportunity' ? 'opportunities' : 'orders' }),
           replace: true,
         })
       }
