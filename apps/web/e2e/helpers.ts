@@ -122,6 +122,94 @@ export async function softDeleteChannelOrder(
 }
 
 /**
+ * 用当前页面登录态更新商机阶段（business 有 update 权限）。
+ * 用途：商机成交通知 E2E 触发 won 状态机与通知触发器。
+ */
+export async function updateOpportunityStage(
+  page: Page,
+  title: string,
+  stage: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, title, stage }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/opportunities?title=eq.${encodeURIComponent(title)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ stage }),
+        }
+      )
+      return res.ok
+    },
+    { url, anonKey, title, stage }
+  )
+}
+
+/**
+ * 用当前页面登录态按内容前缀软删除自己的通知（recipient 有 update 权限）。
+ * 用途：清理商机成交通知 E2E 产生的通知残留。
+ */
+export async function softDeleteNotificationsByContentPrefix(
+  page: Page,
+  prefix: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, prefix }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+      }
+      const list = await fetch(
+        `${url}/rest/v1/notifications?content=like.${encodeURIComponent(
+          `${prefix}%`
+        )}&deleted_at=is.null&select=id`,
+        { headers }
+      )
+      if (!list.ok) return false
+      const rows = (await list.json()) as Array<{ id: string }>
+      for (const row of rows) {
+        const res = await fetch(
+          `${url}/rest/v1/notifications?id=eq.${row.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+          }
+        )
+        if (!res.ok) return false
+      }
+      // 无残留或已全部清理都视为成功，便于用例开头预清理与结尾回收共用。
+      return true
+    },
+    { url, anonKey, prefix }
+  )
+}
+
+/**
  * 用当前页面登录态读取商机跟进备注（business 对 opportunities 可读）。
  * 用途：验证朋友圈复盘后触发器自动追加「来源：朋友圈」。
  */

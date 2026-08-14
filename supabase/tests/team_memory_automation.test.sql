@@ -334,7 +334,7 @@ select lives_ok($$
   select public.run_deadline_checks()
 $$, 'deadline check can run');
 select is(
-  (select count(*) from public.notifications),
+  (select count(*) from public.notifications where type = 'deadline'),
   2::bigint,
   'deadline check creates task and opportunity notifications'
 );
@@ -342,7 +342,7 @@ select lives_ok($$
   select public.run_deadline_checks()
 $$, 'deadline check can run again');
 select is(
-  (select count(*) from public.notifications),
+  (select count(*) from public.notifications where type = 'deadline'),
   2::bigint,
   'deadline check does not duplicate notifications'
 );

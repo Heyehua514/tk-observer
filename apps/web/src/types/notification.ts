@@ -3,7 +3,7 @@
  * 通知属于跨工作台能力，不归属任一 feature。
  */
 export type NotificationType =
-  'design_review' | 'gmv_target' | 'comment' | 'deadline'
+  'design_review' | 'gmv_target' | 'comment' | 'deadline' | 'opportunity_won'
 
 export type AppNotification = {
   id: string

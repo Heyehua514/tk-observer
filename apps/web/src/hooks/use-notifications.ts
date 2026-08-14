@@ -37,6 +37,11 @@ export function useNotifications() {
   useEffect(() => {
     if (!recipient) return
     if (getDataProvider() === 'supabase') {
+      // 本地 Supabase Realtime 对 notifications 表存在两个兼容性问题：
+      // 1) 服务端 filter（recipient_id=eq.…）会报 "invalid column"；
+      // 2) 事件 record 受 RLS 解码影响可能返回空对象（errors 401）。
+      // 因此采用全表订阅 + 收到任意变更即失效查询，列表内容由 REST 查询按 recipient 精确过滤，
+      // 保证铃铛始终只显示当前用户的通知（与 use-companies 的订阅模式一致）。
       const channel = getSupabaseClient()
         .channel(`notifications:${recipient}`)
         .on(
@@ -45,7 +50,6 @@ export function useNotifications() {
             event: '*',
             schema: 'public',
             table: 'notifications',
-            filter: `recipient_id=eq.${recipient}`,
           },
           () => {
             void queryClient.invalidateQueries({

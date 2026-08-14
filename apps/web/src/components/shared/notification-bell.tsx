@@ -30,6 +30,7 @@ const notificationIcons = {
   gmv_target: CircleDollarSign,
   comment: MessageSquare,
   deadline: ClockAlert,
+  opportunity_won: CircleDollarSign,
 } satisfies Record<NotificationType, typeof Bell>
 
 const allowedLinks = [
