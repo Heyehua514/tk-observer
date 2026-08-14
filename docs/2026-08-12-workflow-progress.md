@@ -596,3 +596,19 @@
 ### 提交
 
 - `feat(e2e): 设计需求详情参考/交付记录子 Tab 闭环`
+
+## 2026-08-14 下午续六：剪辑工作台对标/热点录入交互 E2E 闭环
+
+- 新增 E2E `e2e/editing-research-entry.spec.ts`（3 条用例）覆盖谢洁侧此前只有代码无真机验证的录入交互：
+  - 对标账号爆款视频录入（标题/链接/日期/播放量/点赞/内容标签/为什么爆/可借鉴点）→ 列表回显 → 分析笔记二次编辑回显；
+  - 风格分析粘贴解析（六段式 AI 结果 → 解析并保存 → 风格分析历史出现内容定位与可借鉴建议）；
+  - 热点话题批量解析入库（`---` 分隔两条结构化结果 → 卡片按热度展示 → 转为选题跳到选题库并预填标题）。
+- `e2e/helpers.ts` 新增 `insertCompetitorAccount`（editing 角色 REST 建前置对标账号）与 `softDeleteRowsByFieldValue`（uuid 外键精确值软删，uuid 不支持 like 通配）；`softDeleteRowsByFieldPrefix` 表类型扩展到剪辑 4 表。
+- 修复趋势页「调研趋势」按钮二义性（空态 action 与页头按钮各一个），用例改为 `.first()`。
+- 本地 dev 库 E2E 残留验证：competitor_accounts / competitor_videos / competitor_style_analysis / trending_topics 的 `E2E%` live 计数均为 0。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试；E2E 17/17 通过（49.0s，新增剪辑录入 3 条）；build 通过。
+- 验收清单剪辑「对标账号视频录入 / 风格分析录入 / 热点话题批量解析」真机交互项可勾选（代码早已实现，本轮补齐 E2E 证据）。
+
+### 提交
+
+- `2a00558 feat(e2e): 剪辑工作台对标/热点录入交互 E2E 闭环`
