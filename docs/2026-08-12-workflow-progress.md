@@ -678,3 +678,14 @@
 ### 提交
 
 - `test(e2e): 活动任务看板拖拽闭环`
+
+## 2026-08-14 下午续十二：设计任务看板拖拽 E2E 闭环
+
+- 新增 E2E `e2e/design-task-board.spec.ts`：孙铭泽登录 → 设计工作台「设计任务」Tab → 「新增任务」弹窗建 `E2E设计任务-${ts}`（默认落待设计列）→ 断言待设计列卡片可见 → `dragTo` 拖到「进行中」列 → 目标列 +1、源列 0（实时状态更新）→ `softDeleteRowsByFieldValue` 按 title 软删回收。
+- 复用商机看板已验证的 HTML5 dataTransfer 拖拽模式（`design-tasks-board.tsx` onDrop 读 `dataTransfer.getData('text/plain')`），与 `opportunity-pipeline.spec.ts` 同一机制，无需改业务代码。
+- 验收清单设计新增「设计任务四列看板：新增落待设计 + 拖拽流转」自动覆盖项。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试；`pnpm --dir apps/web build` 通过；单跑新用例 1.7s 通过；全量 E2E 23/23 全过（1.2m，22→23）；残留验证 design_tasks `E2E设计任务%` live=0。
+
+### 提交
+
+- `test(e2e): 设计任务看板拖拽闭环`
