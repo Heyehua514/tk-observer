@@ -15,13 +15,16 @@ import {
   mapSupabaseCalendarSocialPlan,
 } from './team-calendar-supabase-mapper'
 
-const dateOnly = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-
 export function useTeamCalendar(date = new Date()) {
-  const monthKey = dateOnly(date)
   return useQuery({
-    queryKey: ['overview', 'team-calendar', monthKey, date.toISOString()],
+    // key 只用稳定的 YYYY-MM：顶部时钟等高频重渲染若把毫秒时间戳放进 key，
+    // React Query 每次渲染都会作废旧请求并无限重发（已在 E2E 实测复现）。
+    queryKey: [
+      'overview',
+      'team-calendar',
+      date.getFullYear(),
+      date.getMonth(),
+    ],
     queryFn: async () => {
       if (getDataProvider() === 'supabase') {
         const [

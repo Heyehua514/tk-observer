@@ -11,3 +11,5 @@ work/
 .worktrees/
 .supabase/
 supabase/.temp/
+
+docs/效率模式清单.md

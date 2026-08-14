@@ -141,7 +141,12 @@ select set_config(
   '{"sub":"60000000-0000-0000-0000-000000000001","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.design_assets where deleted_at is not null), 1::bigint, 'boss can inspect soft-deleted design asset');
+select is(
+  (select count(*) from public.design_assets
+    where id = '62000000-0000-0000-0000-000000000001' and deleted_at is not null),
+  1::bigint,
+  'boss can inspect soft-deleted design asset'
+);
 
 select * from finish();
 rollback;
