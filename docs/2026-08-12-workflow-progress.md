@@ -567,3 +567,18 @@
 ### 提交
 
 - `600110d feat(overview): 团队日历查询键稳定性修复 + 跨角色 E2E`
+
+## 2026-08-14 下午续四：达人商务标记闭环（跨角色 E2E）
+
+- 商务工作台达人管理补齐商务标记三件套：`Creator` 类型新增 `isBizAvailable / cooperationPrice / cooperationNotes`，`creator-mapper.ts` 映射 Supabase 的 `is_biz_available / cooperation_price / cooperation_notes` 并序列化回写（business 经 RLS + `enforce_creator_business_update` 触发器只能改这三个字段）。
+- 达人列表新增「商务标记」列（可商务合作 Badge）与「只看可商务合作」筛选（URL 参数 `bizOnly`，Supabase/PocketBase 双源过滤）；`global-search.tsx` 跳转补齐新参数。
+- 达人详情抽屉新增「商务合作标记」只读区块：可商务合作 Badge、报价（分→元）、备注。
+- 达人表单新增：可商务合作 Switch、合作报价输入（元→分存储）、合作备注 Textarea。
+- 新增 E2E `e2e/creator-biz-mark.spec.ts`：谢洁 REST 建达人 → 董雨辰标记可商务合作（报价 ¥880 + 备注）→ 列表 Badge + 详情只读展示 → 只看可商务筛选 → 商单新增表单达人下拉只列可商务达人（含新标记达人）→ 谢洁软删回收；`e2e/helpers.ts` 新增 `insertCreator` / `softDeleteCreatorsByPrefix`。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试（mapper 新增双源序列化断言）；pgTAP 25 文件 / 450 断言 PASS；E2E 13/13 通过（35.9s，新增达人商务标记用例）；build 通过。
+- 本地 dev 库按依赖顺序物理清理本轮 E2E 残留（creators 3 / clients 4 / events 3 + 子表 / venues 1 / channel_orders 1 / opportunities 1 / social_plans 2 / design_assets 1 / video_ideas 1），验证各表 `E2E%` 计数为 0，仅保留种子达人 `E2E可商务达人`。
+- 验收清单商务「达人商务标记：可商务合作筛选 + 报价/备注只读展示」勾选。
+
+### 提交
+
+- 待提交：`feat(business): 达人商务标记闭环 + 跨角色 E2E`（本轮）

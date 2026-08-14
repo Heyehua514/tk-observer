@@ -41,6 +41,9 @@ async function fetchCreators(
         value: params.status,
       })
     }
+    if (params.bizOnly) {
+      filters.push({ kind: 'eq', column: 'is_biz_available', value: true })
+    }
     if (params.query) {
       const escaped = params.query.replace(/%/g, '\\%').replace(/,/g, '\\,')
       filters.push({
@@ -75,6 +78,9 @@ async function fetchCreators(
   if (params.status !== 'all') {
     filters.push('cooperation_status = {:status}')
     values.status = params.status
+  }
+  if (params.bizOnly) {
+    filters.push('is_biz_available = true')
   }
 
   const page = await pb

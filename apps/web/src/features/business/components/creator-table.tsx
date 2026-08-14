@@ -155,6 +155,16 @@ export function CreatorTable({
         ),
       },
       {
+        id: 'bizAvailable',
+        header: '商务标记',
+        cell: ({ row }) =>
+          row.original.isBizAvailable ? (
+            <Badge>可商务合作</Badge>
+          ) : (
+            <span className='text-muted-foreground'>-</span>
+          ),
+      },
+      {
         accessorKey: 'commissionRate',
         header: '佣金',
         cell: ({ row }) => `${row.original.commissionRate}%`,
@@ -218,6 +228,7 @@ export function CreatorTable({
       query: '',
       region: 'all',
       status: 'all',
+      bizOnly: false,
       sort: '-updated',
       page: 1,
     })
@@ -275,6 +286,20 @@ export function CreatorTable({
                 {cooperationStatusLabels[status]}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={params.bizOnly ? 'biz' : 'all'}
+          onValueChange={(value) =>
+            onParamsChange({ bizOnly: value === 'biz', page: 1 })
+          }
+        >
+          <SelectTrigger className='w-36'>
+            <SelectValue placeholder='商务标记' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='all'>全部达人</SelectItem>
+            <SelectItem value='biz'>只看可商务合作</SelectItem>
           </SelectContent>
         </Select>
         <Select

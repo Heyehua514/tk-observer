@@ -15,6 +15,9 @@ export type Creator = {
   cooperationStatus: CooperationStatus
   commissionRate: number
   owner: string
+  isBizAvailable: boolean
+  cooperationPrice: number
+  cooperationNotes: string
   created: string
   updated: string
 }
@@ -27,6 +30,7 @@ export type CreatorListParams = {
   query: string
   region: Region | 'all'
   status: CooperationStatus | 'all'
+  bizOnly: boolean
   sort:
     'created' | '-created' | 'updated' | '-updated' | 'nickname' | '-nickname'
 }

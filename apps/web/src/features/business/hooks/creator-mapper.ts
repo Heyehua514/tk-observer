@@ -11,6 +11,9 @@ type CreatorRecord = {
   commission_rate?: unknown
   owner?: unknown
   owner_name?: unknown
+  is_biz_available?: unknown
+  cooperation_price?: unknown
+  cooperation_notes?: unknown
   created?: unknown
   created_at?: unknown
   updated?: unknown
@@ -28,6 +31,9 @@ export function mapCreator(record: CreatorRecord): Creator {
       record.cooperation_status as Creator['cooperationStatus'],
     commissionRate: Number(record.commission_rate),
     owner: String(record.owner_name || record.owner || ''),
+    isBizAvailable: Boolean(record.is_biz_available),
+    cooperationPrice: Number(record.cooperation_price || 0),
+    cooperationNotes: String(record.cooperation_notes || ''),
     created: String(record.created_at || record.created || ''),
     updated: String(record.updated_at || record.updated || ''),
   }
@@ -43,6 +49,9 @@ export function serializeCreator(input: CreatorInput) {
     commission_rate: input.commissionRate,
     owner: input.owner,
     owner_name: input.owner,
+    is_biz_available: input.isBizAvailable,
+    cooperation_price: input.cooperationPrice,
+    cooperation_notes: input.cooperationNotes,
   }
 }
 

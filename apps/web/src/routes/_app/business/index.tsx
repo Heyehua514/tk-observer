@@ -62,6 +62,7 @@ function parseSearch(search: Record<string, unknown>): BusinessSearch {
     query: typeof search.query === 'string' ? search.query : '',
     region,
     status,
+    bizOnly: search.bizOnly === true,
     sort,
     tab: [
       'dashboard',

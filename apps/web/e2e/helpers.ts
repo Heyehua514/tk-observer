@@ -208,6 +208,98 @@ export async function softDeleteSocialPlansByPrefix(
 }
 
 /**
+ * 用当前页面登录态插入测试达人（editing 有 insert 权限）。
+ * 用途：达人商务标记 E2E 前置数据，插入后由测试切换角色完成标记。
+ */
+export async function insertCreator(
+  page: Page,
+  fields: { nickname: string; tiktokUrl: string; followers?: number; region?: string }
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, fields }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(`${url}/rest/v1/creators`, {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          nickname: fields.nickname,
+          tiktok_url: fields.tiktokUrl,
+          followers: fields.followers ?? 1000,
+          region: fields.region ?? 'US',
+          cooperation_status: 'pending',
+          owner_name: '谢洁',
+          commission_rate: 10,
+          is_biz_available: false,
+        }),
+      })
+      return res.ok
+    },
+    { url, anonKey, fields }
+  )
+}
+
+/**
+ * 用当前页面登录态按昵称前缀软删除测试达人（editing/owner 有 update 权限）。
+ */
+export async function softDeleteCreatorsByPrefix(
+  page: Page,
+  prefix: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, prefix }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+      }
+      const list = await fetch(
+        `${url}/rest/v1/creators?nickname=like.${encodeURIComponent(
+          `${prefix}%`
+        )}&deleted_at=is.null&select=id`,
+        { headers }
+      )
+      if (!list.ok) return false
+      const rows = (await list.json()) as Array<{ id: string }>
+      let cleaned = 0
+      for (const row of rows) {
+        const res = await fetch(
+          `${url}/rest/v1/creators?id=eq.${row.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+          }
+        )
+        if (res.ok) cleaned += 1
+      }
+      return cleaned > 0
+    },
+    { url, anonKey, prefix }
+  )
+}
+
+/**
  * 用当前页面登录态按唯一名查询行 id（表须对当前角色可见）。
  */
 export async function findRowId(

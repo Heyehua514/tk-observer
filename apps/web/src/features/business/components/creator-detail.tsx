@@ -75,6 +75,36 @@ export function CreatorDetail({
                 <dd>{formatBeijingTime(creator.updated)}</dd>
               </dl>
               <section className='border-t pt-5'>
+                <h3 className='text-sm font-medium'>商务合作标记</h3>
+                <div className='mt-3 rounded-lg border p-4 text-sm'>
+                  {creator.isBizAvailable ? (
+                    <Badge>可商务合作</Badge>
+                  ) : (
+                    <span className='text-muted-foreground'>未标记商务合作</span>
+                  )}
+                  {creator.cooperationPrice > 0 && (
+                    <dl className='mt-3 grid grid-cols-[112px_1fr] gap-x-4 gap-y-2'>
+                      <dt className='text-muted-foreground'>合作报价</dt>
+                      <dd>
+                        ¥
+                        {(creator.cooperationPrice / 100).toLocaleString(
+                          'zh-CN',
+                          { maximumFractionDigits: 0 }
+                        )}
+                      </dd>
+                      {creator.cooperationNotes && (
+                        <>
+                          <dt className='text-muted-foreground'>合作备注</dt>
+                          <dd className='whitespace-pre-wrap break-words'>
+                            {creator.cooperationNotes}
+                          </dd>
+                        </>
+                      )}
+                    </dl>
+                  )}
+                </div>
+              </section>
+              <section className='border-t pt-5'>
                 <h3 className='flex items-center gap-2 text-sm font-medium'>
                   <FileVideo className='size-4' />
                   关联视频

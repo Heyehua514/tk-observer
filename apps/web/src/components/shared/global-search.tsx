@@ -273,6 +273,7 @@ export function GlobalSearch() {
           query: '',
           region: 'all',
           status: 'all',
+          bizOnly: false,
           sort: '-updated',
           tab: result.kind === 'company' ? 'companies' : 'creators',
           companyPage: 1,

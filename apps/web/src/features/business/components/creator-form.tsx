@@ -26,6 +26,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -53,6 +55,13 @@ const creatorSchema = z.object({
     .min(0, '佣金不能低于 0%')
     .max(100, '佣金不能超过 100%'),
   owner: z.string().trim().min(1, '请输入对接人').max(40),
+  isBizAvailable: z.boolean(),
+  cooperationPrice: z
+    .number()
+    .int('报价必须为整数')
+    .min(0, '报价不能为负数')
+    .max(100_000_000, '报价超出上限'),
+  cooperationNotes: z.string().trim().max(500, '备注不超过 500 字'),
 })
 
 const emptyValues: CreatorInput = {
@@ -63,6 +72,9 @@ const emptyValues: CreatorInput = {
   cooperationStatus: 'pending',
   commissionRate: 0,
   owner: '董雨辰',
+  isBizAvailable: false,
+  cooperationPrice: 0,
+  cooperationNotes: '',
 }
 
 export function CreatorFormDialog({
@@ -92,6 +104,9 @@ export function CreatorFormDialog({
             cooperationStatus: creator.cooperationStatus,
             commissionRate: creator.commissionRate,
             owner: creator.owner,
+            isBizAvailable: creator.isBizAvailable,
+            cooperationPrice: creator.cooperationPrice,
+            cooperationNotes: creator.cooperationNotes,
           }
         : emptyValues
     )
@@ -250,6 +265,68 @@ export function CreatorFormDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='isBizAvailable'
+              render={({ field }) => (
+                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3'>
+                  <div>
+                    <FormLabel>可商务合作</FormLabel>
+                    <p className='text-xs text-muted-foreground'>
+                      标记后商务商单可选该达人
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label='可商务合作'
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='cooperationPrice'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>合作报价（元/单）</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      value={field.value ? field.value / 100 : ''}
+                      placeholder='留空表示待议'
+                      onChange={(event) => {
+                        const yuan = Number(event.target.value)
+                        field.onChange(
+                          Number.isFinite(yuan) ? Math.round(yuan * 100) : 0
+                        )
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='cooperationNotes'
+              render={({ field }) => (
+                <FormItem className='sm:col-span-2'>
+                  <FormLabel>商务合作备注</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      rows={2}
+                      placeholder='如：含植入脚本、素材授权范围等'
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
