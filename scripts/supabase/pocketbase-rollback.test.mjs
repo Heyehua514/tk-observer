@@ -5,6 +5,7 @@ import {
   checkEnv,
   checkPocketBase,
   checkSupabaseExports,
+  evaluateReadiness,
   parseEnv,
 } from './pocketbase-rollback.mjs'
 
@@ -54,4 +55,24 @@ test('buildChecklist emits ordered rollback steps and blocks on missing db', () 
   assert.match(steps[0], /provider=supabase/)
   assert.match(steps[1], /阻塞/)
   assert.match(steps[steps.length - 1], /不删除 Supabase/)
+})
+
+test('evaluateReadiness passes when db, migrations and exports are ready', () => {
+  const verdict = evaluateReadiness({
+    pocketbase: { dbPresent: true, dbBytes: 1, migrationFiles: 21 },
+    supabaseExports: { present: true, files: ['a.json'] },
+  })
+  assert.equal(verdict.pass, true)
+  assert.deepEqual(verdict.reasons, [])
+})
+
+test('evaluateReadiness fails with reasons on any missing readiness', () => {
+  const verdict = evaluateReadiness({
+    pocketbase: { dbPresent: false, dbBytes: 0, migrationFiles: 10 },
+    supabaseExports: { present: false, files: [] },
+  })
+  assert.equal(verdict.pass, false)
+  assert.ok(verdict.reasons.some((r) => r.includes('data.db 缺失')))
+  assert.ok(verdict.reasons.some((r) => r.includes('< 15')))
+  assert.ok(verdict.reasons.some((r) => r.includes('导出目录')))
 })

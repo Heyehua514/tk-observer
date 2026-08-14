@@ -767,3 +767,15 @@
 ### 提交
 
 - `test(e2e): PWA 离线壳与移动端视口自动化验证`
+
+## 2026-08-14 续十八：PocketBase 回退演练 dry-run 自动判定
+
+- `pocketbase-rollback.mjs` 新增 `evaluateReadiness()`（三项就绪判定：data.db 存在、migration 文件数 ≥ 15、Supabase 导出目录存在）+ `--drill` 参数：输出 `DRILL_READY_PASS/FAIL` 并以退出码 0/1 供脚本化门禁使用；不写文件、不启动服务、不访问网络。
+- `pocketbase-rollback.test.mjs` 增 2 个单测（就绪通过 / 任一缺失返回具体原因），共 8 个测试全过。
+- `docs/pocketbase-rollback-drill.md` 验收标准第一条勾选并给出自动判定命令与实跑结果。
+- 实跑：`node scripts/supabase/pocketbase-rollback.mjs --drill` → DRILL_READY_PASS（data.db 843776 字节、migration 21 个、导出目录 15 个文件）。
+- 说明：真实回切（provider 切换 + 启动 PocketBase + 前端抽查）属人工步骤，按安全红线不代跑，待用户执行。
+
+### 提交
+
+- `feat(data): 回退演练 dry-run 自动判定与验收勾选`

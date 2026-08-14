@@ -114,6 +114,26 @@ export function buildChecklist(report) {
   return steps
 }
 
+/**
+ * 回退就绪判定（验收标准一：data.db 存在 + migration ≥ 15 + Supabase 导出目录存在）。
+ * 用途：`--drill` 模式以退出码给出就绪结论，供脚本化门禁使用。
+ * 权限：只读；不写文件、不启动服务。
+ */
+export function evaluateReadiness(report) {
+  const reasons = []
+  if (!report.pocketbase?.dbPresent) {
+    reasons.push('PocketBase data.db 缺失（backend/pb_data/data.db）')
+  }
+  const migrationFiles = report.pocketbase?.migrationFiles ?? 0
+  if (migrationFiles < 15) {
+    reasons.push(`PocketBase migration 文件数 ${migrationFiles} < 15`)
+  }
+  if (!report.supabaseExports?.present) {
+    reasons.push('Supabase 导出目录 /tmp/tk-observer-supabase 缺失')
+  }
+  return { pass: reasons.length === 0, reasons }
+}
+
 function printReport(report) {
   const { pocketbase, supabaseExports } = report
   console.log('=== PocketBase 回退就绪检查（dry-run）===')
@@ -129,4 +149,15 @@ function printReport(report) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const report = await collectReport()
   printReport(report)
+  if (process.argv.includes('--drill')) {
+    const verdict = evaluateReadiness(report)
+    console.log('\n=== 回退就绪判定（--drill）===')
+    if (verdict.pass) {
+      console.log('DRILL_READY_PASS：data.db 存在、migration ≥ 15、Supabase 导出目录存在。')
+    } else {
+      console.log('DRILL_READY_FAIL：')
+      for (const reason of verdict.reasons) console.log(`- ${reason}`)
+      process.exitCode = 1
+    }
+  }
 }

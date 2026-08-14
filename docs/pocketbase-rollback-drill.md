@@ -10,6 +10,12 @@
 node scripts/supabase/pocketbase-rollback.mjs
 ```
 
+自动判定（验收标准一）：加 `--drill` 参数，脚本以退出码给出就绪结论，三项（data.db 存在、migration 文件 ≥ 15、Supabase 导出目录存在）任一缺失输出 DRILL_READY_FAIL 并返回非 0。
+
+```bash
+node scripts/supabase/pocketbase-rollback.mjs --drill
+```
+
 输出 5 项状态：
 
 1. 当前数据提供者（.env 的 `VITE_DATA_PROVIDER`）。
@@ -34,7 +40,7 @@ node scripts/supabase/pocketbase-rollback.mjs
 
 ## 三、验收标准
 
-- [ ] dry-run 脚本输出 data.db 存在、migration 文件 ≥ 15。
+- [x] dry-run 脚本输出 data.db 存在、migration 文件 ≥ 15（自动判定：`--drill` 退出码 0 + `evaluateReadiness` 单测 3 断言；2026-08-14 实跑 DRILL_READY_PASS：data.db 843776 字节、migration 21 个、导出目录 15 个文件）。
 - [ ] provider 切换后登录、五个工作台抽查全部可用。
 - [ ] 文件预览（设计/场地/物料/财务凭证）在 PocketBase 文件存储下正常。
 - [ ] 回切后新增的每一条数据能在 PocketBase 侧复现（验证数据流不回 Supabase）。
