@@ -1,6 +1,6 @@
 /**
  * 市场工作台场地资源端到端
- * 用途：登录韩素云 → 新增场地（含照片上传）→ 列表卡片可见 → 详情照片轮播 → 删除回收。
+ * 用途：登录韩素云 → 新增场地（多张照片上传）→ 列表卡片可见 → 详情照片轮播可切换 → 删除回收。
  * 所属工作台：市场（韩素云）
  * 权限：需要 market 测试账号；密码经 TK_OBSERVER_TEST_PASSWORD 注入，不落仓库。
  */
@@ -15,7 +15,7 @@ import {
 
 test.skip(!TEST_PASSWORD, '未配置 TK_OBSERVER_TEST_PASSWORD，跳过 E2E 登录用例')
 
-test('场地新增-照片上传-详情轮播-删除回收', async ({ page }) => {
+test('场地新增-多图上传-详情轮播切换-删除回收', async ({ page }) => {
   await login(page, accounts.market)
   const name = `E2E场地-${Date.now()}`
   await page.goto('/market')
@@ -29,9 +29,10 @@ test('场地新增-照片上传-详情轮播-删除回收', async ({ page }) => 
   )
   await textInputs.nth(0).fill(name)
   await textInputs.nth(1).fill('厦门')
-  await form
-    .locator('input[type=file]')
-    .setInputFiles({ name: 'venue.png', mimeType: 'image/png', buffer: TINY_PNG })
+  await form.locator('input[type=file]').setInputFiles([
+    { name: 'venue-1.png', mimeType: 'image/png', buffer: TINY_PNG },
+    { name: 'venue-2.png', mimeType: 'image/png', buffer: TINY_PNG },
+  ])
   await form.getByRole('button', { name: '保存' }).click()
 
   // 2. 列表卡片可见，封面渲染
@@ -46,6 +47,12 @@ test('场地新增-照片上传-详情轮播-删除回收', async ({ page }) => 
   await expect(
     detail.locator(`img[alt^="${name} 场地照片"]`)
   ).toBeVisible()
+  // 多图：默认第 1 张，切到第 2 张
+  await expect(detail.locator(`img[alt="${name} 场地照片 1"]`)).toBeVisible()
+  await detail.getByRole('button', { name: '下一张' }).click()
+  await expect(detail.locator(`img[alt="${name} 场地照片 2"]`)).toBeVisible()
+  await detail.getByRole('button', { name: '上一张' }).click()
+  await expect(detail.locator(`img[alt="${name} 场地照片 1"]`)).toBeVisible()
   await detail.getByRole('button', { name: 'Close' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
