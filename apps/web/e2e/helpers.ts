@@ -191,6 +191,57 @@ export async function softDeleteVenue(
 }
 
 /**
+ * 用当前页面登录态按名称前缀软删除测试场地（market 有 update 权限）。
+ * 用途：清理历史失败运行残留的 E2E 场地，避免污染筛选/匹配断言。
+ */
+export async function softDeleteVenuesByPrefix(
+  page: Page,
+  prefix: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, prefix }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+      }
+      const list = await fetch(
+        `${url}/rest/v1/venues?name=like.${encodeURIComponent(
+          `${prefix}%`
+        )}&deleted_at=is.null&select=id`,
+        { headers }
+      )
+      if (!list.ok) return false
+      const rows = (await list.json()) as Array<{ id: string }>
+      let cleaned = 0
+      for (const row of rows) {
+        const res = await fetch(
+          `${url}/rest/v1/venues?id=eq.${row.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+          }
+        )
+        if (res.ok) cleaned += 1
+      }
+      return cleaned > 0
+    },
+    { url, anonKey, prefix }
+  )
+}
+
+/**
  * 用当前页面登录态按内容前缀软删除朋友圈测试计划（business 有 update 权限）。
  * 用途：清理历史失败运行残留的 E2E 计划，避免污染日历断言。
  */

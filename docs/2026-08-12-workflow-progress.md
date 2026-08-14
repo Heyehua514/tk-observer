@@ -689,3 +689,15 @@
 ### 提交
 
 - `test(e2e): 设计任务看板拖拽闭环`
+
+## 2026-08-14 下午续十三：场地快速匹配 E2E 闭环（城市/人数/类型组合筛选）
+
+- 新增 E2E `e2e/venue-quick-match.spec.ts`：韩素云建两个不同城市/类型/容纳人数的场地（A 厦门/五星酒店/50-100，B 上海/创意空间/200-300）→ 打开「快速匹配」面板 → 城市=厦门 只命中 A → 人数 80 仍只命中 A → 城市=上海+人数 80 两个都不命中 → 人数 250 只命中 B → 清空人数 → 城市=全部 → 类型=五星酒店 只命中 A → 收起面板 → 软删回收。
+- `e2e/helpers.ts` 新增 `softDeleteVenuesByPrefix`（按名称前缀 + 未软删列出 id 逐条 PATCH，仿 `softDeleteSocialPlansByPrefix`）；`venue-quick-match.spec.ts` 与 `venue-filter.spec.ts` 登录后先按各自前缀清理历史失败残留，失败运行遗留脏数据不再污染断言。
+- 清理历史残留：`docker exec psql` 将 4 条 `E2E匹配场地%` 未软删行软删（UPDATE 4），最终残留 live=0。
+- 验收清单市场「录入场地…验证筛选/搜索/导出」条目补充快速匹配组合筛选自动覆盖。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试；`pnpm --dir apps/web build` 通过；单跑 2 条场地用例 11.4s 全过；全量 E2E 24/24 全过（1.3m，23→24）；残留验证 venues `E2E匹配场地%` / `E2E筛选场地%` live=0。
+
+### 提交
+
+- `test(e2e): 场地快速匹配城市/人数/类型组合筛选闭环`

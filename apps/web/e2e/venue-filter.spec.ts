@@ -5,7 +5,13 @@
  * 权限：需要 market 测试账号；密码经 TK_OBSERVER_TEST_PASSWORD 注入，不落仓库。
  */
 import { expect, test } from 'playwright/test'
-import { accounts, login, softDeleteVenue, TEST_PASSWORD } from './helpers'
+import {
+  accounts,
+  login,
+  softDeleteVenue,
+  softDeleteVenuesByPrefix,
+  TEST_PASSWORD,
+} from './helpers'
 
 test.skip(!TEST_PASSWORD, '未配置 TK_OBSERVER_TEST_PASSWORD，跳过 E2E 登录用例')
 
@@ -14,6 +20,8 @@ test('场地名称/标签搜索 + 城市/类型筛选 + 重置回收', async ({ 
   const nameA = `E2E筛选场地A-${ts}`
   const nameB = `E2E筛选场地B-${ts}`
   await login(page, accounts.market)
+  // 清理历史失败运行残留，避免污染筛选断言
+  await softDeleteVenuesByPrefix(page, 'E2E筛选场地')
   await page.goto('/market')
   await page.getByRole('tab', { name: '场地资源' }).click()
 
