@@ -116,6 +116,8 @@ export function mapMarketRelatedRecord(
               : undefined,
     position: typeof item.position === 'string' ? item.position : undefined,
     category: typeof item.category === 'string' ? item.category : undefined,
+    description:
+      typeof item.description === 'string' ? item.description : undefined,
     notes: typeof item.notes === 'string' ? item.notes : undefined,
   }
 }

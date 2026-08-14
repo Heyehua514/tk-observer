@@ -11,6 +11,7 @@ export type ActivityRelatedRecord = {
   company?: string
   position?: string
   category?: string
+  description?: string
   notes?: string
 }
 

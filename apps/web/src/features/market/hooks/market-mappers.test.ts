@@ -111,6 +111,24 @@ describe('market mappers', () => {
     })
   })
 
+  it('maps finance template rows with description text', () => {
+    expect(
+      mapMarketRelatedRecord({
+        id: 'finance-1',
+        category: 'sponsorship_income',
+        type: 'income',
+        amount: 0,
+        description: '赞助收入',
+      })
+    ).toMatchObject({
+      id: 'finance-1',
+      category: 'sponsorship_income',
+      type: 'income',
+      amount: 0,
+      description: '赞助收入',
+    })
+  })
+
   it('escapes market search input for Supabase or filters', () => {
     expect(toSupabaseMarketSearch('厦门,沙龙%')).toBe('厦门\\,沙龙\\%')
   })

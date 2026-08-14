@@ -20,7 +20,14 @@ export function useActivityDetail(eventId: string) {
     queryFn: async () => {
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
-        const [event, phases, tasks, registrations, sponsorships] =
+        const [
+          event,
+          phases,
+          tasks,
+          registrations,
+          sponsorships,
+          finances,
+        ] =
           await Promise.all([
             supabase.from('events').select('*').eq('id', eventId).single(),
             supabase
@@ -47,6 +54,12 @@ export function useActivityDetail(eventId: string) {
               .eq('event_id', eventId)
               .is('deleted_at', null)
               .order('created_at', { ascending: true }),
+            supabase
+              .from('event_finances')
+              .select('*')
+              .eq('event_id', eventId)
+              .is('deleted_at', null)
+              .order('paid_at', { ascending: true, nullsFirst: true }),
           ])
         for (const result of [
           event,
@@ -54,6 +67,7 @@ export function useActivityDetail(eventId: string) {
           tasks,
           registrations,
           sponsorships,
+          finances,
         ]) {
           if (result.error) throw result.error
         }
@@ -67,7 +81,7 @@ export function useActivityDetail(eventId: string) {
           ),
           sponsorships: (sponsorships.data || []).map(mapMarketRelatedRecord),
           materials: [],
-          finances: [],
+          finances: (finances.data || []).map(mapMarketRelatedRecord),
         }
       }
       const [
@@ -126,8 +140,23 @@ export function useUpdateActivityTask(eventId: string) {
 export function useCreateActivityFinance(eventId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) =>
-      pb.collection('event_finances').create({ ...data, event: eventId }),
+    mutationFn: async (data: Record<string, unknown>) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('event_finances')
+          .insert({
+            event_id: eventId,
+            category: String(data.category || 'other'),
+            type: String(data.type || 'expense'),
+            amount: Number(data.amount || 0),
+            description: String(data.description || ''),
+            paid_at: data.paid_at ? String(data.paid_at) : null,
+          })
+        if (error) throw error
+        return
+      }
+      return pb.collection('event_finances').create({ ...data, event: eventId })
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['market', 'activity-detail', eventId],

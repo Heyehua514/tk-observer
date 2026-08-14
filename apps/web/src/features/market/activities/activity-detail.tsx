@@ -251,6 +251,7 @@ function RecordList({
     id: string
     title?: string
     name?: string
+    description?: string
     status?: string
     stage?: string
     amount?: number
@@ -272,7 +273,11 @@ function RecordList({
             className='flex flex-wrap items-center justify-between gap-2 p-3 text-sm'
           >
             <span className='font-medium'>
-              {item.title || item.name || item.company || '未命名记录'}
+              {item.title ||
+                item.name ||
+                item.company ||
+                item.description ||
+                '未命名记录'}
             </span>
             <span className='text-muted-foreground'>
               {item.status ||

@@ -57,6 +57,13 @@ test('活动详情六 Tab 可切换并渲染', async ({ page }) => {
   await page.getByRole('tab', { name: '财务复盘' }).click()
   await expect(page.getByRole('button', { name: '导出 CSV' })).toBeVisible()
   await expect(page.getByRole('button', { name: '导出 Markdown' })).toBeVisible()
+  await expect(page.getByText('赞助收入')).toBeVisible()
+  await expect(page.getByText('票务收入')).toBeVisible()
+  await expect(page.getByText('场地费')).toBeVisible()
+  await expect(page.getByText('布置费')).toBeVisible()
+  await expect(page.getByText('餐饮费')).toBeVisible()
+  await expect(page.getByText('物料印刷')).toBeVisible()
+  await expect(page.getByText('嘉宾差旅')).toBeVisible()
 
   await page.getByRole('tab', { name: '进度总览' }).click()
   await expect(page.getByText('任务完成度')).toBeVisible()
