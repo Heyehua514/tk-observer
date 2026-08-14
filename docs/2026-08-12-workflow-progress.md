@@ -715,3 +715,19 @@
 ### 提交
 
 - `feat(business): 客户详情关联商机/商单点击跳转闭环`
+
+## 2026-08-14 续十五：商机成交自动通知磊哥 + 铃铛 Realtime 实时到达 E2E
+
+- 后端：新 migration `supabase/migrations/20260814000600_opportunity_won_notification.sql`：
+  - notifications 类型检查约束追加 `opportunity_won`（drop + add，兼容旧数据）；
+  - security definer 触发器 `notify_boss_on_opportunity_won()`：商机 stage 由非 won 变为 won 时，为所有 active 的 boss 角色用户建通知（标题「商机已成交」，内容含商机标题与人民币金额，同一商机不重复），link=/business；函数 revoke public 仅触发器内部执行。
+- 前端：
+  - `types/notification.ts` 追加 `opportunity_won`；`notification-bell.tsx` 图标映射补 CircleDollarSign；
+  - `use-notifications.ts` Supabase 分支由「服务端 filter（recipient_id=eq…）」改为全表订阅 + 任意变更即 invalidateQueries，列表内容由 REST 按 recipient_id 精确过滤。根因：本地 Supabase Realtime 服务端 filter 报 invalid column；且 `supabase_realtime_admin` 对 notifications 无 SELECT 权限，事件 record 解码返回 `{}` + errors 401——事件仍会到达并触发回调，故事件失效查询方案可行（调试日志实证：订阅成功、INSERT 事件到达、回调触发、REST 重查 2→3 行）。
+- E2E：`notification-realtime.spec.ts` 双上下文：磊哥（boss）总览页铃铛保持打开 → 董雨辰（business）建客户+商机 → REST 将 stage 置 won（`updateOpportunityStage` 助手）触发 DB 触发器 → 磊哥页面不刷新，铃铛弹出列表出现商机标题与「商机已成交」、未读 +1 → 软删通知/商机 + UI 删客户回收。`helpers.ts` 新增 `updateOpportunityStage`、`softDeleteNotificationsByContentPrefix`。
+- 调试记录：首轮正式单测失败根因是 dist 为旧构建（改 hook 后未重新 build），重建 dist 后单测稳定通过；期间清理全部历史 E2E 残留（E2E成交 / E2ERT / RT-DEBUG 系列软删）。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 103 文件 / 240 测试；`pnpm build` 通过；`supabase test db` 26 文件 / 469 断言 PASS（含新 opportunity_won_notification.test.sql 12 断言与 team_memory_automation 加固）；单跑新用例 4.1s 通过；全量 E2E 26/26 全过（1.4m，25→26）；残留验证 notifications / opportunities / clients `E2E成交%` live=0。
+
+### 提交
+
+- `feat(business): 商机成交自动通知磊哥 + Realtime 到达 E2E`
