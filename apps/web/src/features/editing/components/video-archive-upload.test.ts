@@ -40,12 +40,10 @@ describe('isSupportedVideoFile', () => {
   })
 
   it('拒绝非法 MIME 类型', () => {
-    expect(
-      isSupportedVideoFile({ type: 'application/pdf', size: 1024 })
-    ).toBe(false)
-    expect(
-      isSupportedVideoFile({ type: 'video/avi', size: 1024 })
-    ).toBe(false)
+    expect(isSupportedVideoFile({ type: 'application/pdf', size: 1024 })).toBe(
+      false
+    )
+    expect(isSupportedVideoFile({ type: 'video/avi', size: 1024 })).toBe(false)
   })
 })
 

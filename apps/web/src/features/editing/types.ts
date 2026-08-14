@@ -61,11 +61,7 @@ export type VideoIdeaListResult = Omit<ListResult<VideoIdea>, 'items'> & {
 }
 
 export type PublishScheduleStatus =
-  | 'scheduled'
-  | 'publishing'
-  | 'published'
-  | 'failed'
-  | 'cancelled'
+  'scheduled' | 'publishing' | 'published' | 'failed' | 'cancelled'
 
 export type PublishPlatform = '微信视频号' | 'TikTok' | '抖音' | 'YouTube'
 

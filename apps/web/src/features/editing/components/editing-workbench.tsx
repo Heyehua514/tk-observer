@@ -15,9 +15,9 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
-import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoTasks } from '../hooks/use-video-tasks'
 import type {
   EditingSearchParams,
@@ -72,7 +72,10 @@ function ProductionSkeleton() {
               </thead>
               <tbody>
                 {tasks.data.map((task) => (
-                  <tr key={task.id} className='border-t transition-colors hover:bg-primary/5'>
+                  <tr
+                    key={task.id}
+                    className='border-t transition-colors hover:bg-primary/5'
+                  >
                     <td className='px-4 py-3'>
                       <div className='font-medium'>{task.title}</div>
                       <div className='text-xs text-muted-foreground'>
@@ -128,7 +131,11 @@ function ProductionSkeleton() {
           <EmptyState
             title='还没有归档成片'
             description='上传后视频文件会存入当前数据服务，并在此支持浏览器内预览。'
-            action={<Button onClick={() => setArchiveUploadOpen(true)}>上传成片</Button>}
+            action={
+              <Button onClick={() => setArchiveUploadOpen(true)}>
+                上传成片
+              </Button>
+            }
           />
         )}
         <VideoArchiveUploadDialog

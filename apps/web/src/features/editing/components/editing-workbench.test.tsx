@@ -7,7 +7,9 @@ import type { EditingSearchParams } from '../types'
 import { EditingWorkbench } from './editing-workbench'
 import type { PublishScheduleItem, VideoArchiveItem } from './production-model'
 
-const schedulesState = vi.hoisted(() => ({ value: [] as PublishScheduleItem[] }))
+const schedulesState = vi.hoisted(() => ({
+  value: [] as PublishScheduleItem[],
+}))
 const archiveState = vi.hoisted(() => ({ value: [] as VideoArchiveItem[] }))
 
 vi.mock('@/features/editing/hooks/use-video-idea-analytics', () => ({
@@ -124,7 +126,11 @@ it('发布排期 Tab 展示引导式空态', async () => {
   await userEvent.click(screen.getByRole('tab', { name: '发布排期' }))
   await expect.element(screen.getByText('等待发布排期沉淀')).toBeInTheDocument()
   await expect
-    .element(screen.getByText('后续按北京时间和站点当地时间双重标注，按账号展示周排期日历。'))
+    .element(
+      screen.getByText(
+        '后续按北京时间和站点当地时间双重标注，按账号展示周排期日历。'
+      )
+    )
     .toBeInTheDocument()
   await expect
     .element(screen.getByRole('button', { name: '新建排期' }))

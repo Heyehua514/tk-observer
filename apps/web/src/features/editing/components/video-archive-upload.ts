@@ -9,7 +9,9 @@ export const SUPPORTED_VIDEO_TYPES = [
 
 export function isSupportedVideoFile(file: { type: string; size: number }) {
   return (
-    SUPPORTED_VIDEO_TYPES.includes(file.type as (typeof SUPPORTED_VIDEO_TYPES)[number]) &&
+    SUPPORTED_VIDEO_TYPES.includes(
+      file.type as (typeof SUPPORTED_VIDEO_TYPES)[number]
+    ) &&
     file.size > 0 &&
     file.size <= VIDEO_FILE_SIZE_LIMIT
   )
