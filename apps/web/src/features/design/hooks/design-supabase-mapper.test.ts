@@ -4,6 +4,7 @@ import {
   mapSupabaseDesignAsset,
   serializeSupabaseDesignAssetStatus,
   serializeSupabaseDesignAssetUpload,
+  toSupabaseDesignAssetSort,
 } from './design-supabase-mapper'
 
 describe('design Supabase mapper', () => {
@@ -60,5 +61,12 @@ describe('design Supabase mapper', () => {
       status: 'approved',
       reviewed_by: 'boss-user',
     })
+  })
+
+  it('maps frontend sort values to Supabase column names', () => {
+    expect(toSupabaseDesignAssetSort('-updated')).toBe('-updated_at')
+    expect(toSupabaseDesignAssetSort('-created')).toBe('-created_at')
+    expect(toSupabaseDesignAssetSort('file_name')).toBe('file_name')
+    expect(toSupabaseDesignAssetSort('-file_name')).toBe('-file_name')
   })
 })

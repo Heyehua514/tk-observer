@@ -67,3 +67,11 @@ export function serializeSupabaseDesignAssetStatus(
     reviewed_at: new Date().toISOString(),
   }
 }
+
+/**
+ * 把前端排序值映射为 Supabase 列名（created/updated → created_at/updated_at）。
+ * 用途：design_assets 在 PocketBase 用 updated，Supabase 用 updated_at。
+ */
+export function toSupabaseDesignAssetSort(sort: string): string {
+  return sort.replace('created', 'created_at').replace('updated', 'updated_at')
+}

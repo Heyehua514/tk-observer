@@ -451,3 +451,13 @@
 ### 提交
 
 - 待提交：`feat(supabase): 设计五表软删除 RLS 对齐 + pgTAP 405`
+
+## 2026-08-14 上午续五：设计素材审核闭环 E2E + 列表排序修复
+
+- 新增 E2E 用例 `e2e/design-review-loop.spec.ts`：孙铭泽上传素材 → 提审 → 磊哥驳回（空理由被前端拦截，填理由后驳回）→ 孙铭泽看到驳回理由再提审 → 磊哥通过。首次跑暴露真实 bug：`useDesignAssets` Supabase 分支直接按 `params.sort` 的 `updated/created` 排序，而 Supabase 列名为 `updated_at/created_at`，列表请求 400 导致素材库永远空态。修复：新增 `toSupabaseDesignAssetSort` 映射（同 use-creators 模式）+ 单测。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 100 文件 / 229 测试；E2E 8/8 通过（新增设计素材审核闭环）；build 通过；测试残留数据已软删除。
+- 验收清单设计「素材上传后提交审核；磊哥通过或驳回（驳回理由必填）」勾选（通知到孙铭泽由 pgTAP notifications 覆盖）。
+
+### 提交
+
+- 待提交：`feat(e2e): 设计素材审核闭环（上传-提审-驳回-再提审-通过）+ 列表排序修复`

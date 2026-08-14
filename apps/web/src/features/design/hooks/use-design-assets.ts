@@ -7,7 +7,10 @@ import { resolveStorageUrls } from '@/lib/storage-url'
 import { getSupabaseClient } from '@/lib/supabase'
 import type { DesignAssetListParams } from '../types'
 import { mapDesignAsset } from './design-asset-mapper'
-import { mapSupabaseDesignAsset } from './design-supabase-mapper'
+import {
+  mapSupabaseDesignAsset,
+  toSupabaseDesignAssetSort,
+} from './design-supabase-mapper'
 
 export const designAssetKeys = {
   all: ['design-assets'] as const,
@@ -40,9 +43,10 @@ export function useDesignAssets(params: DesignAssetListParams) {
     queryFn: async () => {
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
-        const sort = params.sort.startsWith('-')
-          ? { column: params.sort.slice(1), ascending: false }
-          : { column: params.sort, ascending: true }
+        const mappedSort = toSupabaseDesignAssetSort(params.sort)
+        const sort = mappedSort.startsWith('-')
+          ? { column: mappedSort.slice(1), ascending: false }
+          : { column: mappedSort, ascending: true }
         let request = supabase
           .from('design_assets')
           .select('*')
