@@ -440,3 +440,14 @@
 ### 提交
 
 - `dac14b2 feat(e2e): 朋友圈计划新增-状态流转-删除闭环`
+
+## 2026-08-14 上午续四：设计工作台软删除 RLS 对齐
+
+- 新增 migration `supabase/migrations/20260814000200_design_soft_delete_select_rls.sql`：设计五表（design_assets / design_tasks / design_requirements / design_references / design_deliverables）SELECT 策略放宽为角色可见（同 `20260814000100` / `20260813001500` 七表模式），软删除行由前端统一 `.is('deleted_at', null)` 过滤，消除软删除 403 根因。
+- 本地 dev 库已手工应用该 migration 并记录 `schema_migrations`；`design_workspace.test.sql` 断言 23 → 25（新增：design 软删除素材可执行、boss 可查看软删行）。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 100 文件 / 228 测试；pgTAP 23 文件 / 405 断言 PASS。
+- 验收清单无需新增勾选（基础设施修复，不改变验收项）。
+
+### 提交
+
+- 待提交：`feat(supabase): 设计五表软删除 RLS 对齐 + pgTAP 405`

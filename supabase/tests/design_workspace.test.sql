@@ -1,5 +1,5 @@
 begin;
-select plan(23);
+select plan(25);
 
 select has_table('public', 'design_assets', 'design assets table exists');
 select has_table('public', 'design_tasks', 'design tasks table exists');
@@ -126,6 +126,22 @@ select lives_ok($$
   where id = '61000000-0000-0000-0000-000000000001'
 $$, 'requester can return delivered requirement for revision');
 select is((select count(*) from public.design_deliverables), 1::bigint, 'business can read deliverables');
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"60000000-0000-0000-0000-000000000003","role":"authenticated"}',
+  true
+);
+select lives_ok($$
+  update public.design_assets set deleted_at = now()
+  where id = '62000000-0000-0000-0000-000000000001'
+$$, 'design can soft delete own asset');
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"60000000-0000-0000-0000-000000000001","role":"authenticated"}',
+  true
+);
+select is((select count(*) from public.design_assets where deleted_at is not null), 1::bigint, 'boss can inspect soft-deleted design asset');
 
 select * from finish();
 rollback;
