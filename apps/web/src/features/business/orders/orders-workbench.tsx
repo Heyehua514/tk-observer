@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -41,6 +42,7 @@ import {
 import { buildOrderDisplay } from './order-display'
 import { orderCreatePayload } from './order-create'
 import { mapOrderRecord, serializeOrderPayload, type OrderRow } from './order-mapper'
+import { orderStatusUpdatePayload } from './order-status-update'
 import {
   orderContentTypeOptions,
   orderPlatformOptions,
@@ -51,6 +53,8 @@ export function OrdersWorkbench() {
   const cache = useQueryClient()
   const clients = useClients()
   const [open, setOpen] = useState(false)
+  const [cancelling, setCancelling] = useState<OrderRow | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
   const [filters, setFilters] = useState<OrderFilters>(emptyOrderFilters)
   const [draft, setDraft] = useState({
     title: '',
@@ -128,18 +132,28 @@ export function OrdersWorkbench() {
     },
   })
   const update = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({
+      id,
+      status,
+      reason,
+    }: {
+      id: string
+      status: string
+      reason: string
+    }) => {
+      const payload = orderStatusUpdatePayload(status, reason)
       if (getDataProvider() === 'supabase') {
         const { error } = await getSupabaseClient()
           .from('channel_orders')
-          .update({ status })
+          .update(payload)
           .eq('id', id)
         if (error) throw error
         return
       }
-      await pb.collection('channel_orders').update(id, { status })
+      await pb.collection('channel_orders').update(id, payload)
     },
     onSuccess: refresh,
+    onError: () => toast.error('状态更新失败，请重试'),
   })
   const remove = useMutation({
     mutationFn: async (id: string) => {
@@ -239,9 +253,14 @@ export function OrdersWorkbench() {
               <OrderRow
                 key={item.id}
                 item={item}
-                onStatusChange={(status) =>
-                  update.mutate({ id: item.id, status })
-                }
+                onStatusChange={(status) => {
+                  if (status === 'cancelled') {
+                    setCancelReason('')
+                    setCancelling(item)
+                    return
+                  }
+                  update.mutate({ id: item.id, status, reason: '' })
+                }}
                 onRemove={() => remove.mutate(item.id)}
               />
             ))}
@@ -258,6 +277,46 @@ export function OrdersWorkbench() {
           </TableBody>
         </Table>
       </div>
+      <Dialog
+        open={Boolean(cancelling)}
+        onOpenChange={(open) => !open && setCancelling(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>取消商单</DialogTitle>
+          </DialogHeader>
+          <Field label='取消原因（必填）'>
+            <Textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder='填写取消原因，如：客户预算调整'
+            />
+          </Field>
+          <div className='flex justify-end gap-2'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => setCancelling(null)}
+            >
+              暂不取消
+            </Button>
+            <Button
+              disabled={!cancelReason.trim()}
+              onClick={() => {
+                if (!cancelling) return
+                update.mutate({
+                  id: cancelling.id,
+                  status: 'cancelled',
+                  reason: cancelReason,
+                })
+                setCancelling(null)
+              }}
+            >
+              确认取消
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -393,7 +452,14 @@ function OrderRow({
       <TableCell>{display.publishDate}</TableCell>
       <TableCell>
         <Select value={item.status} onValueChange={onStatusChange}>
-          <SelectTrigger className='w-28'>
+          <SelectTrigger
+            className='w-28'
+            title={
+              item.cancelReason
+                ? `取消原因：${item.cancelReason}`
+                : undefined
+            }
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

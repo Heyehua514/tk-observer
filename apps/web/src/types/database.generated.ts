@@ -125,6 +125,7 @@ export type Database = {
         Row: {
           actual_views: number | null
           amount: number
+          cancel_reason: string | null
           client_id: string
           commission: number | null
           content_type: string
@@ -143,6 +144,7 @@ export type Database = {
         Insert: {
           actual_views?: number | null
           amount?: number
+          cancel_reason?: string | null
           client_id: string
           commission?: number | null
           content_type: string
@@ -161,6 +163,7 @@ export type Database = {
         Update: {
           actual_views?: number | null
           amount?: number
+          cancel_reason?: string | null
           client_id?: string
           commission?: number | null
           content_type?: string

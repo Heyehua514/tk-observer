@@ -15,12 +15,14 @@ describe('order mapper', () => {
         platform: 'tiktok',
         content_type: 'unboxing',
         publish_date: null,
+        cancel_reason: '预算调整',
       })
     ).toMatchObject({
       id: 'order-1',
       clientName: '远海品牌',
       creatorName: '跨境小杨',
       publishDate: '',
+      cancelReason: '预算调整',
     })
   })
 

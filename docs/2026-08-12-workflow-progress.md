@@ -492,3 +492,17 @@
 ### 提交
 
 - `8a84221 feat(e2e): 市场场地照片上传闭环 + 悬浮删除`
+
+## 2026-08-14 下午：渠道商单取消原因（数据库约束 + 前端必填弹窗 + E2E）
+
+- 新增 migration `supabase/migrations/20260814000400_channel_order_cancel_reason.sql`：`channel_orders` 追加 `cancel_reason` 列（≤1000 字符）+ 检查约束 `channel_orders_cancel_reason_check`（status=cancelled 时取消原因必填，数据库兜底）。
+- 新增 pgTAP `supabase/tests/channel_order_cancel_reason.test.sql`（8 断言）：列与约束存在、business 可建商单、空原因取消报 23514、带原因可取消并持久化、可流转回 completed。
+- 前端：`order-status-update.ts`（cancelled 空原因抛 `CANCEL_REASON_REQUIRED`，3 单测）、`order-mapper.ts` 映射 `cancel_reason`（`OrderRow.cancelReason`）、`orders-workbench.tsx` 状态切「已取消」弹必填原因弹窗，确认后列表状态下拉 title 显示取消原因。
+- 新增 E2E `e2e/order-status.spec.ts`：董雨辰建客户 → 建商单（选可商务达人）→ 状态切「已取消」空原因按钮禁用 → 填原因确认 → 列表显示已取消+原因 tooltip → 删除回收。
+- 排查并修复 E2E 假失败根因：端口 4173 上残留旧 `vite preview` 进程提供过期 dist，导致「已取消」走旧逻辑被数据库新约束拒绝（400）；重构建 + 重启预览服务后闭环通过。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 101 文件 / 232 测试；pgTAP 25 文件 / 450 断言 PASS；E2E 10/10 通过；build 通过；E2E 测试残留（3 商单 + 3 客户 + 1 达人种子）已物理清理，开发库无残留。
+- 验收清单商务「渠道商单：已取消需填原因」勾选。
+
+### 提交
+
+- 待提交：`feat(business): 渠道商单取消原因必填 + E2E 闭环`

@@ -9,6 +9,7 @@ export type OrderRow = {
   platform: string
   contentType: string
   publishDate: string
+  cancelReason: string
 }
 
 export function mapOrderRecord(record: Record<string, unknown>): OrderRow {
@@ -29,6 +30,7 @@ export function mapOrderRecord(record: Record<string, unknown>): OrderRow {
     platform: String(record.platform || ''),
     contentType: String(record.content_type || ''),
     publishDate: String(record.publish_date || ''),
+    cancelReason: String(record.cancel_reason || ''),
   }
 }
 
