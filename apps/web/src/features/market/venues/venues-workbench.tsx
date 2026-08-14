@@ -6,6 +6,7 @@ import {
   MapPin,
   Plus,
   Search,
+  Trash2,
   Users,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -28,13 +29,14 @@ import {
   type VenueFilters,
   type VenueType,
 } from './types'
-import { useVenueResources } from './use-venues'
+import { useSoftDeleteVenue, useVenueResources } from './use-venues'
 import { VenueDetail } from './venue-detail'
 import { VenueForm } from './venue-form'
 
 const initial: VenueFilters = { query: '', city: '', type: 'all', attendees: 0 }
 export function VenuesWorkbench() {
   const venues = useVenueResources()
+  const remove = useSoftDeleteVenue()
   const [filters, setFilters] = useState(initial)
   const [formOpen, setFormOpen] = useState(false)
   const [matching, setMatching] = useState(false)
@@ -138,10 +140,21 @@ export function VenuesWorkbench() {
         <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
           {visible.map((venue) => (
             <Card
-              className='cursor-pointer overflow-hidden py-0'
+              className='group relative cursor-pointer overflow-hidden py-0'
               key={venue.id}
               onClick={() => setSelected(venue)}
             >
+              <button
+                type='button'
+                aria-label='删除场地'
+                className='absolute right-2 top-2 z-10 rounded-md bg-background/80 p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus:opacity-100 group-hover:opacity-100'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  void remove.mutateAsync(venue.id)
+                }}
+              >
+                <Trash2 className='size-4' />
+              </button>
               {venue.photos[0] ? (
                 <img
                   className='aspect-[16/9] w-full object-cover'

@@ -169,3 +169,24 @@ export function useSaveVenueResource() {
     },
   })
 }
+
+export function useSoftDeleteVenue() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('venues')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id)
+        if (error) throw error
+        return
+      }
+      return pb.collection('venues').delete(id)
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: key })
+      toast.success('场地已删除')
+    },
+  })
+}

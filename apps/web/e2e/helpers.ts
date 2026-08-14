@@ -118,6 +118,41 @@ export async function softDeleteDesignAsset(
   )
 }
 
+/**
+ * 用当前页面登录态软删除测试场地（market 有 update 权限）。
+ */
+export async function softDeleteVenue(
+  page: Page,
+  name: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, name }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/venues?name=eq.${encodeURIComponent(name)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        }
+      )
+      return res.ok
+    },
+    { url, anonKey, name }
+  )
+}
+
 /** 1x1 透明 PNG，E2E 文件上传用。 */
 export const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',

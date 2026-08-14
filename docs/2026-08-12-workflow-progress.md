@@ -478,4 +478,17 @@
 
 ### 提交
 
-- 待提交：`feat(supabase): 软删除 RLS 第四轮全表收口 + pgTAP 442`
+- `53e280b feat(supabase): 软删除 RLS 第四轮全表收口 + pgTAP 442`
+
+## 2026-08-14 上午续七：市场场地资源 E2E（照片上传 + 详情轮播 + 删除回收）
+
+- 场地卡片新增悬浮删除按钮（`useSoftDeleteVenue`：Supabase 分支软删 `deleted_at`，PocketBase 回退 `delete`），Card 补齐 `group relative` 定位保证按钮随卡片 hover 可见、可点击。
+- 新增 E2E 用例 `e2e/venue-resource.spec.ts`：登录韩素云 → 场地资源 Tab → 新增场地（名称/城市必填 + TINY_PNG 照片上传）→ 列表卡片可见且封面渲染 → 点卡片进详情看照片轮播 → 关闭 → 悬浮删除按钮软删回收 → API 兜底清理确认无残留。
+- `e2e/helpers.ts` 新增 `softDeleteVenue(page, name)`（复用 `softDeleteDesignAsset` 的 REST PATCH 模式）。
+- 本地 dev 库物理清理本轮 E2E 软删除残留（1 条 `E2E素材-*` 设计素材、2 条 `E2E场地-*` 场地），恢复 `design_workspace` 软删计数断言。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 100 文件 / 229 测试；pgTAP 24 文件 / 442 断言 PASS；E2E 9/9 通过；build 通过。
+- 验收清单市场「场地资源库：新增/编辑表单支持多图上传、卡片删除」勾选。
+
+### 提交
+
+- 待提交：`feat(e2e): 市场场地照片上传闭环 + 悬浮删除`
