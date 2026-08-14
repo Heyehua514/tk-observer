@@ -603,3 +603,141 @@ export async function insertCompetitorAccount(
     { url, anonKey, fields }
   )
 }
+
+/**
+ * 用当前页面登录态插入活动阶段（market 有插入权限），返回新阶段 id。
+ * 用途：任务看板 E2E 前置数据，测试后按活动软删回收。
+ */
+export async function insertEventPhase(
+  page: Page,
+  fields: { eventId: string; name: string; phaseOrder: number }
+): Promise<string> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return ''
+  return page.evaluate(
+    async ({ url, anonKey, fields }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return ''
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(`${url}/rest/v1/event_phases`, {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({
+          event_id: fields.eventId,
+          name: fields.name,
+          phase_order: fields.phaseOrder,
+        }),
+      })
+      if (!res.ok) return ''
+      const rows = (await res.json()) as Array<{ id: string }>
+      return rows[0]?.id ?? ''
+    },
+    { url, anonKey, fields }
+  )
+}
+
+/**
+ * 用当前页面登录态插入活动任务（market 有插入权限）。
+ * 用途：任务看板 E2E 前置数据，测试后按活动软删回收。
+ */
+export async function insertEventTask(
+  page: Page,
+  fields: {
+    eventId: string
+    phaseId: string
+    title: string
+    assigneeRole: string
+    status?: string
+  }
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, fields }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(`${url}/rest/v1/event_tasks`, {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          event_id: fields.eventId,
+          phase_id: fields.phaseId,
+          title: fields.title,
+          assignee_role: fields.assigneeRole,
+          status: fields.status ?? 'todo',
+        }),
+      })
+      return res.ok
+    },
+    { url, anonKey, fields }
+  )
+}
+
+/**
+ * 用当前页面登录态按活动软删任务/阶段（market 有 update 权限）。
+ * 用途：任务看板 E2E 回收，避免残留污染计数。
+ */
+export async function softDeleteEventTasks(
+  page: Page,
+  eventId: string
+): Promise<boolean> {
+  return softDeleteRowsByFieldValue(page, 'event_tasks', 'event_id', eventId)
+}
+
+export async function softDeleteEventPhases(
+  page: Page,
+  eventId: string
+): Promise<boolean> {
+  return softDeleteRowsByFieldValue(page, 'event_phases', 'event_id', eventId)
+}
+
+/**
+ * 用当前页面登录态软删活动（market 有 update 权限）。
+ * 用途：任务看板 E2E 回收，与 UI「删除活动」行为一致。
+ */
+export async function softDeleteEvent(
+  page: Page,
+  eventId: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, eventId }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/events?id=eq.${eventId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        }
+      )
+      return res.ok
+    },
+    { url, anonKey, eventId }
+  )
+}

@@ -666,3 +666,15 @@
 ### 提交
 
 - `test(e2e): 场地与客户筛选搜索交互闭环`
+
+## 2026-08-14 下午续十一：活动任务看板拖拽 E2E 闭环（验收清单最后一个待真机交互）
+
+- 新增 E2E `e2e/activity-task-board.spec.ts`：韩素云建活动 `E2E任务看板-${ts}` → 详情页 URL 取 eventId → REST 注入 P0 阶段（`event_phases`，`return=representation` 取回 id）与两条任务（todo / in_progress）→ 重载进「任务看板」Tab → 断言待处理/进行中两列各就各位 → 拖拽任务 A（待处理→进行中）→ 断言目标列 +1、源列 -1（实时状态更新）→ 按依赖顺序软删任务 → 阶段 → 活动回收。
+- `e2e/helpers.ts` 新增 5 个助手：`insertEventPhase`（返回新阶段 id）、`insertEventTask`、`softDeleteEventTasks`、`softDeleteEventPhases`（复用 `softDeleteRowsByFieldValue` 按 event_id 软删）、`softDeleteEvent`（REST 软删活动，与 UI「删除活动」同行为）。
+- 确认 RLS/触发器约束：market 角色对 event_tasks 有 insert/update 权限；`enforce_event_task_collaborator_update` 仅限制 business/design/editing 改 status/notes 之外字段，market 软删任务不受阻；拖拽状态更新走 `useUpdateActivityTask`（PATCH status），阶段完成度由 `handle_event_task_phase_completion` 自动刷新。
+- 验收清单市场「阶段进度自动计算；看板拖拽交互待真机」改为自动覆盖（E2E 证据），验收清单全部「待真机」交互项均已由自动验收或 E2E 覆盖（动效/实时到达/移动端真机项除外，属用户预览范畴）。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试；`pnpm --dir apps/web build` 通过；单跑新用例 1/1 通过（1.8s）；全量 E2E 22/22 全过（1.2m，21→22）；残留验证 events / event_tasks / event_phases `E2E任务看板%` live=0。
+
+### 提交
+
+- `test(e2e): 活动任务看板拖拽闭环`
