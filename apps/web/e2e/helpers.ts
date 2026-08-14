@@ -30,3 +30,55 @@ export async function switchAccount(page: Page, email: string) {
   await page.context().clearCookies()
   await login(page, email)
 }
+
+/**
+ * 读取本地 .env 中的 Supabase 连接参数（仅本地 E2E 清理数据用）。
+ * 用途：测试软删除自己创建的商机，避免残留污染 pgTAP 全表计数。
+ */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+export function loadSupabaseEnv() {
+  const envPath = resolve(process.cwd(), '.env')
+  const text = readFileSync(envPath, 'utf8')
+  const get = (key: string) => {
+    const match = text.match(new RegExp(`^${key}=(.*)$`, 'm'))
+    return match?.[1]?.trim().replace(/^["']|["']$/g, '') ?? ''
+  }
+  return { url: get('VITE_SUPABASE_URL'), anonKey: get('VITE_SUPABASE_ANON_KEY') }
+}
+
+/**
+ * 用当前页面登录态软删除测试商机（business 有 update 权限）。
+ */
+export async function softDeleteOpportunity(
+  page: Page,
+  title: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, title }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const res = await fetch(
+        `${url}/rest/v1/opportunities?title=eq.${encodeURIComponent(title)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        }
+      )
+      return res.ok
+    },
+    { url, anonKey, title }
+  )
+}

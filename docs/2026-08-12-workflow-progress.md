@@ -419,3 +419,14 @@
 - 新增市场 E2E 用例：新建活动 → 点击进入详情 → 逐 Tab 切换并断言内容（活动阶段/任务看板空态/招商空态/报名空态/导出按钮/进度总览）→ 返回删除回收。
 - 验证：E2E 5/5 通过（商务客户、设计需求闭环、剪辑选题、市场活动 CRUD、活动详情六 Tab）；build 通过。
 - 验收清单市场「活动详情 6 Tab 可切换」勾选。
+
+## 2026-08-14 上午续二：商务商机 Pipeline E2E + 软删除 RLS 修复
+
+- 新增商务 E2E 用例 `e2e/opportunity-pipeline.spec.ts`：登录董雨辰 → 建客户 → 建商机（客户弹窗+combobox 选客户）→ 看板拖拽「初步接洽 → 方案报价」→ 详情改「已流失」（空原因前端拦截，填原因后落位）→ REST 软删除商机 + UI 删客户回收。
+- E2E 暴露真实 bug：`opportunities` 的 SELECT 策略含 `deleted_at is null or owner`，business 软删除时 PostgreSQL 对 UPDATE 新行做 SELECT 可见性检查，返回 403 `new row violates row-level security policy`。修复：新增 migration `20260814000100_opportunity_soft_delete_select_rls.sql`，SELECT 策略放宽为 owner/boss/business 按角色可见（与 `20260813001500` 七表同模式），删除行由前端统一 `.is('deleted_at', null)` 过滤。
+- 本地 dev 库补齐此前缺失的 5 个迁移记录（01300/01400/01500/01600/14000100）并应用幂等 SQL；`business_transactions.test.sql` 断言数 24 → 26（新增：business 软删除商机可执行、boss 看不到非软删行、boss 可查看软删行）。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 100 文件 / 228 测试；pgTAP 23 文件 / 403 断言 PASS；E2E 6/6 通过（新增商机 Pipeline，含拖拽与流失必填）。
+
+### 提交
+
+- `cdc1392 feat(e2e): 商务商机看板拖拽+已流失必填闭环`（含 migration 20260814000100 与 pgTAP 断言扩展）

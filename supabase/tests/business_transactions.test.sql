@@ -1,5 +1,5 @@
 begin;
-select plan(24);
+select plan(26);
 
 select has_table('public', 'opportunities', 'opportunities table exists');
 select has_table('public', 'channel_orders', 'channel orders table exists');
@@ -124,19 +124,30 @@ select lives_ok($$
   )
 $$, 'business can link social plans to opportunities');
 
+select lives_ok($$
+  update public.opportunities
+  set deleted_at = now()
+  where id = '23000000-0000-0000-0000-000000000001'
+$$, 'business can soft delete opportunities');
+
 select set_config(
   'request.jwt.claims',
   '{"sub":"20000000-0000-0000-0000-000000000003","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.opportunities), 0::bigint, 'market cannot read opportunities');
+select is((select count(*) from public.opportunities where title = '测试商机'), 0::bigint, 'market cannot read opportunities');
 
 select set_config(
   'request.jwt.claims',
   '{"sub":"20000000-0000-0000-0000-000000000001","role":"authenticated"}',
   true
 );
-select is((select count(*) from public.opportunities), 1::bigint, 'boss can read business records');
+select is((select count(*) from public.opportunities where title = '测试商机' and deleted_at is null), 0::bigint, 'boss sees no live rows after soft delete');
+select is(
+  (select count(*) from public.opportunities where title = '测试商机' and deleted_at is not null),
+  1::bigint,
+  'boss can inspect soft-deleted business records'
+);
 
 select * from finish();
 rollback;
