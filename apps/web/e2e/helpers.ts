@@ -412,6 +412,59 @@ export async function softDeleteSponsorship(
   )
 }
 
+/**
+ * 用当前页面登录态按字段前缀软删除指定表记录（调用方需持有该表的 update 权限）。
+ * 用途：设计需求/参考/交付记录 E2E 回收，避免残留污染计数。
+ */
+export async function softDeleteRowsByFieldPrefix(
+  page: Page,
+  table:
+    | 'design_requirements'
+    | 'design_references'
+    | 'design_deliverables',
+  field: string,
+  prefix: string
+): Promise<boolean> {
+  const { url, anonKey } = loadSupabaseEnv()
+  if (!url || !anonKey) return false
+  return page.evaluate(
+    async ({ url, anonKey, table, field, prefix }) => {
+      const entry = Object.entries(localStorage).find(([key]) =>
+        key.includes('auth-token')
+      )
+      if (!entry) return false
+      const token = JSON.parse(entry[1]).access_token
+      const headers = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+      }
+      const list = await fetch(
+        `${url}/rest/v1/${table}?${field}=like.${encodeURIComponent(
+          `${prefix}%`
+        )}&deleted_at=is.null&select=id`,
+        { headers }
+      )
+      if (!list.ok) return false
+      const rows = (await list.json()) as Array<{ id: string }>
+      let cleaned = 0
+      for (const row of rows) {
+        const res = await fetch(`${url}/rest/v1/${table}?id=eq.${row.id}`, {
+          method: 'PATCH',
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ deleted_at: new Date().toISOString() }),
+        })
+        if (res.ok) cleaned += 1
+      }
+      return cleaned > 0
+    },
+    { url, anonKey, table, field, prefix }
+  )
+}
+
 /** 1x1 透明 PNG，E2E 文件上传用。 */
 export const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',

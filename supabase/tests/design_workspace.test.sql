@@ -125,7 +125,12 @@ select lives_ok($$
   update public.design_requirements set status = 'revised'
   where id = '61000000-0000-0000-0000-000000000001'
 $$, 'requester can return delivered requirement for revision');
-select is((select count(*) from public.design_deliverables), 1::bigint, 'business can read deliverables');
+select is(
+  (select count(*) from public.design_deliverables
+    where requirement_id = '61000000-0000-0000-0000-000000000001'),
+  1::bigint,
+  'business can read deliverables'
+);
 
 select set_config(
   'request.jwt.claims',

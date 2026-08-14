@@ -5,7 +5,12 @@
  * 权限：需要 boss + design 测试账号；密码经 TK_OBSERVER_TEST_PASSWORD 注入，不落仓库。
  */
 import { expect, test } from 'playwright/test'
-import { accounts, login, TEST_PASSWORD } from './helpers'
+import {
+  accounts,
+  login,
+  softDeleteRowsByFieldPrefix,
+  TEST_PASSWORD,
+} from './helpers'
 
 test.skip(!TEST_PASSWORD, '未配置 TK_OBSERVER_TEST_PASSWORD，跳过 E2E 登录用例')
 
@@ -28,7 +33,7 @@ test('需求提交-设计师接单闭环', async ({ browser }) => {
   await expect(
     bossPage.locator('tbody tr', { hasText: title })
   ).toHaveCount(1)
-  await bossContext.close()
+  // 注意：bossContext 保留到用例结束，用于最终软删除回收
 
   const designContext = await browser.newContext()
   const designPage = await designContext.newPage()
@@ -42,5 +47,18 @@ test('需求提交-设计师接单闭环', async ({ browser }) => {
   await detail.getByRole('button', { name: '制作中' }).click()
   await expect(detail.getByRole('button', { name: '已交付' })).toBeVisible()
   await expect(detail.getByText('制作中')).toBeVisible()
+
+  // 回收：磊哥软删除需求，避免残留污染计数
+  await expect
+    .poll(() =>
+      softDeleteRowsByFieldPrefix(
+        bossPage,
+        'design_requirements',
+        'title',
+        title
+      )
+    )
+    .toBe(true)
+  await bossContext.close()
   await designContext.close()
 })

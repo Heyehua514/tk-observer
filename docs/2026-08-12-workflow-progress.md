@@ -582,3 +582,17 @@
 ### 提交
 
 - `2a42fc3 feat(business): 达人商务标记闭环 + 跨角色 E2E`
+
+## 2026-08-14 下午续五：设计需求详情参考/交付记录子 Tab E2E 闭环
+
+- 新增 E2E `e2e/design-requirement-subtabs.spec.ts`：孙铭泽建素材并提审 → 磊哥审核通过 → 磊哥提交设计需求 → 孙铭泽在详情「视觉参考」Tab 填图片链接/来源/备注添加参考 → 「交付记录」Tab 选已通过素材 + 尺寸/格式 + 检查勾选添加交付 → 磊哥重新打开详情只读看到交付记录（素材名/尺寸/检查通过 Badge）且无「添加参考/添加交付」编辑表单 → 按依赖顺序软删除回收（交付/参考/素材/需求）。
+- `e2e/helpers.ts` 新增通用 `softDeleteRowsByFieldPrefix`（按字段前缀软删除指定设计表记录，调用方需持有对应角色权限）。
+- 修复 `e2e/design-request-flow.spec.ts` 残留问题：原用例不回收需求，每次全量跑都留一条 in_progress 残留；追加 boss 侧软删除回收（保留 bossContext 到用例末尾）。
+- 修复 pgTAP `design_workspace.test.sql` 交付计数断言被 E2E 软删残留污染（全表 count 1 vs 4 假失败）：改为按 fixture requirement_id 限定计数，永久免疫软删残留。
+- 本地 dev 库物理清理本轮失败运行遗留的 E2E 行（3 交付 + 3 参考 + 4 素材 + 5 需求），验证全部 `E2E%` 计数 live=0，仅保留种子达人 `E2E可商务达人`。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 237 测试；pgTAP 25 文件 / 450 断言 PASS；E2E 14/14 通过（42.2s，新增需求详情子 Tab 用例）；build 通过。
+- 验收清单设计「需求详情页展示参考图与交付记录子 Tab」勾选。
+
+### 提交
+
+- `feat(e2e): 设计需求详情参考/交付记录子 Tab 闭环`
