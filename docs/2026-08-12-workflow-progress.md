@@ -551,3 +551,19 @@
 ### 提交
 
 - `62fcff7 feat(market): 活动财务模板种子 Supabase-first 读取+新增+E2E`
+
+## 2026-08-14 下午续三：团队日历挂起 Bug 根因定位 + 修复 + 跨角色 E2E
+
+- 根因：`use-team-calendar.ts` 的 queryKey 含 `date.toISOString()`（毫秒级时间戳）。顶部时钟组件每分钟触发整页重渲染，React Query 每次渲染都生成新 key、作废旧请求并重新发起 5 个 `/rest/v1/` 请求，浏览器持续重发，请求永远 loading，团队日历只渲染表头不渲染日期格与排期项。
+- 修复：`apps/web/src/features/overview/hooks/use-team-calendar.ts` queryKey 改为稳定值 `['overview', 'team-calendar', getFullYear(), getMonth()]`（满足 `@tanstack/query/exhaustive-deps`）。
+- 新增稳定性回归测试 `use-team-calendar.stability.test.tsx`：模拟 Ticker 强制重渲染 5 次，断言 5 个表各只请求 1 次。已用「临时还原旧 key → 测试失败 → 恢复 → 通过」验证测试能捕获该 Bug。
+- 新增 E2E `e2e/team-calendar.spec.ts`：董雨辰建今天朋友圈计划 → 切磊哥 `/overview/calendar` 看到「朋友圈 · 内容」→ 切回董雨辰软删除回收；`e2e/helpers.ts` 新增 `softDeleteSocialPlansByPrefix`；用例开头先清理 `E2E日历` 前缀数据，断言改切列表视图避免日历视图截断影响。
+- 修复 `supabase/tests/design_workspace.test.sql` 第 144 行按 fixture id 限定软删计数，避免被历史 E2E 残留污染（全表 count 导致 1 vs 2 假失败）。
+- 本地 dev 库物理清理全部 E2E 残留（event_sponsorships 1 / event_finances 21 / event_phases 0 / event_registrations 0 / channel_orders 1 / opportunities 1 / events 3 / clients 4 / social_plans 6 / venues 1 / video_ideas 1 / design_requirements 1 / design_assets 0），仅保留种子达人 `E2E可商务达人`（order-status.spec.ts 依赖）。
+- 关键教训：跑完 rebuild 才部署新代码。此前 E2E 的 vite preview 一直服务旧 dist，修复后仍复现旧行为；`pnpm --dir apps/web build` 后重新跑 E2E 才通过。
+- 验证：`pnpm typecheck`、`pnpm lint` 零错误；`pnpm test` 102 文件 / 236 测试；pgTAP 25 文件 / 450 断言 PASS；E2E 12/12 通过（33.4s）；build 通过。
+- 验收清单总览「跨工作台排期聚合（团队日历）」勾选。
+
+### 提交
+
+- `600110d feat(overview): 团队日历查询键稳定性修复 + 跨角色 E2E`
