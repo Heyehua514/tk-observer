@@ -2,6 +2,8 @@
 
 TK观察内部多角色工作台，面向 TikTok Shop 跨境电商团队。项目是 SPA + Supabase + Tauri 2 架构：默认数据源为 Supabase（Auth、业务表、RLS、Storage、Realtime、pg_cron 自动化），PocketBase 保留显式回退，没有额外的自建后端服务。
 
+> 后端策略（2026-08-14）：PocketBase 已冻结，只作显式回退，不再新增 migration 或业务 hook。新功能一律走 Supabase migration；`pnpm check:pb-freeze`（`node scripts/supabase/pocketbase-freeze-check.mjs`）可校验冻结线。
+
 ## 技术栈
 
 - Vite + React 18 + TypeScript strict

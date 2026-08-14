@@ -16,6 +16,7 @@
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset",
     "supabase:test": "supabase test db",
+    "check:pb-freeze": "node scripts/supabase/pocketbase-freeze-check.mjs",
     "supabase:types": "supabase gen types typescript --local > apps/web/src/types/database.generated.ts && pnpm --dir apps/web exec prettier --write src/types/database.generated.ts",
     "supabase:stop": "supabase stop",
     "supabase:schema:test": "node --test scripts/supabase/schema-inventory.test.mjs",
