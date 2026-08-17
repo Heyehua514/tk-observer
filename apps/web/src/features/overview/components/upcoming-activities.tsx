@@ -4,13 +4,11 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/shared/empty-state'
 import { eventStatusLabels, eventTypeLabels } from '@/features/market/constants'
-import { useEvents } from '@/features/market/hooks/use-market-records'
 import type { Event } from '@/features/market/types'
 import { selectUpcomingActivities } from './upcoming-activities-model'
 
-export function UpcomingActivities() {
-  const events = useEvents()
-  const upcoming = selectUpcomingActivities(events.data || [])
+export function UpcomingActivities({ events }: { events: Event[] }) {
+  const upcoming = selectUpcomingActivities(events)
 
   return (
     <Card className='bento-card shadow-none'>

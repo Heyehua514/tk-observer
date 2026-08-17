@@ -30,7 +30,9 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
+import { useEvents } from '@/features/market/hooks/use-market-records'
 import { TeamMemory } from '../team-memory'
+import { ActivityStatusChart } from './activity-status-chart'
 import {
   mapSupabaseAuditLog,
   mapSupabaseGmvMetric,
@@ -70,6 +72,7 @@ type OverviewDashboardData = {
 
 export function OverviewDashboard() {
   const [metricRange, setMetricRange] = useState<OverviewMetricRange>('30d')
+  const events = useEvents()
   const data = useQuery({
     queryKey: ['overview-dashboard'],
     queryFn: async (): Promise<OverviewDashboardData> => {
@@ -346,7 +349,10 @@ export function OverviewDashboard() {
           </CardContent>
         </Card>
       </div>
-      <UpcomingActivities />
+      <div className='grid gap-6 xl:grid-cols-2'>
+        <UpcomingActivities events={events.data || []} />
+        <ActivityStatusChart events={events.data || []} />
+      </div>
       <TeamMemory />
       <Card className='bento-card shadow-none'>
         <CardHeader>
