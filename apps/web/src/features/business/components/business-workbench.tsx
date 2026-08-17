@@ -123,7 +123,9 @@ export function BusinessWorkbench({
           />
         </TabsContent>
         <TabsContent value='orders' className='mt-5'>
-          <OrdersWorkbench focusId={focusType === 'order' ? focusId : undefined} />
+          <OrdersWorkbench
+            focusId={focusType === 'order' ? focusId : undefined}
+          />
         </TabsContent>
         <TabsContent value='social' className='mt-5'>
           <SocialWorkbench />

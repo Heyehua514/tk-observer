@@ -39,12 +39,16 @@ describe('design Supabase mapper', () => {
 
   it('serializes upload and review fields for Supabase columns', () => {
     expect(
-      serializeSupabaseDesignAssetUpload({
-        fileName: '活动海报.png',
-        file: new File(['x'], 'activity.png', { type: 'image/png' }),
-        dimensions: '1080x1920',
-        region: 'US',
-      }, 'design-user', 'design-assets/activity.png')
+      serializeSupabaseDesignAssetUpload(
+        {
+          fileName: '活动海报.png',
+          file: new File(['x'], 'activity.png', { type: 'image/png' }),
+          dimensions: '1080x1920',
+          region: 'US',
+        },
+        'design-user',
+        'design-assets/activity.png'
+      )
     ).toMatchObject({
       file_name: '活动海报.png',
       file_path: 'design-assets/activity.png',
@@ -53,10 +57,13 @@ describe('design Supabase mapper', () => {
     })
 
     expect(
-      serializeSupabaseDesignAssetStatus({
-        id: 'asset-1',
-        status: 'approved',
-      }, 'boss-user')
+      serializeSupabaseDesignAssetStatus(
+        {
+          id: 'asset-1',
+          status: 'approved',
+        },
+        'boss-user'
+      )
     ).toMatchObject({
       status: 'approved',
       reviewed_by: 'boss-user',

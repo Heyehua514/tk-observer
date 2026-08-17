@@ -55,9 +55,7 @@ async function fetchCreators(
       table: 'creators',
       page: params.page,
       perPage: params.perPage,
-      sort: sort.startsWith('-')
-        ? `${sort.slice(1)}.desc`
-        : `${sort}.asc`,
+      sort: sort.startsWith('-') ? `${sort.slice(1)}.desc` : `${sort}.asc`,
       filters,
       mapRow: mapCreator,
     })

@@ -37,13 +37,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { videoAccounts } from '../constants'
 import { useCreatePublishSchedule } from '../hooks/use-create-publish-schedule'
 import { useUpdatePublishSchedule } from '../hooks/use-update-publish-schedule'
-import { publishScheduleStatusLabels as statusLabels } from './production-model'
 import type {
   PublishPlatform,
   PublishScheduleInput,
   PublishScheduleStatus,
   VideoAccount,
 } from '../types'
+import { publishScheduleStatusLabels as statusLabels } from './production-model'
 
 const platforms = ['微信视频号', 'TikTok', '抖音', 'YouTube'] as const
 const statuses = [
@@ -64,7 +64,10 @@ const schema = z.object({
   notes: z.string().trim().max(1000),
 })
 
-type ScheduleFormValues = Omit<PublishScheduleInput, 'videoId' | 'videoTaskId'> & {
+type ScheduleFormValues = Omit<
+  PublishScheduleInput,
+  'videoId' | 'videoTaskId'
+> & {
   account: VideoAccount
   region: string
   platform: PublishPlatform

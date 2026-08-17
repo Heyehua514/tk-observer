@@ -13,15 +13,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
+import { eventStatusLabels, eventTypeLabels } from '../constants'
 import {
   downloadText,
   financesToCsv,
   financesToMarkdown,
   type EventFinance,
 } from '../resources'
-import { eventStatusLabels, eventTypeLabels } from '../constants'
-import { calculateActivityMetrics } from './activity-metrics'
 import { activityFinanceAmountInput } from './activity-finance'
+import { calculateActivityMetrics } from './activity-metrics'
 import {
   useActivityDetail,
   useCreateActivityFinance,

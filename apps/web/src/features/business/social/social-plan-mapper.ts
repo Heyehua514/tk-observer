@@ -16,7 +16,9 @@ export type SocialPlanDraft = {
   expected_outcome: string
 }
 
-export function mapSocialPlanRecord(record: Record<string, unknown>): SocialPlan {
+export function mapSocialPlanRecord(
+  record: Record<string, unknown>
+): SocialPlan {
   return {
     id: String(record.id || ''),
     date: String(record.date || ''),

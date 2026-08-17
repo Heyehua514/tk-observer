@@ -9,10 +9,7 @@ type BulkUpdateClient = {
   supabase?: {
     from: (table: 'creators') => {
       update: (payload: { cooperation_status: CooperationStatus }) => {
-        in: (
-          column: 'id',
-          values: string[]
-        ) => Promise<{ error: unknown }>
+        in: (column: 'id', values: string[]) => Promise<{ error: unknown }>
       }
     }
   }
@@ -25,8 +22,9 @@ export async function bulkUpdateCreatorStatus(
   if (!input.ids.length) return
   const provider = client.provider || getDataProvider()
   if (provider === 'supabase') {
-    const supabase = (client.supabase ||
-      getSupabaseClient()) as NonNullable<BulkUpdateClient['supabase']>
+    const supabase = (client.supabase || getSupabaseClient()) as NonNullable<
+      BulkUpdateClient['supabase']
+    >
     const { error } = await supabase
       .from('creators')
       .update({ cooperation_status: input.status })

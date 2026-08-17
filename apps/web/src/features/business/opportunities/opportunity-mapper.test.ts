@@ -1,6 +1,9 @@
 /** 商务商机 Supabase/PocketBase 双源映射自检。 */
 import { describe, expect, it } from 'vitest'
-import { mapOpportunityRecord, serializeOpportunityPayload } from './opportunity-mapper'
+import {
+  mapOpportunityRecord,
+  serializeOpportunityPayload,
+} from './opportunity-mapper'
 
 describe('opportunity mapper', () => {
   it('maps Supabase opportunity rows with joined client names', () => {

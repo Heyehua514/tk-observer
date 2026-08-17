@@ -66,7 +66,10 @@ function useClientMutation(action: 'create' | 'update' | 'delete') {
         return
       }
       if (action === 'create') await pb.collection('clients').create(data)
-      else await pb.collection('clients').update((payload as { id: string }).id, data)
+      else
+        await pb
+          .collection('clients')
+          .update((payload as { id: string }).id, data)
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: clientKeys.all })

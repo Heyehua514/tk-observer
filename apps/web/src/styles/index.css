@@ -137,10 +137,12 @@
 @keyframes logo-breathe {
   0%,
   100% {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--sidebar-primary) 12%, transparent);
+    box-shadow: 0 0 0 4px
+      color-mix(in oklab, var(--sidebar-primary) 12%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 7px color-mix(in oklab, var(--sidebar-primary) 24%, transparent);
+    box-shadow: 0 0 0 7px
+      color-mix(in oklab, var(--sidebar-primary) 24%, transparent);
   }
 }
 

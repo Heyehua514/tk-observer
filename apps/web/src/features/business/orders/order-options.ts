@@ -25,4 +25,6 @@ export const orderContentTypeOptions = [
 
 export const orderStatusLabels = Object.fromEntries(orderStatusOptions)
 export const orderPlatformLabels = Object.fromEntries(orderPlatformOptions)
-export const orderContentTypeLabels = Object.fromEntries(orderContentTypeOptions)
+export const orderContentTypeLabels = Object.fromEntries(
+  orderContentTypeOptions
+)

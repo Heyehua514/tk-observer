@@ -11,6 +11,7 @@ import {
   serializeMarketVenue,
   toSupabaseMarketSearch,
 } from './market-mappers'
+
 export const marketKeys = {
   events: ['market', 'events'] as const,
   venues: ['market', 'venues'] as const,

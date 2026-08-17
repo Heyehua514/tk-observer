@@ -4,8 +4,8 @@ import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
-import { mapEvent } from '../hooks/use-market-records'
 import { mapMarketRelatedRecord } from '../hooks/market-mappers'
+import { mapEvent } from '../hooks/use-market-records'
 
 function related(collection: string, eventId: string) {
   return pb.collection(collection).getFullList({
@@ -20,14 +20,7 @@ export function useActivityDetail(eventId: string) {
     queryFn: async () => {
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
-        const [
-          event,
-          phases,
-          tasks,
-          registrations,
-          sponsorships,
-          finances,
-        ] =
+        const [event, phases, tasks, registrations, sponsorships, finances] =
           await Promise.all([
             supabase.from('events').select('*').eq('id', eventId).single(),
             supabase
@@ -76,9 +69,7 @@ export function useActivityDetail(eventId: string) {
           event: mapEvent(event.data),
           phases: (phases.data || []).map(mapMarketRelatedRecord),
           tasks: (tasks.data || []).map(mapMarketRelatedRecord),
-          registrations: (registrations.data || []).map(
-            mapMarketRelatedRecord
-          ),
+          registrations: (registrations.data || []).map(mapMarketRelatedRecord),
           sponsorships: (sponsorships.data || []).map(mapMarketRelatedRecord),
           materials: [],
           finances: (finances.data || []).map(mapMarketRelatedRecord),

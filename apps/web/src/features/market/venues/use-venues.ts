@@ -8,7 +8,10 @@ import { pb } from '@/lib/pocketbase'
 import { resolveStorageUrls } from '@/lib/storage-url'
 import { getSupabaseClient } from '@/lib/supabase'
 import type { Venue, VenueInput } from './types'
-import { mapSupabaseVenue, serializeSupabaseVenue } from './venue-supabase-mapper'
+import {
+  mapSupabaseVenue,
+  serializeSupabaseVenue,
+} from './venue-supabase-mapper'
 
 const key = ['market', 'venue-resources'] as const
 const mapVenue = (r: RecordModel): Venue => ({

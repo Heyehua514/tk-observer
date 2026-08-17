@@ -5,13 +5,13 @@ import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
-import type { RequirementStatus } from './requirement-rules'
 import {
   mapSupabaseDesignDeliverable,
   mapSupabaseDesignReference,
   mapSupabaseDesignRequirement,
   serializeSupabaseDesignRequirement,
 } from './design-requirement-supabase-mapper'
+import type { RequirementStatus } from './requirement-rules'
 import type {
   DesignDeliverable,
   DesignReference,

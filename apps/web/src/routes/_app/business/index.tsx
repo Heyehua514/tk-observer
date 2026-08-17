@@ -166,7 +166,12 @@ function BusinessRoute() {
       focusId={params.recordId}
       onFocus={(type, id) =>
         void navigate({
-          search: (previous) => ({ ...previous, recordType: type, recordId: id, tab: type === 'opportunity' ? 'opportunities' : 'orders' }),
+          search: (previous) => ({
+            ...previous,
+            recordType: type,
+            recordId: id,
+            tab: type === 'opportunity' ? 'opportunities' : 'orders',
+          }),
           replace: true,
         })
       }

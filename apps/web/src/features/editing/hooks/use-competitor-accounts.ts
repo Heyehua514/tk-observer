@@ -28,7 +28,9 @@ export function useCompetitorAccounts(query = '') {
           .order('name', { ascending: true })
         if (query) {
           const escaped = query.replace(/%/g, '\\%').replace(/,/g, '\\,')
-          request = request.or(`name.ilike.%${escaped}%,notes.ilike.%${escaped}%`)
+          request = request.or(
+            `name.ilike.%${escaped}%,notes.ilike.%${escaped}%`
+          )
         }
         const { data, error } = await request
         if (error) throw error

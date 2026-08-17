@@ -36,7 +36,9 @@ export function useBlogArticles() {
         return (data || []).map(mapSupabaseBlogArticle)
       }
       return (
-        await pb.collection('blog_articles').getFullList({ sort: '-publish_date' })
+        await pb
+          .collection('blog_articles')
+          .getFullList({ sort: '-publish_date' })
       ).map(mapArticle)
     },
   })

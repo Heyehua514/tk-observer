@@ -39,8 +39,14 @@ it('shows a guided empty state for sponsorship records', async () => {
     </QueryClientProvider>
   )
 
-  await expect.element(screen.getByText('还没有活动招商记录')).toBeInTheDocument()
   await expect
-    .element(screen.getByText('市场录入活动招商后，商务可在这里跟进意向、洽谈、签约和流失状态。'))
+    .element(screen.getByText('还没有活动招商记录'))
+    .toBeInTheDocument()
+  await expect
+    .element(
+      screen.getByText(
+        '市场录入活动招商后，商务可在这里跟进意向、洽谈、签约和流失状态。'
+      )
+    )
     .toBeInTheDocument()
 })

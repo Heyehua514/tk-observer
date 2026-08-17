@@ -18,7 +18,8 @@ export function registerServiceWorker(
 ): void {
   const prod = options.prod ?? import.meta.env.PROD
   if (!prod) return
-  const target = win ?? (typeof window === 'undefined' ? null : (window as WindowLike))
+  const target =
+    win ?? (typeof window === 'undefined' ? null : (window as WindowLike))
   if (!target?.navigator.serviceWorker) return
   target.addEventListener('load', () => {
     void target.navigator.serviceWorker!.register('/sw.js').catch((error) => {

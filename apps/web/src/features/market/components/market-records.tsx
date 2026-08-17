@@ -28,8 +28,8 @@ import {
   useVenues,
   venueData,
 } from '../hooks/use-market-records'
-import { marketEmptyTitles } from './market-empty-copy'
 import type { EventInput, VenueInput } from '../types'
+import { marketEmptyTitles } from './market-empty-copy'
 
 export function EventsPanel({ query }: { query: string }) {
   const events = useEvents(query)

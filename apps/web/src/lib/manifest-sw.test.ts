@@ -22,14 +22,18 @@ describe('PWA manifest', () => {
     const icons = manifest.icons as Array<{ sizes: string; purpose?: string }>
     expect(icons.some((icon) => icon.sizes === '192x192')).toBe(true)
     expect(icons.some((icon) => icon.sizes === '512x512')).toBe(true)
-    expect(icons.some((icon) => icon.sizes === '512x512' && icon.purpose?.includes('maskable'))).toBe(
-      true
-    )
+    expect(
+      icons.some(
+        (icon) => icon.sizes === '512x512' && icon.purpose?.includes('maskable')
+      )
+    ).toBe(true)
   })
 
   it('manifest 引用的图标文件可访问', async () => {
     for (const size of ['192', '512']) {
-      const icon = await fetch(new URL(`/images/pwa-${size}.png`, location.href))
+      const icon = await fetch(
+        new URL(`/images/pwa-${size}.png`, location.href)
+      )
       expect(icon.ok).toBe(true)
       expect(icon.headers.get('content-type')).toMatch(/png/)
     }

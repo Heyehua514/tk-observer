@@ -21,7 +21,9 @@ it('uses neutral data-service wording when team memory fails to load', async () 
     </QueryClientProvider>
   )
 
-  await expect.element(screen.getByText('团队记忆暂时无法加载')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('团队记忆暂时无法加载'))
+    .toBeInTheDocument()
   await expect
     .element(screen.getByText('请检查数据服务和当前账号权限后重试。'))
     .toBeInTheDocument()

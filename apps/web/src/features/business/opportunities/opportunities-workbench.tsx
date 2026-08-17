@@ -26,11 +26,6 @@ import {
 } from '@/components/ui/select'
 import { useClients } from '../clients'
 import { formatCny, opportunityCreateInput } from './opportunity-amount'
-import {
-  opportunityStagePatch,
-  opportunityStages,
-  type OpportunityStage,
-} from './opportunity-rules'
 import { opportunityCreatePayload } from './opportunity-create'
 import {
   opportunityDetailPatch,
@@ -40,7 +35,13 @@ import {
   mapOpportunityRecord,
   serializeOpportunityPayload,
 } from './opportunity-mapper'
+import {
+  opportunityStagePatch,
+  opportunityStages,
+  type OpportunityStage,
+} from './opportunity-rules'
 import { opportunityDueText, type OpportunityView } from './opportunity-view'
+
 const labels: Record<OpportunityStage, string> = {
   contact: '初步接洽',
   proposal: '方案报价',
@@ -50,11 +51,7 @@ const labels: Record<OpportunityStage, string> = {
   lost: '已流失',
 }
 
-export function OpportunitiesWorkbench({
-  focusId,
-}: {
-  focusId?: string
-}) {
+export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
   const queryClient = useQueryClient()
   const clients = useClients()
   const opportunities = useQuery({

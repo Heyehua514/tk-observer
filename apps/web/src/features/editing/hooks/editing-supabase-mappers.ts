@@ -1,5 +1,10 @@
 /** 剪辑工作台 Supabase 映射层。只负责表行到现有前端模型的转换。 */
 import type { Database } from '@/types/database.generated'
+import {
+  buildVideoArchiveItems,
+  buildPublishScheduleItems,
+  buildVideoTaskItems,
+} from '../components/production-model'
 import type {
   CompetitorAccount,
   CompetitorStyleAnalysis,
@@ -14,11 +19,6 @@ import type {
   VideoIdeaInput,
   VideoIdeaTypeAnalytics,
 } from '../types'
-import {
-  buildVideoArchiveItems,
-  buildPublishScheduleItems,
-  buildVideoTaskItems,
-} from '../components/production-model'
 
 type PublicDb = Database['public']['Tables']
 
@@ -33,7 +33,8 @@ type CompetitorAccountRow = PublicDb['competitor_accounts']['Row']
 type CompetitorVideoRow = PublicDb['competitor_videos']['Row']
 type TrendingTopicRow = PublicDb['trending_topics']['Row']
 type CompetitorStyleAnalysisRow = PublicDb['competitor_style_analysis']['Row']
-type VideoIdeaSummaryRow = Database['public']['Views']['video_idea_summary']['Row']
+type VideoIdeaSummaryRow =
+  Database['public']['Views']['video_idea_summary']['Row']
 type VideoIdeaAccountStatsRow =
   Database['public']['Views']['video_idea_account_stats']['Row']
 type VideoIdeaTypeStatsRow =
@@ -44,7 +45,9 @@ type PartialRecord<T> = Partial<T> & Record<string, unknown>
 
 const dateOnly = (value: unknown) => String(value || '').slice(0, 10)
 
-export function mapSupabaseVideoTaskRecord(record: PartialRecord<VideoTaskRow>) {
+export function mapSupabaseVideoTaskRecord(
+  record: PartialRecord<VideoTaskRow>
+) {
   return buildVideoTaskItems([
     {
       id: String(record.id || ''),
@@ -201,8 +204,8 @@ export function mapSupabaseImportHistory(
         (record.snapshot as { averageViews?: number })?.averageViews || 0
       ),
       totalFollowerGain: Number(
-        (record.snapshot as { totalFollowerGain?: number })?.totalFollowerGain ||
-          0
+        (record.snapshot as { totalFollowerGain?: number })
+          ?.totalFollowerGain || 0
       ),
     },
     created: String(record.created_at || ''),

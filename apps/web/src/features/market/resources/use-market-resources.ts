@@ -73,15 +73,15 @@ export function useResourceEvents() {
         if (error) throw error
         return (data || []).map(mapSupabaseResourceEvent)
       }
-      return (await pb.collection('events').getFullList({ sort: '-start_date' })).map(
-        (record) => ({
-          id: record.id,
-          name: String(record.name),
-          city: String(record.location_city || ''),
-          date: String(record.start_date || '').slice(0, 10),
-          theme: String(record.theme || ''),
-        })
-      )
+      return (
+        await pb.collection('events').getFullList({ sort: '-start_date' })
+      ).map((record) => ({
+        id: record.id,
+        name: String(record.name),
+        city: String(record.location_city || ''),
+        date: String(record.start_date || '').slice(0, 10),
+        theme: String(record.theme || ''),
+      }))
     },
   })
 }
@@ -159,7 +159,13 @@ export function useSaveTemplate() {
 export function useMarkTemplateUsed() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, usageCount }: { id: string; usageCount: number }) => {
+    mutationFn: async ({
+      id,
+      usageCount,
+    }: {
+      id: string
+      usageCount: number
+    }) => {
       if (getDataProvider() === 'supabase') {
         // Supabase 由 bump_event_template_usage 触发器按 last_used_at 自动 +1，
         // 前端只写 last_used_at，避免与触发器双重计数。
@@ -241,8 +247,8 @@ export function useSaveMaterial() {
           let filePath: string | null = null
           if (input.file) {
             filePath = `${input.eventId || 'general'}/${Date.now()}-${input.file.name.replace(/[^\w.-]+/g, '-')}`
-            const upload = await getSupabaseClient().storage
-              .from('event-materials')
+            const upload = await getSupabaseClient()
+              .storage.from('event-materials')
               .upload(filePath, input.file, { upsert: false })
             if (upload.error) throw upload.error
           }
@@ -343,14 +349,17 @@ export function useSaveFinance() {
         let receiptPath: string | null = null
         if (input.receipt) {
           receiptPath = `${input.eventId}/${Date.now()}-${input.receipt.name.replace(/[^\w.-]+/g, '-')}`
-          const upload = await getSupabaseClient().storage
-            .from('finance-receipts')
+          const upload = await getSupabaseClient()
+            .storage.from('finance-receipts')
             .upload(receiptPath, input.receipt, { upsert: false })
           if (upload.error) throw upload.error
         }
         const { error } = await getSupabaseClient()
           .from('event_finances')
-          .insert({ ...serializeSupabaseEventFinance(input), receipt_path: receiptPath })
+          .insert({
+            ...serializeSupabaseEventFinance(input),
+            receipt_path: receiptPath,
+          })
         if (error) throw error
         return
       }

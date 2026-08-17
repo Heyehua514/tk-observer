@@ -11,7 +11,9 @@ it('keeps dark tabs legible and the fixed header above workspace content', () =>
   expect(appShellSource).toContain(
     'text-[11px] font-medium tracking-[0.16em] text-foreground/50 uppercase'
   )
-  expect(appShellSource).toContain("content-shell relative z-10 min-w-0 flex-1 p-7")
+  expect(appShellSource).toContain(
+    'content-shell relative z-10 min-w-0 flex-1 p-7'
+  )
 })
 
 it('renders KPI signal bars instead of incomplete pseudo-elements', () => {

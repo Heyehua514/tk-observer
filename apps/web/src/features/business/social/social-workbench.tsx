@@ -38,6 +38,7 @@ import {
   serializeSocialPlanDraft,
   type SocialPlan,
 } from './social-plan-mapper'
+
 export function SocialWorkbench() {
   const cache = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -90,8 +91,17 @@ export function SocialWorkbench() {
       ).map((r: Record<string, unknown>) => ({
         id: String(r.id || ''),
         title: String(r.title || ''),
-        clients: ((r.expand as Record<string, unknown> | undefined)?.client as { name?: string } | undefined)
-          ? { name: String(((r.expand as Record<string, unknown> | undefined)?.client as { name?: string }).name || '') }
+        clients: ((r.expand as Record<string, unknown> | undefined)?.client as
+          { name?: string } | undefined)
+          ? {
+              name: String(
+                (
+                  (r.expand as Record<string, unknown> | undefined)?.client as {
+                    name?: string
+                  }
+                ).name || ''
+              ),
+            }
           : null,
       }))
     },
@@ -280,7 +290,10 @@ export function SocialWorkbench() {
           </Button>
         </DialogContent>
       </Dialog>
-      <Dialog open={!!reviewPlan} onOpenChange={(open) => !open && setReviewPlan(null)}>
+      <Dialog
+        open={!!reviewPlan}
+        onOpenChange={(open) => !open && setReviewPlan(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>复盘朋友圈计划</DialogTitle>
@@ -376,7 +389,9 @@ function SocialPlanTable({
           {plans.map((item) => (
             <TableRow key={item.id}>
               <TableCell>{item.date.slice(0, 10)}</TableCell>
-              <TableCell className='max-w-md truncate'>{item.content}</TableCell>
+              <TableCell className='max-w-md truncate'>
+                {item.content}
+              </TableCell>
               <TableCell>{item.target || '—'}</TableCell>
               <TableCell>
                 <Select

@@ -30,8 +30,8 @@ export function useVideoIdeaAnalytics() {
     queryFn: async () => {
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
-        const [summary, accounts, types, features, history] =
-          await Promise.all([
+        const [summary, accounts, types, features, history] = await Promise.all(
+          [
             supabase.from('video_idea_summary').select('*').maybeSingle(),
             supabase.from('video_idea_account_stats').select('*'),
             supabase
@@ -49,7 +49,8 @@ export function useVideoIdeaAnalytics() {
               .is('deleted_at', null)
               .order('imported_at', { ascending: false })
               .range(0, 1),
-          ])
+          ]
+        )
         for (const result of [summary, accounts, types, features, history]) {
           if (result.error) throw result.error
         }

@@ -41,9 +41,7 @@ export function mapSupabaseCalendarSocialPlan(record: Row): TeamCalendarItem {
   }
 }
 
-export function mapSupabaseCalendarChannelOrder(
-  record: Row
-): TeamCalendarItem {
+export function mapSupabaseCalendarChannelOrder(record: Row): TeamCalendarItem {
   return {
     id: String(record.id || ''),
     title: String(record.title || '渠道商单'),

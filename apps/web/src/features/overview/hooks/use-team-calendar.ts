@@ -82,12 +82,13 @@ export function useTeamCalendar(date = new Date()) {
         }
         if (socialPlans.status === 'fulfilled' && !socialPlans.value.error) {
           items.push(
-            ...(socialPlans.value.data || []).map(
-              mapSupabaseCalendarSocialPlan
-            )
+            ...(socialPlans.value.data || []).map(mapSupabaseCalendarSocialPlan)
           )
         }
-        if (channelOrders.status === 'fulfilled' && !channelOrders.value.error) {
+        if (
+          channelOrders.status === 'fulfilled' &&
+          !channelOrders.value.error
+        ) {
           items.push(
             ...(channelOrders.value.data || []).map(
               mapSupabaseCalendarChannelOrder

@@ -39,7 +39,7 @@ export function DesignRequirements() {
   const requirements = useDesignRequirements(status)
   const latestSelected =
     selected && requirements.data
-      ? requirements.data.find((item) => item.id === selected.id) ?? selected
+      ? (requirements.data.find((item) => item.id === selected.id) ?? selected)
       : selected
   return (
     <div className='space-y-4'>

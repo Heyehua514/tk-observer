@@ -8,8 +8,12 @@ import {
 
 describe('editing empty and error copy', () => {
   it('does not expose PocketBase-only failure wording in Supabase-first components', () => {
-    expect(editingDataErrorDescription).toBe('请检查数据服务和当前账号权限后重试。')
-    expect(editingPermissionErrorDescription).toBe('请检查数据服务和当前账号权限。')
+    expect(editingDataErrorDescription).toBe(
+      '请检查数据服务和当前账号权限后重试。'
+    )
+    expect(editingPermissionErrorDescription).toBe(
+      '请检查数据服务和当前账号权限。'
+    )
     expect(editingDataErrorDescription).not.toContain('PocketBase')
     expect(editingPermissionErrorDescription).not.toContain('PocketBase')
     expect(Object.values(editingEmptyTitles)).toEqual([

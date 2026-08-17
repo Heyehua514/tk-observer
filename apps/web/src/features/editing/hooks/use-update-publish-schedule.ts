@@ -29,9 +29,7 @@ export function useUpdatePublishSchedule() {
         if (error) throw error
         return { id: String(data.id), status: String(data.status) }
       }
-      const updated = await pb
-        .collection('publish_schedules')
-        .update(id, input)
+      const updated = await pb.collection('publish_schedules').update(id, input)
       return { id: String(updated.id), status: String(updated.status) }
     },
     onSuccess: ({ id, status }) => {

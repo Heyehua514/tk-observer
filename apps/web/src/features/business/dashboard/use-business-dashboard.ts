@@ -19,8 +19,8 @@ export function useBusinessDashboard() {
     queryKey: businessDashboardKey,
     queryFn: async () => {
       if (getDataProvider() === 'supabase') {
-        const [clients, opportunities, orders, socialPlans] =
-          await Promise.all([
+        const [clients, opportunities, orders, socialPlans] = await Promise.all(
+          [
             getSupabaseClient()
               .from('clients')
               .select('*')
@@ -41,7 +41,8 @@ export function useBusinessDashboard() {
               .select('*')
               .is('deleted_at', null)
               .order('date'),
-          ])
+          ]
+        )
         for (const result of [clients, opportunities, orders, socialPlans]) {
           if (result.error) throw result.error
         }

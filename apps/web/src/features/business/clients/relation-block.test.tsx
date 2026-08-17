@@ -28,7 +28,13 @@ it('点击关联商单条目触发跳转回调（类型+ID）', async () => {
       type='order'
       title='关联商单'
       empty='该客户还没有商单'
-      items={[{ id: 'r1', title: 'TikTok 口播植入', meta: '¥30,000 · 已确认 · 2026-08-20' }]}
+      items={[
+        {
+          id: 'r1',
+          title: 'TikTok 口播植入',
+          meta: '¥30,000 · 已确认 · 2026-08-20',
+        },
+      ]}
       loading={false}
       onOpenRelated={onOpenRelated}
     />

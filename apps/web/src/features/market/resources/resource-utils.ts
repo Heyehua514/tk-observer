@@ -1,5 +1,5 @@
-import type { EventFinance } from './types'
 import { formatFinanceCny } from './finance-format'
+import type { EventFinance } from './types'
 
 export function applyTemplate(
   content: string,

@@ -147,7 +147,7 @@ export function VenuesWorkbench() {
               <button
                 type='button'
                 aria-label='删除场地'
-                className='absolute right-2 top-2 z-10 rounded-md bg-background/80 p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus:opacity-100 group-hover:opacity-100'
+                className='absolute top-2 right-2 z-10 rounded-md bg-background/80 p-1.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive focus:opacity-100'
                 onClick={(e) => {
                   e.stopPropagation()
                   void remove.mutateAsync(venue.id)

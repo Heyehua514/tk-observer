@@ -4,11 +4,11 @@ import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { createSupabasePageQuery } from '@/lib/supabase-table'
 import type { VideoIdeaListParams, VideoIdeaListResult } from '../types'
+import { mapVideoIdea } from './editing-mappers'
 import {
   mapSupabaseVideoIdeaRecord,
   toSupabaseVideoIdeaSort,
 } from './editing-supabase-mappers'
-import { mapVideoIdea } from './editing-mappers'
 import { useEditingRealtime } from './use-editing-realtime'
 
 export const videoIdeaKeys = {
@@ -97,7 +97,11 @@ async function fetchVideoIdeas(
       })
     }
     if (params.viral !== 'all') {
-      filters.push({ kind: 'eq', column: 'is_viral', value: params.viral === 'viral' })
+      filters.push({
+        kind: 'eq',
+        column: 'is_viral',
+        value: params.viral === 'viral',
+      })
     }
     return createSupabasePageQuery({
       table: 'video_ideas',
@@ -129,9 +133,7 @@ export function useVideoIdeas(params: VideoIdeaListParams) {
 export async function fetchVideoIdeasForExport(params: VideoIdeaListParams) {
   if (getDataProvider() === 'supabase') {
     const result = await fetchVideoIdeas({ ...params, page: 1, perPage: 500 })
-    return (
-      result.items
-    )
+    return result.items
   }
   const records = await pb.collection('video_ideas').getFullList({
     filter: buildVideoIdeaFilter(params),

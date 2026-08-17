@@ -47,7 +47,8 @@ async function runGlobalSearch(
   query: string,
   role: string
 ): Promise<SearchGroup[]> {
-  if (getDataProvider() === 'supabase') return runSupabaseGlobalSearch(query, role)
+  if (getDataProvider() === 'supabase')
+    return runSupabaseGlobalSearch(query, role)
   const tasks: Promise<SearchGroup>[] = []
   if (role === 'boss' || role === 'business') {
     tasks.push(
@@ -181,14 +182,14 @@ async function runSupabaseGlobalSearch(
           )
           .limit(5)
       ).then(({ data, error, count }) => {
-          if (error) throw error
-          return {
-            kind: 'company' as const,
-            title: '客户 / 供应商',
-            total: count || 0,
-            items: (data || []).map(mapSupabaseCompanySearch),
-          }
-        })
+        if (error) throw error
+        return {
+          kind: 'company' as const,
+          title: '客户 / 供应商',
+          total: count || 0,
+          items: (data || []).map(mapSupabaseCompanySearch),
+        }
+      })
     )
   }
   if (role === 'boss' || role === 'market') {
@@ -203,14 +204,14 @@ async function runSupabaseGlobalSearch(
           )
           .limit(5)
       ).then(({ data, error, count }) => {
-          if (error) throw error
-          return {
-            kind: 'product' as const,
-            title: '商品',
-            total: count || 0,
-            items: (data || []).map(mapSupabaseProductSearch),
-          }
-        })
+        if (error) throw error
+        return {
+          kind: 'product' as const,
+          title: '商品',
+          total: count || 0,
+          items: (data || []).map(mapSupabaseProductSearch),
+        }
+      })
     )
   }
   if (role === 'boss' || role === 'editing') {
@@ -225,14 +226,14 @@ async function runSupabaseGlobalSearch(
           )
           .limit(5)
       ).then(({ data, error, count }) => {
-          if (error) throw error
-          return {
-            kind: 'video' as const,
-            title: '视频',
-            total: count || 0,
-            items: (data || []).map(mapSupabaseVideoSearch),
-          }
-        })
+        if (error) throw error
+        return {
+          kind: 'video' as const,
+          title: '视频',
+          total: count || 0,
+          items: (data || []).map(mapSupabaseVideoSearch),
+        }
+      })
     )
   }
   return (await Promise.all(tasks)).filter((group) => group.total > 0)

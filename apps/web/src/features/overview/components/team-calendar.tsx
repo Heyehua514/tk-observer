@@ -71,7 +71,8 @@ export function TeamCalendar() {
                 <span
                   className={cn(
                     'flex size-7 items-center justify-center text-xs',
-                    item.isToday && 'rounded-full bg-primary text-primary-foreground'
+                    item.isToday &&
+                      'rounded-full bg-primary text-primary-foreground'
                   )}
                 >
                   {item.day}

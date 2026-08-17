@@ -98,7 +98,9 @@ export function BlogWorkbench() {
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-between gap-3 rounded-lg border bg-muted/20 px-4 py-3 text-sm text-muted-foreground'>
-        <span>公众号分析已接入对标账号与爆款沉淀，表格统一使用淡斑马纹和紧凑表头。</span>
+        <span>
+          公众号分析已接入对标账号与爆款沉淀，表格统一使用淡斑马纹和紧凑表头。
+        </span>
         <span className='tabular-nums'>北京时间持续同步</span>
       </div>
       <div className='grid gap-4 md:grid-cols-3'>

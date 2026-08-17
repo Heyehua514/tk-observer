@@ -5,7 +5,8 @@ export function mapOpportunityRecord(
   record: Record<string, unknown>
 ): OpportunityView {
   const expand = record.expand as { client?: { name?: unknown } } | undefined
-  const client = (record.clients || expand?.client) as { name?: unknown } | undefined
+  const client = (record.clients || expand?.client) as
+    { name?: unknown } | undefined
   return {
     id: String(record.id || ''),
     client: String(record.client_id || record.client || ''),

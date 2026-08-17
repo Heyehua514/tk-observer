@@ -31,24 +31,24 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { formatOrderAmount } from '../orders/order-amount'
 import {
+  emptyClientFilters,
+  filterClients,
+  type ClientFilters,
+} from './client-filters'
+import {
   clientIndustryLabels,
   clientIndustryOptions,
   clientSourceLabels,
   clientSourceOptions,
 } from './client-options'
-import {
-  emptyClientFilters,
-  filterClients,
-  type ClientFilters,
-} from './client-filters'
 import type { Client, ClientInput } from './types'
+import { useClientRelations } from './use-client-relations'
 import {
   useClients,
   useCreateClient,
   useDeleteClient,
   useUpdateClient,
 } from './use-clients'
-import { useClientRelations } from './use-client-relations'
 
 const empty: ClientInput = {
   name: '',

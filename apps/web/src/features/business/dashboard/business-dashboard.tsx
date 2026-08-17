@@ -23,16 +23,13 @@ import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { RoleAvatar } from '@/components/shared/role-avatar'
-import {
-  opportunityStages,
-  type OpportunityStage,
-} from '../opportunities'
+import { opportunityStages, type OpportunityStage } from '../opportunities'
+import { updateDashboardOpportunityStage } from './dashboard-stage-update'
 import type { BusinessDashboardSummary, DashboardOpportunity } from './types'
 import {
   businessDashboardKey,
   useBusinessDashboard,
 } from './use-business-dashboard'
-import { updateDashboardOpportunityStage } from './dashboard-stage-update'
 
 export type BusinessDashboardTarget =
   'clients' | 'opportunities' | 'orders' | 'social'

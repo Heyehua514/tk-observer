@@ -99,8 +99,13 @@ export function MarketWorkbench({
           </div>
           <div className='mt-4 grid gap-3 sm:grid-cols-3'>
             {adOverview.summary.map((item) => (
-              <div key={item.label} className='rounded-lg border bg-card/60 p-3'>
-                <div className='text-xs text-muted-foreground'>{item.label}</div>
+              <div
+                key={item.label}
+                className='rounded-lg border bg-card/60 p-3'
+              >
+                <div className='text-xs text-muted-foreground'>
+                  {item.label}
+                </div>
                 <div className='mt-1 text-xl font-semibold'>{item.value}</div>
                 <div className='text-xs text-emerald-600'>{item.delta}</div>
               </div>
@@ -193,7 +198,9 @@ export function MarketWorkbench({
             </div>
           ) : (
             <EmptyState
-              title={activeQuery ? '没有匹配的商品' : marketEmptyTitles.products}
+              title={
+                activeQuery ? '没有匹配的商品' : marketEmptyTitles.products
+              }
               description={
                 activeQuery
                   ? '换个关键词试试，确认商品名称、类目或站点拼写。'

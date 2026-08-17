@@ -25,7 +25,10 @@ async function fetchCompanies(
       .from('companies')
       .select('*', { count: 'exact' })
       .is('deleted_at', null)
-      .range((params.page - 1) * params.perPage, params.page * params.perPage - 1)
+      .range(
+        (params.page - 1) * params.perPage,
+        params.page * params.perPage - 1
+      )
     if (params.query.trim()) {
       const query = params.query.trim().replace(/[%_,]/g, '').slice(0, 80)
       if (query) {

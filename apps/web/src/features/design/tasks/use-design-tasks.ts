@@ -25,15 +25,15 @@ export function useDesignTasks() {
         if (error) throw error
         return (data || []).map(mapSupabaseDesignTask)
       }
-      return (await pb.collection('design_tasks').getFullList({ sort: 'due_at' })).map(
-        (record): DesignTask => ({
-          id: record.id,
-          title: String(record.title || ''),
-          status: (record.status || 'todo') as DesignTaskStatus,
-          dueAt: String(record.due_at || ''),
-          region: record.region as DesignTask['region'],
-        })
-      )
+      return (
+        await pb.collection('design_tasks').getFullList({ sort: 'due_at' })
+      ).map((record): DesignTask => ({
+        id: record.id,
+        title: String(record.title || ''),
+        status: (record.status || 'todo') as DesignTaskStatus,
+        dueAt: String(record.due_at || ''),
+        region: record.region as DesignTask['region'],
+      }))
     },
   })
 }
@@ -66,7 +66,13 @@ export function useCreateDesignTask() {
 export function useUpdateDesignTask() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: DesignTaskStatus }) => {
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string
+      status: DesignTaskStatus
+    }) => {
       if (getDataProvider() === 'supabase') {
         const { error } = await getSupabaseClient()
           .from('design_tasks')

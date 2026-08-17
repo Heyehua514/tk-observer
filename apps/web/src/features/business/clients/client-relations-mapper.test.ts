@@ -1,6 +1,9 @@
 /** 客户详情关联查询 Supabase/PocketBase 双源映射自检。 */
 import { describe, expect, it } from 'vitest'
-import { mapClientOrderRelation, mapClientOpportunityRelation } from './use-client-relations'
+import {
+  mapClientOrderRelation,
+  mapClientOpportunityRelation,
+} from './use-client-relations'
 
 describe('client relation mappers', () => {
   it('maps Supabase foreign keys into existing relation models', () => {

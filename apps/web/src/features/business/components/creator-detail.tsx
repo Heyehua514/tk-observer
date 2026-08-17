@@ -80,7 +80,9 @@ export function CreatorDetail({
                   {creator.isBizAvailable ? (
                     <Badge>可商务合作</Badge>
                   ) : (
-                    <span className='text-muted-foreground'>未标记商务合作</span>
+                    <span className='text-muted-foreground'>
+                      未标记商务合作
+                    </span>
                   )}
                   {creator.cooperationPrice > 0 && (
                     <dl className='mt-3 grid grid-cols-[112px_1fr] gap-x-4 gap-y-2'>
@@ -95,7 +97,7 @@ export function CreatorDetail({
                       {creator.cooperationNotes && (
                         <>
                           <dt className='text-muted-foreground'>合作备注</dt>
-                          <dd className='whitespace-pre-wrap break-words'>
+                          <dd className='break-words whitespace-pre-wrap'>
                             {creator.cooperationNotes}
                           </dd>
                         </>

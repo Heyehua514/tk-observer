@@ -15,11 +15,11 @@ import { useStyleAnalyses } from '../hooks/use-style-analyses'
 import type { CompetitorAccount, CompetitorVideo } from '../types'
 import { CompetitorAccountForm } from './competitor-account-form'
 import { CompetitorVideoForm } from './competitor-video-form'
+import { editingPermissionErrorDescription } from './editing-empty-copy'
 import {
   StyleAnalysisDialog,
   StyleAnalysisRecord,
 } from './style-analysis-dialog'
-import { editingPermissionErrorDescription } from './editing-empty-copy'
 
 export function CompetitorWorkbench({
   query,

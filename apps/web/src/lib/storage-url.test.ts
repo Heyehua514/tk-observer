@@ -4,7 +4,11 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 import { getDataProvider } from './data-provider'
-import { resolveStorageUrls, signStoragePaths, type StorageSigner } from './storage-url'
+import {
+  resolveStorageUrls,
+  signStoragePaths,
+  type StorageSigner,
+} from './storage-url'
 
 function fakeSigner(impl: {
   data?: Array<{ path: string; signedUrl: string }> | null
@@ -15,7 +19,11 @@ function fakeSigner(impl: {
     error: impl.error ?? null,
   })
   const from = vi.fn().mockReturnValue({ createSignedUrls })
-  return { signer: { storage: { from } } as unknown as StorageSigner, from, createSignedUrls }
+  return {
+    signer: { storage: { from } } as unknown as StorageSigner,
+    from,
+    createSignedUrls,
+  }
 }
 
 describe('signStoragePaths', () => {

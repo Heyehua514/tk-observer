@@ -1,14 +1,12 @@
 /** 市场工作台数据库映射层：兼容 Supabase/PocketBase 行结构。 */
-import type { Event, EventInput, Venue, VenueInput } from '../types'
 import type { ActivityRelatedRecord } from '../activities/types'
+import type { Event, EventInput, Venue, VenueInput } from '../types'
 
 export function toSupabaseMarketSearch(value: string) {
   return value.trim().replace(/%/g, '\\%').replace(/,/g, '\\,')
 }
 
-export function mapMarketEventRecord(
-  record: Record<string, unknown>
-): Event {
+export function mapMarketEventRecord(record: Record<string, unknown>): Event {
   return {
     id: String(record.id || ''),
     name: String(record.name || ''),
@@ -25,9 +23,7 @@ export function mapMarketEventRecord(
   }
 }
 
-export function mapMarketVenueRecord(
-  record: Record<string, unknown>
-): Venue {
+export function mapMarketVenueRecord(record: Record<string, unknown>): Venue {
   return {
     id: String(record.id || ''),
     name: String(record.name || ''),
@@ -99,9 +95,7 @@ export function mapMarketRelatedRecord(
     type: typeof item.type === 'string' ? item.type : undefined,
     amount: typeof item.amount === 'number' ? item.amount : undefined,
     completionPct:
-      typeof item.completion_pct === 'number'
-        ? item.completion_pct
-        : undefined,
+      typeof item.completion_pct === 'number' ? item.completion_pct : undefined,
     title: typeof item.title === 'string' ? item.title : undefined,
     name: typeof item.name === 'string' ? item.name : undefined,
     company:

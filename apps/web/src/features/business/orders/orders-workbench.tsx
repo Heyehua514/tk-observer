@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -31,29 +30,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { useClients } from '../clients'
+import { orderCreatePayload } from './order-create'
+import { buildOrderDisplay } from './order-display'
 import {
   emptyOrderFilters,
   filterOrders,
   type OrderFilters,
 } from './order-filters'
-import { buildOrderDisplay } from './order-display'
-import { orderCreatePayload } from './order-create'
-import { mapOrderRecord, serializeOrderPayload, type OrderRow } from './order-mapper'
-import { orderStatusUpdatePayload } from './order-status-update'
+import {
+  mapOrderRecord,
+  serializeOrderPayload,
+  type OrderRow,
+} from './order-mapper'
 import {
   orderContentTypeOptions,
   orderPlatformOptions,
   orderStatusOptions,
 } from './order-options'
+import { orderStatusUpdatePayload } from './order-status-update'
 
-export function OrdersWorkbench({
-  focusId,
-}: {
-  focusId?: string
-}) {
+export function OrdersWorkbench({ focusId }: { focusId?: string }) {
   const cache = useQueryClient()
   const clients = useClients()
   const [open, setOpen] = useState(false)
@@ -374,9 +374,7 @@ export function OrdersWorkbench({
               value={draft.amount}
               min='0'
               step='0.01'
-              onChange={(e) =>
-                setDraft({ ...draft, amount: e.target.value })
-              }
+              onChange={(e) => setDraft({ ...draft, amount: e.target.value })}
             />
           </Field>
           <Field label='平台'>
@@ -452,7 +450,11 @@ function OrderRow({
     <TableRow
       data-order-id={item.id}
       className={highlighted ? 'bg-primary/5' : undefined}
-      ref={highlighted ? (el) => el?.scrollIntoView({ block: 'center' }) : undefined}
+      ref={
+        highlighted
+          ? (el) => el?.scrollIntoView({ block: 'center' })
+          : undefined
+      }
     >
       <TableCell className='font-medium'>{item.title}</TableCell>
       <TableCell>{item.clientName}</TableCell>
@@ -466,9 +468,7 @@ function OrderRow({
           <SelectTrigger
             className='w-28'
             title={
-              item.cancelReason
-                ? `取消原因：${item.cancelReason}`
-                : undefined
+              item.cancelReason ? `取消原因：${item.cancelReason}` : undefined
             }
           >
             <SelectValue />

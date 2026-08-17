@@ -1,5 +1,8 @@
 /** 商务工作台商机详情编辑模型；用于卡片详情弹窗。 */
-import { opportunityStagePatch, type OpportunityStage } from './opportunity-rules'
+import {
+  opportunityStagePatch,
+  type OpportunityStage,
+} from './opportunity-rules'
 
 export type OpportunityDetailDraft = {
   stage: OpportunityStage

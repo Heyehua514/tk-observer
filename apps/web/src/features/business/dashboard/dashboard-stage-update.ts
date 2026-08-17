@@ -22,8 +22,9 @@ export async function updateDashboardOpportunityStage(
   const provider = client.provider || getDataProvider()
   const patch = opportunityStagePatch(input.stage, input.lostReason || '')
   if (provider === 'supabase') {
-    const supabase = (client.supabase ||
-      getSupabaseClient()) as NonNullable<StageUpdateClient['supabase']>
+    const supabase = (client.supabase || getSupabaseClient()) as NonNullable<
+      StageUpdateClient['supabase']
+    >
     const { error } = await supabase
       .from('opportunities')
       .update({

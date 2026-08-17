@@ -1,6 +1,6 @@
 /** Supabase 分页查询包装；保持前端 ListResult 语义不变。 */
-import { getSupabaseClient } from '@/lib/supabase'
 import type { Database } from '@/types/database.generated'
+import { getSupabaseClient } from '@/lib/supabase'
 
 type PublicTables = Database['public']['Tables']
 

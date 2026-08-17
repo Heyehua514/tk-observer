@@ -1,6 +1,9 @@
 /** 商务朋友圈计划 Supabase/PocketBase 双源映射自检。 */
 import { describe, expect, it } from 'vitest'
-import { mapSocialPlanRecord, serializeSocialPlanDraft } from './social-plan-mapper'
+import {
+  mapSocialPlanRecord,
+  serializeSocialPlanDraft,
+} from './social-plan-mapper'
 
 describe('social plan mapper', () => {
   it('maps Supabase social plan rows into the existing frontend shape', () => {

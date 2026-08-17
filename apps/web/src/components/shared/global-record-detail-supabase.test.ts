@@ -10,7 +10,9 @@ describe('getSupabaseRecordDetailSelect', () => {
     expect(getSupabaseRecordDetailSelect('company')).toBe(
       'id,company_name,contact_name,region'
     )
-    expect(getSupabaseRecordDetailSelect('product')).toBe('id,name,category,region')
+    expect(getSupabaseRecordDetailSelect('product')).toBe(
+      'id,name,category,region'
+    )
     expect(getSupabaseRecordDetailSelect('video')).toBe(
       'id,title,creator_name,product_name,region'
     )

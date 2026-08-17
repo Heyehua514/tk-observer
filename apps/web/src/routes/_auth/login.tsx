@@ -9,7 +9,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { memberOptions } from '@/types/auth'
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react'
-import appIconUrl from '../../../../desktop/assets/icon.svg'
 import {
   getDefaultRoute,
   LoginError,
@@ -36,6 +35,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatBeijingClock } from '@/components/shared/beijing-time'
+import appIconUrl from '../../../../desktop/assets/icon.svg'
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, '请输入邮箱').email('请输入有效邮箱'),
@@ -173,9 +173,7 @@ function LoginPage() {
 
       <section className='border-t border-white/10 p-8 md:border-t-0 md:border-l md:p-10'>
         <div className='mb-5 flex items-baseline justify-between gap-3'>
-          <h2 className='text-xl font-semibold tracking-tight'>
-            登录工作台
-          </h2>
+          <h2 className='text-xl font-semibold tracking-tight'>登录工作台</h2>
           <time
             dateTime={now.toISOString()}
             className='text-xs text-foreground/50 tabular-nums'

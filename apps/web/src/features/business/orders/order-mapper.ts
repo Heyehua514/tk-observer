@@ -16,10 +16,10 @@ export function mapOrderRecord(record: Record<string, unknown>): OrderRow {
   const expand = record.expand as
     | { client?: { name?: unknown }; creator?: { nickname?: unknown } }
     | undefined
-  const client = (record.clients || expand?.client) as { name?: unknown } | undefined
+  const client = (record.clients || expand?.client) as
+    { name?: unknown } | undefined
   const creator = (record.creators || expand?.creator) as
-    | { nickname?: unknown }
-    | undefined
+    { nickname?: unknown } | undefined
   return {
     id: String(record.id || ''),
     title: String(record.title || ''),

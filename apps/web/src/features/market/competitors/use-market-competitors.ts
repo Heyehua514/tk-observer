@@ -49,9 +49,12 @@ export function useMarketCompetitors(query = '') {
       const records = await pb.collection('competitor_accounts').getFullList({
         sort: 'name',
         filter: query
-          ? pb.filter('name ~ {:query} || category ~ {:query} || notes ~ {:query}', {
-              query,
-            })
+          ? pb.filter(
+              'name ~ {:query} || category ~ {:query} || notes ~ {:query}',
+              {
+                query,
+              }
+            )
           : '',
       })
       return records.map(mapMarketCompetitor)

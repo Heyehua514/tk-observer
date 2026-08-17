@@ -21,7 +21,9 @@ type CreatorVideoRecord = {
   updated?: unknown
 }
 
-export function mapCreatorVideoRecord(record: CreatorVideoRecord): CreatorVideo {
+export function mapCreatorVideoRecord(
+  record: CreatorVideoRecord
+): CreatorVideo {
   return {
     id: String(record.id || ''),
     title: String(record.title || ''),

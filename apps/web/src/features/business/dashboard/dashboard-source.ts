@@ -9,7 +9,8 @@ import type {
 
 const relatedName = (record: Record<string, unknown>) => {
   const expand = record.expand as { client?: { name?: unknown } } | undefined
-  const client = (record.clients || expand?.client) as { name?: unknown } | undefined
+  const client = (record.clients || expand?.client) as
+    { name?: unknown } | undefined
   return String(client?.name || '未知客户')
 }
 
