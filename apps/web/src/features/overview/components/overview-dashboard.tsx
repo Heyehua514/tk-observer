@@ -1,4 +1,5 @@
 /** 总览工作台主体：经营指标、GMV 趋势、团队动态与成员任务进度。 */
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Activity,
@@ -18,10 +19,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { formatMoney } from '@/lib/format'
 import { getDataProvider } from '@/lib/data-provider'
+import { formatMoney } from '@/lib/format'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
@@ -37,6 +39,11 @@ import {
   type OverviewGmvMetric,
   type OverviewTeamTask,
 } from './overview-dashboard-supabase-mapper'
+import {
+  CNY_ACCOUNTING_NOTE,
+  filterGmvMetricsByRange,
+  type OverviewMetricRange,
+} from './overview-metrics'
 
 const fallbackTrend = [
   { date: '08-01', value: 126000 },
@@ -46,6 +53,11 @@ const fallbackTrend = [
   { date: '08-29', value: 278000 },
 ]
 const team = ['磊哥', '董雨辰', '韩素云', '孙铭泽', '谢洁']
+const rangeLabels: Record<OverviewMetricRange, string> = {
+  '7d': '近 7 天',
+  '30d': '近 30 天',
+  all: '全部',
+}
 type OverviewDashboardData = {
   gmv: OverviewGmvMetric[]
   creators: number
@@ -56,6 +68,7 @@ type OverviewDashboardData = {
 }
 
 export function OverviewDashboard() {
+  const [metricRange, setMetricRange] = useState<OverviewMetricRange>('30d')
   const data = useQuery({
     queryKey: ['overview-dashboard'],
     queryFn: async (): Promise<OverviewDashboardData> => {
@@ -145,15 +158,15 @@ export function OverviewDashboard() {
       }
     },
   })
-  const trend = data.data?.gmv.length
-    ? data.data.gmv.map((item) => ({
+  const gmvRecords = filterGmvMetricsByRange(data.data?.gmv || [], metricRange)
+  const trend = gmvRecords.length
+    ? gmvRecords.map((item) => ({
         date: item.metricDate.slice(5, 10),
         value: item.amountMinor,
       }))
     : fallbackTrend
   const totalGmv =
-    data.data?.gmv.reduce((sum, item) => sum + item.amountMinor, 0) || 987600
-  const gmvRecords = data.data?.gmv || []
+    gmvRecords.reduce((sum, item) => sum + item.amountMinor, 0) || 987600
   const latestGmv = gmvRecords[gmvRecords.length - 1]?.amountMinor || 0
   const previousGmv = gmvRecords[gmvRecords.length - 2]?.amountMinor || 0
   const gmvDelta = previousGmv
@@ -161,7 +174,7 @@ export function OverviewDashboard() {
     : null
   const metrics = [
     {
-      label: '本月 GMV',
+      label: `${rangeLabels[metricRange]} GMV`,
       value: totalGmv,
       icon: CircleDollarSign,
       money: true,
@@ -225,7 +238,31 @@ export function OverviewDashboard() {
       <div className='grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'>
         <Card className='bento-card shadow-none'>
           <CardHeader>
-            <CardTitle className='text-base'>GMV 走势</CardTitle>
+            <div className='flex flex-wrap items-start justify-between gap-3'>
+              <div>
+                <CardTitle className='text-base'>GMV 走势</CardTitle>
+                <p className='mt-1 text-xs text-muted-foreground'>
+                  {CNY_ACCOUNTING_NOTE}
+                </p>
+              </div>
+              <div
+                aria-label='GMV 时间范围'
+                className='flex items-center gap-1'
+              >
+                {(Object.keys(rangeLabels) as OverviewMetricRange[]).map(
+                  (range) => (
+                    <Button
+                      key={range}
+                      size='sm'
+                      variant={metricRange === range ? 'default' : 'outline'}
+                      onClick={() => setMetricRange(range)}
+                    >
+                      {rangeLabels[range]}
+                    </Button>
+                  )
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className='h-72'>
             <ResponsiveContainer width='100%' height='100%'>
@@ -285,10 +322,7 @@ export function OverviewDashboard() {
             {data.data?.logs.length ? (
               <div className='relative space-y-5 before:absolute before:inset-y-1 before:left-[5px] before:w-px before:bg-border'>
                 {data.data.logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className='relative pl-6 text-sm'
-                  >
+                  <div key={log.id} className='relative pl-6 text-sm'>
                     <span
                       aria-hidden='true'
                       className='absolute top-1.5 left-0 size-[11px] rounded-full border-2 border-background bg-primary shadow-[0_0_10px_color-mix(in_oklab,var(--primary)_55%,transparent)]'

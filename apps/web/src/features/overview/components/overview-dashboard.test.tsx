@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
+import { userEvent } from 'vitest/browser'
 import { OverviewDashboard } from './overview-dashboard'
 
 vi.mock('@/lib/data-provider', () => ({
@@ -11,7 +12,10 @@ vi.mock('@/lib/data-provider', () => ({
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: () => ({
     from: (table: string) => ({
-      select: (_columns?: string, options?: { count?: string; head?: boolean }) => ({
+      select: (
+        _columns?: string,
+        options?: { count?: string; head?: boolean }
+      ) => ({
         eq: () => ({
           is: () => Promise.resolve({ data: null, error: null, count: 0 }),
         }),
@@ -22,7 +26,11 @@ vi.mock('@/lib/supabase', () => ({
           order: () =>
             table === 'audit_logs'
               ? { limit: vi.fn().mockResolvedValue({ data: [], error: null }) }
-              : Promise.resolve({ data: [], error: null, count: options?.head ? 0 : null }),
+              : Promise.resolve({
+                  data: [],
+                  error: null,
+                  count: options?.head ? 0 : null,
+                }),
         }),
       }),
     }),
@@ -55,4 +63,12 @@ it('renders guided empty states for overview dashboard data gaps', async () => {
   await expect
     .element(screen.getByText('等待下一条数据').first())
     .toBeInTheDocument()
+  await expect
+    .element(
+      screen.getByText('统一人民币口径：金额以分存储，前端按人民币元展示。')
+    )
+    .toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: '近 7 天' }))
+  await expect.element(screen.getByText('近 7 天 GMV')).toBeInTheDocument()
 })
