@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { findMaterialsForRequirement } from '@/features/market/resources/material-design-link'
+import { useEventMaterials } from '@/features/market/resources/use-market-resources'
 import { requirementStatusLabels } from './requirement-labels'
 import { nextRequirementStatuses } from './requirement-rules'
 import type { DesignRequirement } from './types'
@@ -31,6 +33,13 @@ import {
   useRequirementRelations,
   useUpdateRequirementStatus,
 } from './use-design-requirements'
+
+const materialStatusLabels: Record<string, string> = {
+  designing: '设计中',
+  pending_review: '待审核',
+  confirmed: '已确认',
+  printed: '已印制',
+}
 
 export function RequirementDetail({
   requirement,
@@ -48,8 +57,13 @@ export function RequirementDetail({
   const addReference = useCreateDesignReference()
   const addDeliverable = useCreateDesignDeliverable()
   const assets = useApprovedDesignAssets(isDesigner)
+  const materials = useEventMaterials()
   const [asset, setAsset] = useState('')
   if (!requirement) return null
+  const linkedMaterials = findMaterialsForRequirement(
+    requirement,
+    materials.data || []
+  )
   const nextStatuses = nextRequirementStatuses(requirement.status).filter(
     (status) => (isDesigner ? status !== 'revised' : status === 'revised')
   )
@@ -83,6 +97,7 @@ export function RequirementDetail({
             <TabsTrigger value='detail'>需求详情</TabsTrigger>
             <TabsTrigger value='references'>视觉参考</TabsTrigger>
             <TabsTrigger value='deliverables'>交付记录</TabsTrigger>
+            <TabsTrigger value='materials'>关联物料</TabsTrigger>
           </TabsList>
           <TabsContent
             value='detail'
@@ -232,6 +247,33 @@ export function RequirementDetail({
                 </Button>
               </form>
             )}
+          </TabsContent>
+          <TabsContent value='materials' className='mt-4 space-y-3'>
+            {linkedMaterials.map((item) => (
+              <div
+                className='flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3'
+                key={item.id}
+              >
+                <div>
+                  <div className='font-medium'>{item.name}</div>
+                  <div className='text-sm text-muted-foreground'>
+                    {item.eventName || '通用物料'}
+                  </div>
+                </div>
+                <Badge variant='outline'>
+                  {materialStatusLabels[item.status] || item.status}
+                </Badge>
+              </div>
+            ))}
+            {!linkedMaterials.length && (
+              <div className='rounded-lg border border-dashed p-4 text-sm text-muted-foreground'>
+                还没有关联活动物料。市场侧物料备注写入 design:{requirement.id}{' '}
+                或包含需求标题后会自动出现在这里。
+              </div>
+            )}
+            <Button asChild variant='outline' size='sm'>
+              <a href='/market'>打开市场物料库</a>
+            </Button>
           </TabsContent>
         </Tabs>
       </DialogContent>

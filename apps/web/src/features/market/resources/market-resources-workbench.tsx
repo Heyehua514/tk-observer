@@ -14,13 +14,18 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
+import { RequirementDetail } from '@/features/design/requirements/requirement-detail'
+import type { DesignRequirement } from '@/features/design/requirements/types'
+import { useDesignRequirements } from '@/features/design/requirements/use-design-requirements'
+import { financeYuanInput, formatFinanceCny } from './finance-format'
+import { findRequirementForMaterial } from './material-design-link'
+import { marketResourceEmptyTitles } from './resource-empty-copy'
 import {
   applyTemplate,
   downloadText,
   financesToCsv,
   financesToMarkdown,
 } from './resource-utils'
-import { marketResourceEmptyTitles } from './resource-empty-copy'
 import type {
   FinanceCategory,
   FinanceType,
@@ -39,7 +44,6 @@ import {
   useSaveMaterial,
   useSaveTemplate,
 } from './use-market-resources'
-import { financeYuanInput, formatFinanceCny } from './finance-format'
 
 const templateTypeLabels: Record<TemplateType, string> = {
   invitation: '邀约文案',
@@ -217,7 +221,10 @@ function TemplatesPanel() {
 function MaterialsPanel({ eventId }: { eventId?: string }) {
   const materials = useEventMaterials(eventId)
   const events = useResourceEvents()
+  const requirements = useDesignRequirements('all')
   const save = useSaveMaterial()
+  const [selectedRequirement, setSelectedRequirement] =
+    useState<DesignRequirement | null>(null)
   const [file, setFile] = useState<File>()
   const [draft, setDraft] = useState({
     eventId: eventId || '',
@@ -277,48 +284,78 @@ function MaterialsPanel({ eventId }: { eventId?: string }) {
       </div>
       {materials.data?.length ? (
         <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
-          {materials.data.map((item) => (
-            <div key={item.id} className='rounded-md border p-4'>
-              <div className='flex items-start justify-between gap-2'>
-                <div>
-                  <div className='font-medium'>{item.name}</div>
-                  <div className='text-xs text-muted-foreground'>
-                    {item.eventName || '通用物料'}
+          {materials.data.map((item) => {
+            const requirement = findRequirementForMaterial(
+              item,
+              requirements.data || []
+            )
+            return (
+              <div key={item.id} className='rounded-md border p-4'>
+                <div className='flex items-start justify-between gap-2'>
+                  <div>
+                    <div className='font-medium'>{item.name}</div>
+                    <div className='text-xs text-muted-foreground'>
+                      {item.eventName || '通用物料'}
+                    </div>
                   </div>
-                </div>
-                <Badge
-                  variant={
-                    item.status === 'confirmed' || item.status === 'printed'
-                      ? 'default'
-                      : 'secondary'
-                  }
-                >
-                  {materialStatusLabels[item.status]}
-                </Badge>
-              </div>
-              <div className='mt-3 text-sm'>
-                {materialTypeLabels[item.type]}
-              </div>
-              {item.file && (
-                <div className='mt-2'>
-                  <a
-                    href={item.file}
-                    target='_blank'
-                    rel='noreferrer'
-                    className='inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline'
+                  <Badge
+                    variant={
+                      item.status === 'confirmed' || item.status === 'printed'
+                        ? 'default'
+                        : 'secondary'
+                    }
                   >
-                    <FileText className='size-3.5' />
-                    预览文件
-                  </a>
+                    {materialStatusLabels[item.status]}
+                  </Badge>
                 </div>
-              )}
-              {item.notes && (
-                <div className='mt-1 text-sm text-muted-foreground'>
-                  {item.notes}
+                <div className='mt-3 text-sm'>
+                  {materialTypeLabels[item.type]}
                 </div>
-              )}
-            </div>
-          ))}
+                {requirement && (
+                  <div className='mt-3 rounded-md border bg-muted/30 p-2'>
+                    <div className='text-xs text-muted-foreground'>
+                      关联设计需求
+                    </div>
+                    <Button
+                      variant='link'
+                      className='h-auto p-0 text-sm'
+                      onClick={() => setSelectedRequirement(requirement)}
+                    >
+                      {requirement.title}
+                      <span className='text-xs text-muted-foreground'>
+                        · 截止 {requirement.dueDate.slice(0, 10)}
+                      </span>
+                    </Button>
+                  </div>
+                )}
+                {item.file && (
+                  <div className='mt-2'>
+                    <a
+                      href={item.file}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline'
+                    >
+                      <FileText className='size-3.5' />
+                      预览文件
+                    </a>
+                  </div>
+                )}
+                {item.notes && (
+                  <div className='mt-1 text-sm text-muted-foreground'>
+                    {item.notes}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          <RequirementDetail
+            requirement={selectedRequirement}
+            open={Boolean(selectedRequirement)}
+            onOpenChange={(open) => {
+              if (!open) setSelectedRequirement(null)
+            }}
+          />
         </div>
       ) : (
         <EmptyState
@@ -425,9 +462,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
           step='0.01'
           placeholder='金额（人民币/元）'
           value={draft.amount}
-          onChange={(e) =>
-            setDraft({ ...draft, amount: e.target.value })
-          }
+          onChange={(e) => setDraft({ ...draft, amount: e.target.value })}
         />
         <Input
           placeholder='说明'
@@ -442,9 +477,7 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
         <Input
           type='file'
           accept='image/*,application/pdf'
-          onChange={(e) =>
-            setDraft({ ...draft, receipt: e.target.files?.[0] })
-          }
+          onChange={(e) => setDraft({ ...draft, receipt: e.target.files?.[0] })}
         />
         <Button
           disabled={
