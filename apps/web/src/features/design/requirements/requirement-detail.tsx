@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { findMaterialsForRequirement } from '@/features/market/resources/material-design-link'
 import { useEventMaterials } from '@/features/market/resources/use-market-resources'
+import { createDeliverableVersionTimeline } from './deliverable-version-timeline'
 import { requirementStatusLabels } from './requirement-labels'
 import { nextRequirementStatuses } from './requirement-rules'
 import type { DesignRequirement } from './types'
@@ -60,6 +61,9 @@ export function RequirementDetail({
   const materials = useEventMaterials()
   const [asset, setAsset] = useState('')
   if (!requirement) return null
+  const deliverables = createDeliverableVersionTimeline(
+    relations.data?.deliverables || []
+  )
   const linkedMaterials = findMaterialsForRequirement(
     requirement,
     materials.data || []
@@ -176,13 +180,16 @@ export function RequirementDetail({
             )}
           </TabsContent>
           <TabsContent value='deliverables' className='mt-4 space-y-4'>
-            {relations.data?.deliverables.map((item) => (
+            {deliverables.map((item) => (
               <div
-                className='flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3'
+                className='relative flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 ps-7 before:absolute before:top-0 before:bottom-0 before:left-3 before:w-px before:bg-border after:absolute after:top-5 after:left-2 after:size-2 after:rounded-full after:bg-primary'
                 key={item.id}
               >
                 <div>
-                  <div className='font-medium'>{item.assetName}</div>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <Badge variant='secondary'>版本 {item.version}</Badge>
+                    <div className='font-medium'>{item.assetName}</div>
+                  </div>
                   <div className='text-sm text-muted-foreground'>
                     {item.exportedSize} · {item.exportedFormat} ·{' '}
                     {item.deliveredAt.slice(0, 10)}

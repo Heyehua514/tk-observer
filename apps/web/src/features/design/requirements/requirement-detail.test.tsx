@@ -33,7 +33,29 @@ vi.mock('./use-design-requirements', () => ({
   useCreateDesignDeliverable: () => ({ mutate: vi.fn() }),
   useCreateDesignReference: () => ({ mutate: vi.fn() }),
   useRequirementRelations: () => ({
-    data: { references: [], deliverables: [] },
+    data: {
+      references: [],
+      deliverables: [
+        {
+          id: 'delivery-2',
+          asset: 'asset-2',
+          assetName: '主KV-v2.png',
+          exportedSize: '1080x1920',
+          exportedFormat: 'png',
+          checklistOk: true,
+          deliveredAt: '2026-08-16T10:00:00.000Z',
+        },
+        {
+          id: 'delivery-1',
+          asset: 'asset-1',
+          assetName: '主KV-v1.png',
+          exportedSize: '1080x1920',
+          exportedFormat: 'png',
+          checklistOk: false,
+          deliveredAt: '2026-08-14T10:00:00.000Z',
+        },
+      ],
+    },
   }),
   useUpdateRequirementStatus: () => ({ mutate: vi.fn() }),
 }))
