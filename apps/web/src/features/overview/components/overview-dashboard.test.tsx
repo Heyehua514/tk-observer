@@ -24,13 +24,19 @@ vi.mock('@/lib/supabase', () => ({
         }),
         is: () => ({
           order: () =>
-            table === 'audit_logs'
-              ? { limit: vi.fn().mockResolvedValue({ data: [], error: null }) }
-              : Promise.resolve({
-                  data: [],
-                  error: null,
-                  count: options?.head ? 0 : null,
-                }),
+            table === 'events'
+              ? {
+                  range: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }
+              : table === 'audit_logs'
+                ? {
+                    limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+                  }
+                : Promise.resolve({
+                    data: [],
+                    error: null,
+                    count: options?.head ? 0 : null,
+                  }),
         }),
       }),
     }),
@@ -67,6 +73,9 @@ it('renders guided empty states for overview dashboard data gaps', async () => {
     .element(
       screen.getByText('统一人民币口径：金额以分存储，前端按人民币元展示。')
     )
+    .toBeInTheDocument()
+  await expect
+    .element(screen.getByText('还没有即将开始的活动'))
     .toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: '近 7 天' }))

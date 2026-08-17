@@ -44,6 +44,7 @@ import {
   filterGmvMetricsByRange,
   type OverviewMetricRange,
 } from './overview-metrics'
+import { UpcomingActivities } from './upcoming-activities'
 
 const fallbackTrend = [
   { date: '08-01', value: 126000 },
@@ -345,6 +346,7 @@ export function OverviewDashboard() {
           </CardContent>
         </Card>
       </div>
+      <UpcomingActivities />
       <TeamMemory />
       <Card className='bento-card shadow-none'>
         <CardHeader>
