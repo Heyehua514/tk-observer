@@ -52,13 +52,83 @@ export const BOOLEAN_COLUMNS = {
 
 export const REQUIRED_PROFILE_FKS = { notifications: ['recipient_id'] }
 
+/**
+ * 过滤无法解析必需 profile 外键的行（REST 路径与 buildSqlImport 的
+ * select-where-exists 行为保持一致：解析不到则整行跳过）。
+ * 返回 { rows, skipped }。
+ */
+export function filterRequiredProfileRows(table, rows, idMap, onWarning) {
+  const required = REQUIRED_PROFILE_FKS[table] ?? []
+  if (!required.length) return { rows, skipped: 0 }
+  const kept = []
+  let skipped = 0
+  for (const row of rows) {
+    const missing = required.filter((column) => {
+      const value = row[column]
+      return typeof value === 'string' && (!value || !idMap.profiles.has(value))
+    })
+    if (missing.length) {
+      skipped += 1
+      onWarning?.(
+        `${table} 行 ${row.id} 缺少必需 profile 外键（${missing.join('/')}），已跳过`
+      )
+    } else {
+      kept.push(row)
+    }
+  }
+  return { rows: kept, skipped }
+}
+
+/** 收集当前 idMap 里还没有解析的普通外键 legacy_id。 */
+export function collectMissingParentRefs(table, rows, idMap) {
+  const refs = new Map()
+  for (const row of rows) {
+    for (const [column, parent] of Object.entries(FK_MAP[table] ?? {})) {
+      if (parent === 'profiles') continue
+      const value = row[column]
+      if (!value || idMap[parent]?.has(value)) continue
+      if (!refs.has(parent)) refs.set(parent, new Set())
+      refs.get(parent).add(value)
+    }
+  }
+  return refs
+}
+
+/** 合并单表 legacy_id → 新 id 映射到共享 idMap（子表 FK 翻译依赖父表映射）。 */
+export function mergeTableIds(idMap, table, map) {
+  if (map && map.size) idMap[table] = map
+  return idMap
+}
+
+async function resolveMissingParentRefs({ baseUrl, serviceKey, table, rows, idMap, onWarning }) {
+  const refs = collectMissingParentRefs(table, rows, idMap)
+  for (const [parent, values] of refs.entries()) {
+    const found = await apiFetch(
+      baseUrl,
+      serviceKey,
+      `/rest/v1/${parent}?select=id,legacy_id&legacy_id=in.(${[...values].map((v) => `"${v}"`).join(',')})`
+    )
+    const map = idMap[parent] ?? new Map()
+    for (const row of found) map.set(row.legacy_id, row.id)
+    mergeTableIds(idMap, parent, map)
+    for (const value of values) {
+      if (!map.has(value)) onWarning?.(`${parent} 中未找到 legacy_id=${value}，关联列已置空`)
+    }
+  }
+}
 
 export async function readExport(path = DEFAULT_EXPORT) {
   return JSON.parse(await readFile(path, 'utf8'))
 }
 
-export function planImport(data) {
-  return TABLE_ORDER.filter((table) => data.tables?.[table]?.rows?.length).map((table) => {
+export function planImport(data, tables = null) {
+  const include = tables
+    ? new Set(tables.map((t) => t.trim()).filter(Boolean))
+    : null
+  return TABLE_ORDER.filter(
+    (table) =>
+      (!include || include.has(table)) && data.tables?.[table]?.rows?.length
+  ).map((table) => {
     const info = data.tables[table]
     const fkColumns = Object.entries(FK_MAP[table] ?? {}).map(([column, parent]) => ({ column, parent }))
     return {
@@ -74,6 +144,12 @@ export function coerceValue(table, column, value) {
   if (value === null || value === undefined || value === '') return null
   if (BOOLEAN_COLUMNS[table]?.includes(column)) return Boolean(value)
   return value
+}
+
+export function normalizeSecret(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
 }
 
 export function buildRow(table, sourceRow, idMap, columns) {
@@ -201,8 +277,25 @@ export async function upsertTable({ baseUrl, serviceKey, table, rows, idMap, onW
       if (!idMap.profiles.has(v)) onWarning?.(`profiles 中未找到 legacy_id=${v}，关联列已置空`)
     }
   }
-  const columns = Object.keys(rows[0] ?? {}).filter((c) => c !== 'id')
-  const payload = rows.map((row) => buildRow(table, row, idMap, columns))
+  await resolveMissingParentRefs({
+    baseUrl,
+    serviceKey,
+    table,
+    rows,
+    idMap,
+    onWarning,
+  })
+  const { rows: keptRows, skipped } = filterRequiredProfileRows(
+    table,
+    rows,
+    idMap,
+    onWarning
+  )
+  if (!keptRows.length) {
+    return { table, rows: 0, skipped, map: new Map() }
+  }
+  const columns = Object.keys(keptRows[0] ?? {}).filter((c) => c !== 'id')
+  const payload = keptRows.map((row) => buildRow(table, row, idMap, columns))
   const returned = await apiFetch(
     baseUrl,
     serviceKey,
@@ -214,12 +307,29 @@ export async function upsertTable({ baseUrl, serviceKey, table, rows, idMap, onW
     }
   )
   const map = new Map(returned.map((r) => [r.legacy_id, r.id]))
-  return { table, rows: returned.length, map }
+  return { table, rows: returned.length, skipped, map }
 }
 
-export async function runImport({ exportPath = DEFAULT_EXPORT, baseUrl = DEFAULT_URL, serviceKey = null, dryRun = false, onWarning }) {
+export async function runImport({
+  exportPath = DEFAULT_EXPORT,
+  baseUrl = DEFAULT_URL,
+  serviceKey = null,
+  dryRun = false,
+  tables = null,
+  onWarning,
+}) {
   const data = await readExport(exportPath)
-  const plan = planImport(data)
+  const include = tables
+    ? new Set(tables.map((t) => t.trim()).filter(Boolean))
+    : null
+  if (include) {
+    for (const table of include) {
+      if (!TABLE_ORDER.includes(table)) {
+        onWarning?.(`忽略未在导入顺序中的表：${table}`)
+      }
+    }
+  }
+  const plan = planImport(data, tables)
   if (!serviceKey || dryRun) {
     return { dryRun: true, plan }
   }
@@ -234,6 +344,7 @@ export async function runImport({ exportPath = DEFAULT_EXPORT, baseUrl = DEFAULT
       idMap,
       onWarning,
     })
+    mergeTableIds(idMap, item.table, result.map)
     results.push(result)
   }
   return { dryRun: false, results }
@@ -254,18 +365,25 @@ function printReport(report) {
     return
   }
   console.log('=== 导入结果（幂等 upsert，legacy_id 冲突合并）===')
-  for (const r of report.results) console.log(`- ${r.table}: ${r.rows} 行 upsert 完成`)
+  for (const r of report.results) {
+    const skipped = r.skipped ? `（跳过 ${r.skipped} 行）` : ''
+    console.log(`- ${r.table}: ${r.rows} 行 upsert 完成${skipped}`)
+  }
 }
 
 export function parseArgs(argv) {
-  const args = { serviceKey: (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim() || null, dryRun: false }
+  const args = {
+    serviceKey: normalizeSecret(process.env.SUPABASE_SERVICE_ROLE_KEY) || null,
+    dryRun: false,
+  }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '--dry-run') args.dryRun = true
     else if (arg === '--sql-only') args.sqlOnly = true
-    else if (arg === '--service-role-key') args.serviceKey = (argv[++i] ?? '').trim() || null
+    else if (arg === '--service-role-key') args.serviceKey = normalizeSecret(argv[++i]) || null
     else if (arg === '--export') args.exportPath = argv[++i]
     else if (arg === '--url') args.baseUrl = argv[++i]
+    else if (arg === '--tables') args.tables = (argv[++i] ?? '').split(',').map((t) => t.trim()).filter(Boolean)
   }
   return args
 }
@@ -279,6 +397,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const warnings = []
   const report = await runImport({ ...args, onWarning: (w) => warnings.push(w) })
+  if (args.tables) {
+    console.log(`（增量导入过滤：${args.tables.join(', ')}）`)
+  }
   printReport(report)
   for (const w of warnings) console.log(`[warn] ${w}`)
 }
