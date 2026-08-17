@@ -64,7 +64,9 @@ describe('material design link rules', () => {
     const result = findRequirementForMaterial(materials[0], requirements)
 
     expect(result).toMatchObject({ id: 'req-1' })
-    expectTypeOf(result).toEqualTypeOf<(typeof requirements)[number] | undefined>()
+    expectTypeOf(result).toEqualTypeOf<
+      (typeof requirements)[number] | undefined
+    >()
   })
 
   it('finds all materials linked to one requirement', () => {
