@@ -220,6 +220,53 @@ export async function registerAccount(input: RegistrationInput) {
   }
 }
 
+export type ChangePasswordErrorCode =
+  'WEAK_PASSWORD' | 'WRONG_PASSWORD' | 'NETWORK'
+
+export class ChangePasswordError extends Error {
+  constructor(public readonly code: ChangePasswordErrorCode) {
+    super(code)
+    this.name = 'ChangePasswordError'
+  }
+}
+
+/**
+ * 修改当前登录账号密码。
+ * Supabase：校验当前密码后更新；PocketBase：更新当前用户记录。
+ */
+export async function changeCurrentPassword(
+  currentPassword: string,
+  newPassword: string
+) {
+  if (getDataProvider() === 'supabase') {
+    const supabase = getSupabaseClient()
+    try {
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: useAuthStore.getState().user?.email || '',
+        password: currentPassword,
+      })
+      if (verifyError) throw new ChangePasswordError('WRONG_PASSWORD')
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+      if (updateError) throw new ChangePasswordError('NETWORK')
+      return
+    } catch (error) {
+      if (error instanceof ChangePasswordError) throw error
+      throw new ChangePasswordError('NETWORK')
+    }
+  }
+
+  try {
+    await pb.collection('users').update(pb.authStore.model?.id || '', {
+      password: newPassword,
+      passwordConfirm: newPassword,
+    })
+  } catch {
+    throw new ChangePasswordError('NETWORK')
+  }
+}
+
 export async function logout() {
   if (getDataProvider() === 'supabase') {
     await getSupabaseClient().auth.signOut()
