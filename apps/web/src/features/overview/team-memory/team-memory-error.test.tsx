@@ -4,7 +4,7 @@ import { expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { TeamMemory } from './team-memory'
 
-vi.mock('./use-team-memory', () => ({
+vi.mock('@/features/overview/team-memory/use-team-memory', () => ({
   useTeamMemory: () => ({
     isLoading: false,
     isError: true,

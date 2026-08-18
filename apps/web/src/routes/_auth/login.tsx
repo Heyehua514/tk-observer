@@ -152,13 +152,13 @@ function LoginPage() {
             alt='TK观察'
             className='logo-glow ml-6 size-14 rounded-2xl md:size-16'
           />
-          <p className='pt-1 text-[11px] font-medium tracking-[0.24em] text-foreground/60 uppercase'>
+          <p className='pt-1 text-[11px] font-medium tracking-[0.24em] text-foreground/80 uppercase'>
             TK OBSERVER WORKBENCH
           </p>
           <h1 className='text-2xl font-semibold tracking-tight md:text-3xl'>
             看清信号，进入行动
           </h1>
-          <p className='max-w-sm text-sm text-foreground/60'>
+          <p className='max-w-sm text-sm text-foreground/80'>
             统一查看经营走势、团队进度和最近业务动态。
           </p>
         </div>
@@ -176,7 +176,7 @@ function LoginPage() {
           <h2 className='text-xl font-semibold tracking-tight'>登录工作台</h2>
           <time
             dateTime={now.toISOString()}
-            className='text-xs text-foreground/50 tabular-nums'
+            className='text-xs text-foreground/70 tabular-nums'
             aria-label={`北京时间 ${formatBeijingClock(now)}`}
           >
             {formatBeijingClock(now)}
@@ -394,7 +394,7 @@ function LoginPage() {
             </Form>
           </TabsContent>
         </Tabs>
-        <p className='mt-4 text-center text-xs text-foreground/50'>
+        <p className='mt-4 text-center text-xs text-foreground/70'>
           首次使用请先注册公司账号
         </p>
       </section>
