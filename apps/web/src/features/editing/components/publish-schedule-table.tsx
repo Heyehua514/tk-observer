@@ -4,6 +4,17 @@
  */
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -41,8 +52,7 @@ export function PublishScheduleTable({
     void updateSchedule.mutateAsync({ id, input: { status } })
   }
 
-  const remove = async (id: string, title: string) => {
-    if (!window.confirm(`确认删除「${title}」的发布排期？`)) return
+  const remove = async (id: string) => {
     setDeleting(id)
     try {
       await deleteSchedule.mutateAsync(id)
@@ -96,15 +106,32 @@ export function PublishScheduleTable({
                 </Select>
               </td>
               <td className='px-4 py-3 text-right'>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  aria-label={`删除 ${item.title}`}
-                  disabled={deleting === item.id}
-                  onClick={() => void remove(item.id, item.title)}
-                >
-                  <Trash2 className='size-4' />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      aria-label={`删除 ${item.title}`}
+                      disabled={deleting === item.id}
+                    >
+                      <Trash2 className='size-4' />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>删除发布排期</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        确认删除「{item.title}」？删除后不可恢复。
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>取消</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void remove(item.id)}>
+                        确认删除
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </td>
             </tr>
           ))}
