@@ -4,8 +4,16 @@
  * 所属工作台：全局（商务/市场/设计/剪辑等均可复用）。
  */
 import { useRef, useState } from 'react'
-import { Check, ClipboardCopy, LoaderCircle, Sparkles } from 'lucide-react'
+import {
+  Check,
+  ClipboardCopy,
+  LoaderCircle,
+  Save,
+  Sparkles,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
+import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -39,6 +47,7 @@ export function AiAssistantPanel({
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [saving, setSaving] = useState(false)
   const inFlight = useRef(false)
 
   const run = async () => {
@@ -67,6 +76,35 @@ export function AiAssistantPanel({
     } finally {
       inFlight.current = false
       setBusy(false)
+    }
+  }
+
+  const saveNote = async () => {
+    if (!result || saving) return
+    setSaving(true)
+    try {
+      const user = useAuthStore.getState().user
+      const supabase = getSupabaseClient()
+      const insertFn = supabase.from.bind(supabase) as unknown as (
+        table: string
+      ) => {
+        insert(
+          data: Record<string, unknown>
+        ): Promise<{ error: { message: string } | null }>
+      }
+      const { error } = await insertFn('ai_notes').insert({
+        scope,
+        task_type: taskType,
+        prompt,
+        result,
+        owner_id: user?.id ?? null,
+      })
+      if (error) throw error
+      toast.success('已保存到 AI 记录')
+    } catch {
+      toast.error('保存失败')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -140,6 +178,15 @@ export function AiAssistantPanel({
         {result && (
           <div className='space-y-2'>
             <div className='flex justify-end gap-2'>
+              <Button
+                size='sm'
+                variant='outline'
+                onClick={() => void saveNote()}
+                disabled={saving}
+              >
+                <Save />
+                {saving ? '保存中…' : '保存到记录'}
+              </Button>
               <Button size='sm' variant='outline' onClick={() => void copy()}>
                 {copied ? <Check /> : <ClipboardCopy />}
                 {copied ? '已复制' : '复制结果'}
