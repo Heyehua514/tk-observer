@@ -1,5 +1,5 @@
 /** 全局搜索详情 Supabase 查询工具；权限：按 RLS 返回当前可见记录。 */
-import type { GlobalSearchKind } from './global-search'
+import type { GlobalSearchKind } from './global-search-core'
 
 export const supabaseTableByKind = {
   creator: 'creators',
