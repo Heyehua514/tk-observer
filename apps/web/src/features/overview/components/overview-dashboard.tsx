@@ -1,6 +1,7 @@
 /** 总览工作台主体：经营指标、GMV 趋势、团队动态与成员任务进度。 */
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { memberOptions, type UserRole } from '@/types/auth'
 import {
   Activity,
   ArrowDownRight,
@@ -49,12 +50,15 @@ import {
 } from './overview-metrics'
 import { UpcomingActivities } from './upcoming-activities'
 
-const team = ['磊哥', '董雨辰', '韩素云', '孙铭泽', '谢洁']
 const rangeLabels: Record<OverviewMetricRange, string> = {
   '7d': '近 7 天',
   '30d': '近 30 天',
   all: '全部',
 }
+function roleForMember(name: string): UserRole {
+  return memberOptions.find((member) => member.name === name)?.role ?? 'editing'
+}
+
 type OverviewDashboardData = {
   gmv: OverviewGmvMetric[]
   creators: number
@@ -354,40 +358,36 @@ export function OverviewDashboard() {
         <CardHeader>
           <CardTitle className='text-base'>成员任务进度</CardTitle>
         </CardHeader>
-        <CardContent className='space-y-4'>
-          {team.map((name, index) => {
-            const task = data.data?.teamTasks.find(
-              (item) => item.assigneeName === name
-            )
-            const progress = Number(
-              task?.progress ?? [82, 68, 54, 76, 61][index]
-            )
-            return (
-              <div
-                key={name}
-                className='grid grid-cols-[34px_72px_1fr_44px] items-center gap-3 text-sm'
-              >
-                <RoleAvatar
-                  name={name}
-                  role={
-                    ['boss', 'business', 'market', 'design', 'editing'][
-                      index
-                    ] as 'boss' | 'business' | 'market' | 'design' | 'editing'
-                  }
-                />
-                <span>{name}</span>
-                <div className='h-2 overflow-hidden rounded-full bg-muted'>
-                  <div
-                    className='h-full rounded-full bg-primary'
-                    style={{ width: `${progress}%` }}
+        <CardContent>
+          {data.data?.teamTasks.length ? (
+            <div className='space-y-4'>
+              {data.data.teamTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className='grid grid-cols-[34px_72px_1fr_44px] items-center gap-3 text-sm'
+                >
+                  <RoleAvatar
+                    name={task.assigneeName}
+                    role={roleForMember(task.assigneeName)}
                   />
+                  <span>{task.assigneeName}</span>
+                  <div className='h-2 overflow-hidden rounded-full bg-muted'>
+                    <div
+                      className='h-full rounded-full bg-primary'
+                      style={{ width: `${task.progress}%` }}
+                    />
+                  </div>
+                  <span className='text-right text-muted-foreground'>
+                    {task.progress}%
+                  </span>
                 </div>
-                <span className='text-right text-muted-foreground'>
-                  {progress}%
-                </span>
-              </div>
-            )
-          })}
+              ))}
+            </div>
+          ) : (
+            <p className='text-sm text-muted-foreground'>
+              成员开始录入任务后，这里会显示每个人的真实完成进度。
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

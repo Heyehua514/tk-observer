@@ -31,34 +31,13 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { SearchBar } from '@/components/shared/search-bar'
 import { buildAdOverview } from '../ads/ad-overview'
-import { CompetitorsWorkbench } from '../competitors'
+import { CompetitorsWorkbench, MarketCompetitorSummary } from '../competitors'
 import { useMarketWorkbench } from '../hooks/use-market-workbench'
 import { useProductCatalog } from '../hooks/use-product-catalog'
 import { MarketResourcesWorkbench } from '../resources'
 import { VenuesWorkbench } from '../venues'
 import { marketEmptyTitles } from './market-empty-copy'
 import { EventsPanel } from './market-records'
-
-const competitorRows = [
-  {
-    name: '霞光社',
-    platform: '微信公众号',
-    category: '出海跨境',
-    trend: '内容更新频率高',
-  },
-  {
-    name: '白鲸出海',
-    platform: '微信公众号',
-    category: '出海跨境',
-    trend: '选题覆盖更广',
-  },
-  {
-    name: '晚点财经',
-    platform: '微信公众号',
-    category: '科技财经',
-    trend: '标题结构稳定',
-  },
-] as const
 
 export function MarketWorkbench({
   query,
@@ -78,16 +57,7 @@ export function MarketWorkbench({
       />
       <div className='grid gap-3 md:grid-cols-6'>
         <div className='bento-card p-4 md:col-span-2'>
-          <div className='text-xs text-muted-foreground'>竞品监测</div>
-          <div className='mt-1 text-lg font-semibold'>3 个公众号</div>
-          <div className='mt-2 space-y-1 text-sm text-muted-foreground'>
-            {competitorRows.map((row) => (
-              <div key={row.name} className='flex items-center justify-between'>
-                <span>{row.name}</span>
-                <span>{row.category}</span>
-              </div>
-            ))}
-          </div>
+          <MarketCompetitorSummary />
         </div>
         <div className='bento-card p-4 md:col-span-4'>
           <div className='flex items-center justify-between'>
@@ -245,3 +215,7 @@ export function MarketWorkbench({
     </div>
   )
 }
+
+/**
+ * 竞品监测摘要卡：从共享 competitor_accounts 表读取真实账号并展示前 4 条。
+ */
