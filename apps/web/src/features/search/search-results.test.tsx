@@ -12,14 +12,26 @@ vi.mock('@/stores/auth-store', () => ({
 
 vi.mock('@/components/shared/global-search-core', () => ({
   runGlobalSearch: vi.fn(async () => [
-    { kind: 'creator', title: '达人', total: 8, items: [{ id: 'c1', kind: 'creator', label: '跨境班长', description: 'US · 128000 粉丝', }] },
+    {
+      kind: 'creator',
+      title: '达人',
+      total: 8,
+      items: [
+        {
+          id: 'c1',
+          kind: 'creator',
+          label: '跨境班长',
+          description: 'US · 128000 粉丝',
+        },
+      ],
+    },
   ]),
 }))
 
 it('renders grouped results with totals and item rows', async () => {
   const screen = await render(
     <QueryClientProvider client={qc}>
-      <SearchResultsPage query="跨境" kind="creator" />
+      <SearchResultsPage query='跨境' kind='creator' />
     </QueryClientProvider>
   )
   await expect.element(screen.getByText('达人 · 共 8 条')).toBeInTheDocument()
@@ -29,8 +41,10 @@ it('renders grouped results with totals and item rows', async () => {
 it('shows an empty-state when no query is provided', async () => {
   const screen = await render(
     <QueryClientProvider client={qc}>
-      <SearchResultsPage query="" kind={undefined} />
+      <SearchResultsPage query='' kind={undefined} />
     </QueryClientProvider>
   )
-  await expect.element(screen.getByText('输入至少两个字开始搜索')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('输入至少两个字开始搜索'))
+    .toBeInTheDocument()
 })

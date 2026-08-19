@@ -22,7 +22,8 @@ vi.mock('@/hooks/use-mark-notification-read', () => ({
 }))
 
 vi.mock('@/stores/auth-store', () => ({
-  useAuthStore: (sel: (s: { user: { id: string } }) => unknown) => sel({ user: { id: 'u1' } }),
+  useAuthStore: (sel: (s: { user: { id: string } }) => unknown) =>
+    sel({ user: { id: 'u1' } }),
 }))
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
