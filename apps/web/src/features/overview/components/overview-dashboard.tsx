@@ -31,7 +31,7 @@ import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import { useEvents } from '@/features/market/hooks/use-market-records'
-import { AiAssistantPanel } from '@/features/shared-ai'
+import { AiAssistantPanel, AiNotesView } from '@/features/shared-ai'
 import { TeamMemory } from '../team-memory'
 import { ActivityStatusChart } from './activity-status-chart'
 import { GmvEntryDialog } from './gmv-entry-dialog'
@@ -357,6 +357,9 @@ export function OverviewDashboard() {
         <ActivityStatusChart events={events.data || []} />
       </div>
       <TeamMemory />
+      <div className='mt-5'>
+        <AiNotesView />
+      </div>
       <Card className='bento-card shadow-none'>
         <CardHeader>
           <CardTitle className='text-base'>成员任务进度</CardTitle>

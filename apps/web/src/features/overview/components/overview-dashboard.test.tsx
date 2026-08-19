@@ -11,6 +11,8 @@ vi.mock('@/lib/data-provider', () => ({
 
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: () => ({
+    channel: () => ({ on: () => ({ subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) }) }),
+    removeChannel: vi.fn(),
     from: (table: string) => ({
       select: (
         _columns?: string,
