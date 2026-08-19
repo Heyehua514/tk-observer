@@ -127,13 +127,16 @@ export function VideoAiPanel() {
 
 const videoIdeaInvalidKeys = ['editing', 'videoIdeas'] as const
 
-async function runWorkBuddy(_prompt: string): Promise<string> {
-  // 浏览器无法执行本机 CLI；此处通过本地 WorkBuddy 网关调用（配置后启用）。
-  // 网关未接通时返回占位 JSON，仅用于界面联调，不耗费 credits。
-  return JSON.stringify({
-    titlePatterns: ['示例规律'],
-    publishTimePatterns: ['示例时段'],
-    contentTypePreferences: ['示例类型'],
-    summary: '等待配置本地 WorkBuddy 网关',
+async function runWorkBuddy(prompt: string): Promise<string> {
+  const endpoint =
+    localStorage.getItem('tk.workbuddy.gateway') || 'http://127.0.0.1:8877/analyze'
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
   })
+  if (!response.ok) throw new Error('GATEWAY_UNAVAILABLE')
+  const data = (await response.json()) as { ok: boolean; text?: string }
+  if (!data.ok || !data.text) throw new Error('GATEWAY_UNAVAILABLE')
+  return data.text
 }
