@@ -17,6 +17,7 @@ vi.mock('@/features/editing/hooks/use-video-idea-analytics', () => ({
 }))
 
 vi.mock('@/features/editing/hooks/use-video-tasks', () => ({
+  videoTaskKeys: { all: ['video-tasks'] },
   useVideoTasks: () => ({ data: [] }),
 }))
 

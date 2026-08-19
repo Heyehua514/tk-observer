@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { AiAssistantPanel } from '@/features/shared-ai'
+import { useUpdateVideoTask } from '../hooks/use-create-video-task'
 import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
@@ -29,6 +30,7 @@ import type {
 import { CompetitorWorkbench } from './competitor-workbench'
 import { editingEmptyTitles } from './editing-empty-copy'
 import { IdeaAnalytics } from './idea-analytics'
+import type { VideoTaskItem } from './production-model'
 import { PublishScheduleFormDialog } from './publish-schedule-form'
 import { PublishScheduleTable } from './publish-schedule-table'
 import { TrendingWorkbench } from './trending-workbench'
@@ -36,6 +38,7 @@ import { VideoAiPanel } from './video-ai-panel'
 import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
+import { VideoTaskFormDialog } from './video-task-form'
 
 function ProductionSkeleton() {
   const tasks = useVideoTasks()
@@ -43,6 +46,9 @@ function ProductionSkeleton() {
   const schedules = usePublishSchedules()
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false)
   const [archiveUploadOpen, setArchiveUploadOpen] = useState(false)
+  const [taskFormOpen, setTaskFormOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState<VideoTaskItem | null>(null)
+  const updateTask = useUpdateVideoTask()
 
   return (
     <Tabs defaultValue='tasks'>
@@ -61,6 +67,16 @@ function ProductionSkeleton() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value='tasks' className='mt-5'>
+        <div className='mb-4 flex justify-end'>
+          <Button
+            onClick={() => {
+              setEditingTask(null)
+              setTaskFormOpen(true)
+            }}
+          >
+            新增任务
+          </Button>
+        </div>
         {tasks.data?.length ? (
           <div className='overflow-hidden rounded-lg border'>
             <table className='w-full text-sm'>
@@ -70,6 +86,7 @@ function ProductionSkeleton() {
                   <th className='px-4 py-3 text-left font-medium'>状态</th>
                   <th className='px-4 py-3 text-left font-medium'>截止</th>
                   <th className='px-4 py-3 text-left font-medium'>负责人</th>
+                  <th className='px-4 py-3 text-left font-medium'></th>
                 </tr>
               </thead>
               <tbody>
@@ -84,9 +101,45 @@ function ProductionSkeleton() {
                         {task.subtitle}
                       </div>
                     </td>
-                    <td className='px-4 py-3'>{task.status}</td>
+                    <td className='px-4 py-3'>
+                      <select
+                        value={task.status}
+                        onChange={(e) =>
+                          updateTask.mutate({
+                            id: task.id,
+                            input: { status: e.target.value },
+                          })
+                        }
+                        className='rounded border bg-transparent px-1 py-0.5 text-sm'
+                      >
+                        {['todo', 'editing', 'review', 'done'].map((st) => (
+                          <option key={st} value={st}>
+                            {
+                              {
+                                todo: '待处理',
+                                editing: '制作中',
+                                review: '待审核',
+                                done: '已完成',
+                              }[st]
+                            }
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td className='px-4 py-3'>{task.dueAt || '未填'}</td>
                     <td className='px-4 py-3'>{task.owner}</td>
+                    <td className='px-4 py-3 text-right'>
+                      <Button
+                        size='sm'
+                        variant='ghost'
+                        onClick={() => {
+                          setEditingTask(task)
+                          setTaskFormOpen(true)
+                        }}
+                      >
+                        编辑
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -98,6 +151,11 @@ function ProductionSkeleton() {
             description='任务将展示标题、关联商品、关联达人、目标站点、状态、截止日期和负责人。'
           />
         )}
+        <VideoTaskFormDialog
+          open={taskFormOpen}
+          onOpenChange={setTaskFormOpen}
+          task={editingTask}
+        />
       </TabsContent>
       <TabsContent value='archive' className='mt-5'>
         {archive.data?.length ? (
