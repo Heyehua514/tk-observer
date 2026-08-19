@@ -59,6 +59,7 @@ import {
 } from '@/components/ui/table'
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { SearchBar } from '@/components/shared/search-bar'
 import { videoAccounts, videoTypes } from '../constants'
 import { useDeleteVideoIdea } from '../hooks/use-delete-video-idea'
@@ -475,9 +476,10 @@ export function VideoIdeaTable({
         )}
       </div>
       {ideas.isError ? (
-        <EmptyState
+        <LoadStateError
           title='选题数据加载失败'
           description={editingDataErrorDescription}
+          onRetry={() => void ideas.refetch()}
         />
       ) : ideas.data?.items.length === 0 ? (
         <EmptyState

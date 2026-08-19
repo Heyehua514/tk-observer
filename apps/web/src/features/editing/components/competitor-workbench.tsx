@@ -8,6 +8,7 @@ import { formatBeijingTime } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/empty-state'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { SearchBar } from '@/components/shared/search-bar'
 import { useCompetitorAccounts } from '../hooks/use-competitor-accounts'
 import { useCompetitorVideos } from '../hooks/use-competitor-videos'
@@ -59,9 +60,10 @@ export function CompetitorWorkbench({
         </span>
       </div>
       {accounts.isError ? (
-        <EmptyState
+        <LoadStateError
           title='对标账号加载失败'
           description={editingPermissionErrorDescription}
+          onRetry={() => void accounts.refetch()}
         />
       ) : (
         <div className='grid gap-4 md:grid-cols-3'>

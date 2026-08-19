@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { TableSkeleton } from '@/components/shared/table-skeleton'
 import { matchVenues } from './match-venues'
 import { QuickMatch } from './quick-match'
 import {
@@ -133,9 +134,7 @@ export function VenuesWorkbench() {
         </Select>
       </div>
       {venues.isLoading ? (
-        <p className='py-12 text-center text-muted-foreground'>
-          正在加载场地...
-        </p>
+        <TableSkeleton title='正在加载场地资源' rows={4} columns={3} />
       ) : visible.length ? (
         <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
           {visible.map((venue) => (

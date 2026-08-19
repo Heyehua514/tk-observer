@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { blogAccounts } from './types'
 import { useBlogArticles } from './use-blog-articles'
 
@@ -88,9 +89,10 @@ export function BlogWorkbench() {
 
   if (articles.isError) {
     return (
-      <EmptyState
+      <LoadStateError
         title='公众号数据暂时无法加载'
         description='请检查数据服务和当前账号权限后重试。'
+        onRetry={() => void articles.refetch()}
       />
     )
   }
