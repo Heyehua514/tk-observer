@@ -1,11 +1,14 @@
 /**
- * WorkBuddy(CodeBuddy) CLI 调用封装。
- * 用途：前端(浏览器)无法直接执行本机 CLI，本文件是给运行在本机的脚本/服务端侧使用的纯函数，
- *       生成传给 codebuddy 的提示词与解析规则；浏览器端只负责装配数据与展示结果。
+ * WorkBuddy(CodeBuddy) CLI 调用封装与提示词构造。
  * 所属工作台：剪辑（谢洁）+ 全局 AI 助手。
  */
 export const CODEBUDDY_CLI =
   '/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/bin/codebuddy'
+
+export type VideoPerItemAnalysis = {
+  id: string
+  insight: string
+}
 
 export type VideoAnalysisResult = {
   titlePatterns: string[]
@@ -15,29 +18,36 @@ export type VideoAnalysisResult = {
 }
 
 /**
- * 构造视频批量分析的提示词，要求 WorkBuddy 输出纯 JSON。
+ * 构造视频批量分析的提示词，返回逐条洞察 + 汇总规律。
  */
 export function buildVideoAnalysisPrompt(
-  videos: Array<{ title: string; videoType: string; publishDate: string; views: number }>
+  videos: Array<{ id: string; title: string; videoType: string; publishDate: string; views: number }>
 ): string {
-  const payload = JSON.stringify(videos)
+  const payload = JSON.stringify(
+    videos.map((v) => ({
+      id: v.id,
+      title: v.title,
+      videoType: v.videoType,
+      publishDate: v.publishDate,
+      views: v.views,
+    }))
+  )
   return [
     '你是 TK 短视频运营数据分析助手。分析以下视频数据：',
-    '- 标题规律',
-    '- 发布时间规律',
-    '- 内容类型偏好',
+    '- 为每一条视频给出 1 条精炼洞察（insight），说明其可借鉴之处',
+    '- 再给出标题规律、发布时间规律、内容类型偏好和整体总结',
     '',
     '只输出一个 JSON 对象，不要任何额外文字或 Markdown 代码块：',
-    '{"titlePatterns":["..."],"publishTimePatterns":["..."],"contentTypePreferences":["..."],"summary":"..."}',
+    '{"videos":[{"id":"<原id>","insight":"<该条洞察>"}],"titlePatterns":["..."],"publishTimePatterns":["..."],"contentTypePreferences":["..."],"summary":"..."}',
     '',
     `数据：${payload}`,
   ].join('\n')
 }
 
 /** 从 WorkBuddy 输出中抽取 JSON（容忍首尾多余文本/代码块）。 */
-export function parseVideoAnalysisJson(
-  raw: string
-): VideoAnalysisResult {
+export function parseVideoAnalysisJson(raw: string): VideoAnalysisResult & {
+  videos: VideoPerItemAnalysis[]
+} {
   const text = raw.trim()
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/)
   const candidate = fenced ? fenced[1] : text
@@ -48,6 +58,7 @@ export function parseVideoAnalysisJson(
   }
   const parsed = JSON.parse(candidate.slice(start, end + 1))
   return {
+    videos: Array.isArray(parsed.videos) ? parsed.videos : [],
     titlePatterns: Array.isArray(parsed.titlePatterns)
       ? parsed.titlePatterns.map(String)
       : [],

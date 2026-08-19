@@ -68,8 +68,7 @@ export function VideoAiPanel() {
       const prompt = buildVideoAnalysisPrompt(videos)
       const raw = await runWorkBuddy(prompt)
       const parsed = parseVideoAnalysisJson(raw)
-      const text = JSON.stringify(parsed, null, 2)
-      // 写回：每个视频写入同一份结构化分析（可在后续改成逐条）。
+
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
         const call = supabase.rpc(
@@ -79,7 +78,32 @@ export function VideoAiPanel() {
           analysis: string
           analyzed: string
         }) => Promise<{ error: { message: string } | null }>
+        const insightMap = new Map(
+          parsed.videos.map((v) => [v.id, v.insight])
+        )
         for (const v of videos) {
+          const insight = insightMap.get(v.id)
+          const text = insight
+            ? `【本条洞察】${insight}\n\n——汇总——\n${JSON.stringify(
+                {
+                  titlePatterns: parsed.titlePatterns,
+                  publishTimePatterns: parsed.publishTimePatterns,
+                  contentTypePreferences: parsed.contentTypePreferences,
+                  summary: parsed.summary,
+                },
+                null,
+                2
+              )}`
+            : JSON.stringify(
+                {
+                  titlePatterns: parsed.titlePatterns,
+                  publishTimePatterns: parsed.publishTimePatterns,
+                  contentTypePreferences: parsed.contentTypePreferences,
+                  summary: parsed.summary,
+                },
+                null,
+                2
+              )
           const { error } = await call({
             target_id: v.id,
             analysis: text,
@@ -88,9 +112,9 @@ export function VideoAiPanel() {
           if (error) throw error
         }
       }
-      setPreview(text)
+      setPreview(JSON.stringify(parsed, null, 2))
       void queryClient.invalidateQueries({ queryKey: videoIdeaInvalidKeys })
-      return text
+      return JSON.stringify(parsed, null, 2)
     },
     onSuccess: () => toast.success('分析完成，已写入'),
     onError: (e) =>
