@@ -46,6 +46,13 @@ vi.mock('../competitors', () => ({
       </tbody>
     </table>
   ),
+  MarketCompetitorSummary: () => (
+    <div>
+      <div>竞品监测</div>
+      <div>0 个公众号</div>
+      <div>暂无监测账号</div>
+    </div>
+  ),
 }))
 
 vi.mock('../resources', () => ({
