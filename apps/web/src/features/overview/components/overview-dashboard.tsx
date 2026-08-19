@@ -33,6 +33,7 @@ import { RoleAvatar } from '@/components/shared/role-avatar'
 import { useEvents } from '@/features/market/hooks/use-market-records'
 import { TeamMemory } from '../team-memory'
 import { ActivityStatusChart } from './activity-status-chart'
+import { GmvEntryDialog } from './gmv-entry-dialog'
 import {
   mapSupabaseAuditLog,
   mapSupabaseGmvMetric,
@@ -48,13 +49,6 @@ import {
 } from './overview-metrics'
 import { UpcomingActivities } from './upcoming-activities'
 
-const fallbackTrend = [
-  { date: '08-01', value: 126000 },
-  { date: '08-08', value: 184000 },
-  { date: '08-15', value: 163000 },
-  { date: '08-22', value: 236000 },
-  { date: '08-29', value: 278000 },
-]
 const team = ['磊哥', '董雨辰', '韩素云', '孙铭泽', '谢洁']
 const rangeLabels: Record<OverviewMetricRange, string> = {
   '7d': '近 7 天',
@@ -168,9 +162,8 @@ export function OverviewDashboard() {
         date: item.metricDate.slice(5, 10),
         value: item.amountMinor,
       }))
-    : fallbackTrend
-  const totalGmv =
-    gmvRecords.reduce((sum, item) => sum + item.amountMinor, 0) || 987600
+    : []
+  const totalGmv = gmvRecords.reduce((sum, item) => sum + item.amountMinor, 0)
   const latestGmv = gmvRecords[gmvRecords.length - 1]?.amountMinor || 0
   const previousGmv = gmvRecords[gmvRecords.length - 2]?.amountMinor || 0
   const gmvDelta = previousGmv
@@ -249,22 +242,25 @@ export function OverviewDashboard() {
                   {CNY_ACCOUNTING_NOTE}
                 </p>
               </div>
-              <div
-                aria-label='GMV 时间范围'
-                className='flex items-center gap-1'
-              >
-                {(Object.keys(rangeLabels) as OverviewMetricRange[]).map(
-                  (range) => (
-                    <Button
-                      key={range}
-                      size='sm'
-                      variant={metricRange === range ? 'default' : 'outline'}
-                      onClick={() => setMetricRange(range)}
-                    >
-                      {rangeLabels[range]}
-                    </Button>
-                  )
-                )}
+              <div className='flex flex-wrap items-center gap-2'>
+                <GmvEntryDialog />
+                <div
+                  aria-label='GMV 时间范围'
+                  className='flex items-center gap-1'
+                >
+                  {(Object.keys(rangeLabels) as OverviewMetricRange[]).map(
+                    (range) => (
+                      <Button
+                        key={range}
+                        size='sm'
+                        variant={metricRange === range ? 'default' : 'outline'}
+                        onClick={() => setMetricRange(range)}
+                      >
+                        {rangeLabels[range]}
+                      </Button>
+                    )
+                  )}
+                </div>
               </div>
             </div>
           </CardHeader>
