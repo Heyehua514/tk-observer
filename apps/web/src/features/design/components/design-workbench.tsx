@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { useDesignAssets } from '../hooks/use-design-assets'
 import { DesignRequirements } from '../requirements'
 import { useDesignRequirements } from '../requirements/use-design-requirements'
@@ -158,6 +159,9 @@ export function DesignWorkbench({
           </TabsContent>
         )}
       </Tabs>
+      <div className='mt-5'>
+        <AiAssistantPanel scope='设计工作台' />
+      </div>
     </div>
   )
 }

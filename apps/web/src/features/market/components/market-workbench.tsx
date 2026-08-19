@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { SearchBar } from '@/components/shared/search-bar'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { buildAdOverview } from '../ads/ad-overview'
 import { CompetitorsWorkbench } from '../competitors'
 import { useMarketWorkbench } from '../hooks/use-market-workbench'
@@ -242,6 +243,9 @@ export function MarketWorkbench({
           <MarketResourcesWorkbench />
         </TabsContent>
       </Tabs>
+      <div className='mt-5'>
+        <AiAssistantPanel scope='市场工作台' />
+      </div>
     </div>
   )
 }

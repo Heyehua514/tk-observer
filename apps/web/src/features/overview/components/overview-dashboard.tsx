@@ -31,6 +31,7 @@ import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import { useEvents } from '@/features/market/hooks/use-market-records'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { TeamMemory } from '../team-memory'
 import { ActivityStatusChart } from './activity-status-chart'
 import { GmvEntryDialog } from './gmv-entry-dialog'
@@ -232,6 +233,9 @@ export function OverviewDashboard() {
           </Card>
         ))}
       </MetricDeck>
+      <div className='mt-1'>
+        <AiAssistantPanel scope='总览工作台' />
+      </div>
       <div className='grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'>
         <Card className='bento-card shadow-none'>
           <CardHeader>

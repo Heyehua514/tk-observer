@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageHeader } from '@/components/shared/page-header'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { BlogWorkbench } from '../blog'
 import { ClientsWorkbench } from '../clients'
 import { BusinessDashboard } from '../dashboard'
@@ -104,6 +105,9 @@ export function BusinessWorkbench({
         </TabsList>
         <TabsContent value='dashboard' className='mt-5'>
           <BusinessDashboard onNavigate={onTabChange} />
+          <div className='mt-5'>
+            <AiAssistantPanel scope='商务工作台' />
+          </div>
         </TabsContent>
         <TabsContent value='creators' className='mt-5'>
           <CreatorTable params={params} onParamsChange={onParamsChange} />
