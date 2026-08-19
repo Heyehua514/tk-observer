@@ -146,8 +146,10 @@ export function DesignAssetGrid({
       </FilterBar>
 
       {assets.isLoading ? (
-        <div className='flex min-h-64 items-center justify-center text-sm text-muted-foreground'>
-          正在加载设计素材…
+        <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className='h-48 animate-pulse rounded-xl bg-muted' />
+          ))}
         </div>
       ) : assets.data?.length ? (
         <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>

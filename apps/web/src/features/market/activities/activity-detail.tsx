@@ -53,7 +53,15 @@ export function ActivityDetail({
   )
   if (detail.isLoading)
     return (
-      <div className='p-6 text-sm text-muted-foreground'>正在加载活动详情…</div>
+      <div className='space-y-5' aria-label='正在加载活动详情'>
+        <div className='h-8 w-1/3 animate-pulse rounded-lg bg-muted' />
+        <div className='grid gap-3 sm:grid-cols-4'>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className='h-24 animate-pulse rounded-lg bg-muted' />
+          ))}
+        </div>
+        <div className='h-72 animate-pulse rounded-lg bg-muted' />
+      </div>
     )
   if (detail.isError || !detail.data || !metrics)
     return (
