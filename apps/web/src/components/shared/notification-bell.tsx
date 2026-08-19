@@ -24,6 +24,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { EmptyState } from '@/components/shared/empty-state'
+import { LoadStateError } from '@/components/shared/load-state-error'
 
 const notificationIcons = {
   design_review: Palette,
@@ -155,9 +156,16 @@ export function NotificationBell() {
         </div>
         <div className='max-h-96 overflow-y-auto'>
           {notifications.isLoading ? (
-            <div className='p-8 text-center text-sm text-muted-foreground'>
-              正在加载通知…
-            </div>
+            <LoadStateError
+              title='正在加载通知…'
+              description='获取你的最近通知。'
+            />
+          ) : notifications.isError ? (
+            <LoadStateError
+              title='通知加载失败'
+              description='请检查数据服务后重试。'
+              onRetry={() => void notifications.refetch()}
+            />
           ) : items.length === 0 ? (
             <EmptyState
               title='消息都处理完了'

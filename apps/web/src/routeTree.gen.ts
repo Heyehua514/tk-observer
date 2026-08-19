@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppSearchRouteImport } from './routes/_app/search'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppBusinessIndexRouteImport } from './routes/_app/business/index'
 import { Route as AppDesignIndexRouteImport } from './routes/_app/design/index'
@@ -35,6 +36,11 @@ const AppRoute = AppRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AppRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
@@ -89,6 +95,7 @@ const AppMarketEventsEventIdRoute = AppMarketEventsEventIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/search': typeof AppSearchRoute
   '/login': typeof AuthLoginRoute
   '/overview/calendar': typeof AppOverviewCalendarRoute
   '/settings/feishu': typeof AppSettingsFeishuRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/search': typeof AppSearchRoute
   '/login': typeof AuthLoginRoute
   '/overview/calendar': typeof AppOverviewCalendarRoute
   '/settings/feishu': typeof AppSettingsFeishuRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/_app/search': typeof AppSearchRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_app/overview/calendar': typeof AppOverviewCalendarRoute
   '/_app/settings/feishu': typeof AppSettingsFeishuRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/search'
     | '/login'
     | '/overview/calendar'
     | '/settings/feishu'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/search'
     | '/login'
     | '/overview/calendar'
     | '/settings/feishu'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_auth'
+    | '/_app/search'
     | '/_auth/login'
     | '/_app/overview/calendar'
     | '/_app/settings/feishu'
@@ -201,6 +213,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/search': {
+      id: '/_app/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AppSearchRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_auth/login': {
       id: '/_auth/login'
@@ -276,6 +295,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppSearchRoute: typeof AppSearchRoute
   AppOverviewCalendarRoute: typeof AppOverviewCalendarRoute
   AppSettingsFeishuRoute: typeof AppSettingsFeishuRoute
   AppBusinessIndexRoute: typeof AppBusinessIndexRoute
@@ -288,6 +308,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppSearchRoute: AppSearchRoute,
   AppOverviewCalendarRoute: AppOverviewCalendarRoute,
   AppSettingsFeishuRoute: AppSettingsFeishuRoute,
   AppBusinessIndexRoute: AppBusinessIndexRoute,

@@ -47,14 +47,12 @@ export async function createGmvMetric(input: GmvInput) {
   // PocketBase：先查当天，删除后用新增（同样保证一行）
   const start = new Date(`${input.metricDate}T00:00:00+08:00`).toISOString()
   const end = new Date(`${input.metricDate}T23:59:59+08:00`).toISOString()
-  const existing = await pb
-    .collection('gmv_metrics')
-    .getFullList({
-      filter: pb.filter('metric_date >= {:s} && metric_date <= {:e}', {
-        s: start,
-        e: end,
-      }),
-    })
+  const existing = await pb.collection('gmv_metrics').getFullList({
+    filter: pb.filter('metric_date >= {:s} && metric_date <= {:e}', {
+      s: start,
+      e: end,
+    }),
+  })
   for (const record of existing) {
     await pb.collection('gmv_metrics').delete(record.id)
   }

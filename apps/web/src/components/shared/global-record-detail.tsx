@@ -14,7 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import type { GlobalSearchKind } from '@/components/shared/global-search'
+import type { GlobalSearchKind } from '@/components/shared/global-search-core'
 import {
   getSupabaseRecordDetailSelect,
   supabaseTableByKind,

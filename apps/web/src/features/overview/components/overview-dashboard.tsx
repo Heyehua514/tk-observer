@@ -174,7 +174,15 @@ export function OverviewDashboard() {
   const gmvDelta = previousGmv
     ? ((latestGmv - previousGmv) / previousGmv) * 100
     : null
-  const metrics = [
+  const metrics: Array<{
+    label: string
+    value: number
+    icon: typeof CircleDollarSign
+    money?: boolean
+    delta: number | null
+    /** 点击指标卡跳转的工作台（nav.target）；无则不可点。 */
+    target?: { to: 'business' | 'editing' }
+  }> = [
     {
       label: `${rangeLabels[metricRange]} GMV`,
       value: totalGmv,
@@ -199,6 +207,7 @@ export function OverviewDashboard() {
       value: data.data?.videos ?? 0,
       icon: Clapperboard,
       delta: null,
+      target: { to: 'editing' },
     },
   ]
 
@@ -212,30 +221,36 @@ export function OverviewDashboard() {
         aria-label='经营核心指标'
         className='sm:grid-cols-2 xl:grid-cols-4'
       >
-        {metrics.map((metric) => (
-          <Card
-            key={metric.label}
-            className="bento-card h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
-          >
-            <CardContent className='flex items-start justify-between p-5'>
-              <div>
-                <p className='text-sm text-muted-foreground'>{metric.label}</p>
-                <p className='mt-2 text-2xl font-semibold'>
-                  <AnimatedNumber
-                    value={metric.value}
-                    format={
-                      metric.money
-                        ? (value) => formatMoney(Math.round(value))
-                        : (value) => Math.round(value).toLocaleString('zh-CN')
-                    }
-                  />
-                </p>
-                <MetricTrend delta={metric.delta} />
-              </div>
-              <metric.icon className='size-5 text-primary' />
-            </CardContent>
-          </Card>
-        ))}
+        {metrics.map((metric) => {
+          const navTo =
+            metric.target?.to === 'editing'
+              ? ('/editing' as const)
+              : metric.target?.to === 'business'
+                ? ('/business' as const)
+                : null
+          return (
+            <Card
+              key={metric.label}
+              className={
+                navTo
+                  ? "bento-card h-full overflow-hidden shadow-none transition-colors before:block before:h-0.5 before:w-12 before:bg-primary before:content-[''] hover:border-primary/40"
+                  : "bento-card h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
+              }
+            >
+              {navTo ? (
+                <a
+                  href={navTo}
+                  className='block h-full'
+                  aria-label='跳转到对应工作台'
+                >
+                  <MetricCardBody metric={metric} />
+                </a>
+              ) : (
+                <MetricCardBody metric={metric} />
+              )}
+            </Card>
+          )
+        })}{' '}
       </MetricDeck>
       <div className='mt-1'>
         <AiAssistantPanel
@@ -401,6 +416,38 @@ export function OverviewDashboard() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function MetricCardBody({
+  metric,
+}: {
+  metric: {
+    label: string
+    value: number
+    money?: boolean
+    delta: number | null
+    icon: typeof CircleDollarSign
+  }
+}) {
+  return (
+    <CardContent className='flex items-start justify-between p-5'>
+      <div>
+        <p className='text-sm text-muted-foreground'>{metric.label}</p>
+        <p className='mt-2 text-2xl font-semibold'>
+          <AnimatedNumber
+            value={metric.value}
+            format={
+              metric.money
+                ? (value) => formatMoney(Math.round(value))
+                : (value) => Math.round(value).toLocaleString('zh-CN')
+            }
+          />
+        </p>
+        <MetricTrend delta={metric.delta} />
+      </div>
+      <metric.icon className='size-5 text-primary' />
+    </CardContent>
   )
 }
 

@@ -1,5 +1,5 @@
 /** 全局搜索 Supabase 映射层；权限：按当前角色可见范围查询。 */
-import type { SearchResult } from './global-search'
+import type { SearchResult } from './global-search-core'
 
 type Row = Record<string, unknown>
 
