@@ -1,14 +1,21 @@
 /** 商务工作台主体：达人 CRUD、客户/供应商及合作跟进看板入口。 */
 import {
   Building2,
-  Newspaper,
   CalendarDays,
   ChartNoAxesCombined,
   Handshake,
   KanbanSquare,
+  MoreHorizontal,
+  Newspaper,
   ShoppingBag,
   UsersRound,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageHeader } from '@/components/shared/page-header'
 import { BlogWorkbench } from '../blog'
@@ -54,6 +61,15 @@ export function BusinessWorkbench({
   focusId?: string
   onFocus?: (type: 'opportunity' | 'order', id: string) => void
 }) {
+  const moreTabs: Array<{
+    value: BusinessTab
+    label: string
+    icon: typeof Building2
+  }> = [
+    { value: 'companies', label: '客户 / 供应商', icon: Building2 },
+    { value: 'sponsorships', label: '活动招商', icon: Handshake },
+    { value: 'blog', label: '公众号分析', icon: Newspaper },
+  ]
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -73,10 +89,6 @@ export function BusinessWorkbench({
             <UsersRound className='size-4' />
             达人管理
           </TabsTrigger>
-          <TabsTrigger value='companies'>
-            <Building2 className='size-4' />
-            客户 / 供应商
-          </TabsTrigger>
           <TabsTrigger value='clients'>
             <UsersRound className='size-4' />
             客户管理
@@ -93,14 +105,29 @@ export function BusinessWorkbench({
             <CalendarDays className='size-4' />
             朋友圈运营
           </TabsTrigger>
-          <TabsTrigger value='sponsorships'>
-            <Handshake className='size-4' />
-            活动招商
-          </TabsTrigger>
-          <TabsTrigger value='blog'>
-            <Newspaper className='size-4' />
-            公众号分析
-          </TabsTrigger>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type='button'
+                className='inline-flex h-9 items-center gap-1 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=open]:bg-muted/70'
+                aria-label='更多功能'
+              >
+                <MoreHorizontal className='size-4' />
+                更多
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              {moreTabs.map((entry) => (
+                <DropdownMenuItem
+                  key={entry.value}
+                  onClick={() => onTabChange(entry.value)}
+                >
+                  <entry.icon className='size-4' />
+                  {entry.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </TabsList>
         <TabsContent value='dashboard' className='mt-5'>
           <BusinessDashboard onNavigate={onTabChange} />
