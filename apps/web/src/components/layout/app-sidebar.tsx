@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useLayout } from '@/context/layout-provider'
+import { useRecentPages } from '@/hooks/use-recent-pages'
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +29,14 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+
+const titleByPath: Record<string, { title: string; icon: typeof Store }> = {
+  '/overview': { title: '总览工作台', icon: ChartNoAxesCombined },
+  '/market': { title: '市场工作台', icon: Store },
+  '/business': { title: '商务工作台', icon: BriefcaseBusiness },
+  '/design': { title: '设计工作台', icon: Palette },
+  '/editing': { title: '剪辑工作台', icon: Clapperboard },
+}
 
 const navigation = [
   {
@@ -76,6 +85,7 @@ export function AppSidebar() {
   const { collapsible, variant } = useLayout()
   const role = useAuthStore((state) => state.user?.role)
   const pathname = useLocation({ select: (location) => location.pathname })
+  const recent = useRecentPages()
   if (!role) return null
 
   return (
@@ -118,6 +128,33 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {recent.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>最近访问</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {recent.map((path) => {
+                  const meta = titleByPath[path]
+                  if (!meta) return null
+                  return (
+                    <SidebarMenuItem key={path}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={meta.title}
+                        isActive={pathname.startsWith(path)}
+                      >
+                        <Link to={path}>
+                          <meta.icon className='size-4' />
+                          <span>{meta.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         <SidebarGroup className='mt-auto'>
           <SidebarGroupContent>
             <SidebarMenu>
