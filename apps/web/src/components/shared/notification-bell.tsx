@@ -42,8 +42,33 @@ const allowedLinks = [
   '/settings',
 ] as const
 
-function getSafeLink(link: string) {
-  return allowedLinks.find((path) => link === path) || '/overview'
+type DeepLinkTarget = {
+  /** 目标路由（allowlist 内的合法路径）。 */
+  to: string
+  /** 商机深链：跳商务工作台并定位商机。 */
+  recordType?: 'opportunity'
+  recordId?: string
+  /** 活动任务深链：跳活动详情并定位任务。 */
+  taskId?: string
+}
+
+function resolveNotificationTarget(
+  notification: AppNotification
+): DeepLinkTarget {
+  const base = allowedLinks.find((path) => notification.link === path)
+  const recordType = notification.recordType
+  const recordId = notification.recordId
+  if (recordType === 'opportunity' && base === '/business') {
+    return { to: '/business', recordType, recordId }
+  }
+  if (recordType === 'event_task') {
+    // link 形如 /market/events/{eventId}；recordId 是任务 id。传给活动详情路由定位并高亮任务。
+    const eventPath = notification.link
+    const match = /^\/market\/events\/[^/?#]+/.exec(eventPath)
+    const to = match?.[0] || '/market'
+    return { to, taskId: recordId }
+  }
+  return { to: base || '/overview' }
 }
 
 export function NotificationBell() {
@@ -72,7 +97,16 @@ export function NotificationBell() {
 
   const openNotification = async (notification: AppNotification) => {
     if (!notification.isRead) await markRead.mutateAsync([notification.id])
-    await navigate({ to: getSafeLink(notification.link) })
+    const target = resolveNotificationTarget(notification)
+    await navigate({
+      to: target.to,
+      search: target.taskId
+        ? { taskId: target.taskId }
+        : target.recordType && target.recordId
+          ? { recordType: target.recordType, recordId: target.recordId }
+          : {},
+      replace: true,
+    })
   }
 
   return (

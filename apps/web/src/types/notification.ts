@@ -12,6 +12,8 @@ export type AppNotification = {
   title: string
   content: string
   link: string
+  recordType?: 'opportunity' | 'event_task'
+  recordId?: string
   isRead: boolean
   created: string
 }
