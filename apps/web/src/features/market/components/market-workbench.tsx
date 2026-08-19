@@ -71,6 +71,15 @@ export function MarketWorkbench({
   const activeQuery = useMarketWorkbench(query)
   const products = useProductCatalog(activeQuery)
   const adOverview = buildAdOverview()
+  const productsContext = products.data?.length
+    ? `当前选品库前几项：\n${products.data
+        .slice(0, 5)
+        .map(
+          (p) =>
+            `- ${p.name}（${p.category}/${p.region}，售价 ¥${(p.priceMinor / 100).toFixed(0)}）`
+        )
+        .join('\n')}`
+    : '当前选品库暂无数据。'
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -244,7 +253,7 @@ export function MarketWorkbench({
         </TabsContent>
       </Tabs>
       <div className='mt-5'>
-        <AiAssistantPanel scope='市场工作台' />
+        <AiAssistantPanel scope='市场工作台' context={productsContext} />
       </div>
     </div>
   )

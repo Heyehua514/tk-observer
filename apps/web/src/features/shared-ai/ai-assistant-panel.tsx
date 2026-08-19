@@ -27,7 +27,13 @@ import {
 export type AiTaskType = '调研' | '文案' | '总结复盘' | '分析' | '自定义'
 const TASK_TYPES: AiTaskType[] = ['调研', '文案', '总结复盘', '分析', '自定义']
 
-export function AiAssistantPanel({ scope }: { scope: string }) {
+export function AiAssistantPanel({
+  scope,
+  context,
+}: {
+  scope: string
+  context?: string
+}) {
   const [prompt, setPrompt] = useState('')
   const [taskType, setTaskType] = useState<AiTaskType>('分析')
   const [busy, setBusy] = useState(false)
@@ -43,9 +49,12 @@ export function AiAssistantPanel({ scope }: { scope: string }) {
     try {
       const fullPrompt = [
         `工作台：${scope}；任务类型：${taskType}。`,
+        context ? `以下是当前页面/工作台相关数据，供你参考：\n${context}` : '',
         prompt,
         '请给出清晰、可直接使用的中文结果。只输出结果本身，不要提问或寒暄。',
-      ].join('\n')
+      ]
+        .filter(Boolean)
+        .join('\n')
       const text = await callGateway(fullPrompt)
       setResult(text)
       toast.success('AI 已完成，请确认是否采用')

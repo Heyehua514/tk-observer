@@ -160,7 +160,10 @@ export function DesignWorkbench({
         )}
       </Tabs>
       <div className='mt-5'>
-        <AiAssistantPanel scope='设计工作台' />
+        <AiAssistantPanel
+          scope='设计工作台'
+          context={`当前设计资产 ${assetCount} 项、待审核 ${pendingAssetCount} 项、已交付需求 ${deliveredRequirementCount} 项。`}
+        />
       </div>
     </div>
   )

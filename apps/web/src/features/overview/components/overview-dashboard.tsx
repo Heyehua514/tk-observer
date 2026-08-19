@@ -234,7 +234,10 @@ export function OverviewDashboard() {
         ))}
       </MetricDeck>
       <div className='mt-1'>
-        <AiAssistantPanel scope='总览工作台' />
+        <AiAssistantPanel
+          scope='总览工作台'
+          context={`近 ${metricRange === 'all' ? '全部' : metricRange === '7d' ? '7 天' : '30 天'} GMV 总额 ¥${(totalGmv / 100).toLocaleString()}`}
+        />
       </div>
       <div className='grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'>
         <Card className='bento-card shadow-none'>

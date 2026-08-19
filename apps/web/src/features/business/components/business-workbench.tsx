@@ -34,6 +34,18 @@ type BusinessTab =
   | 'sponsorships'
   | 'blog'
 
+const tabLabels: Record<BusinessTab, string> = {
+  dashboard: '经营驾驶舱',
+  creators: '达人管理',
+  companies: '客户/供应商',
+  clients: '客户管理',
+  opportunities: '商机 Pipeline',
+  orders: '渠道商单',
+  social: '朋友圈运营',
+  sponsorships: '活动招商',
+  blog: '公众号分析',
+}
+
 export function BusinessWorkbench({
   params,
   companyParams,
@@ -55,6 +67,7 @@ export function BusinessWorkbench({
   focusId?: string
   onFocus?: (type: 'opportunity' | 'order', id: string) => void
 }) {
+  const tabLabel = tabLabels[tab]
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -106,7 +119,10 @@ export function BusinessWorkbench({
         <TabsContent value='dashboard' className='mt-5'>
           <BusinessDashboard onNavigate={onTabChange} />
           <div className='mt-5'>
-            <AiAssistantPanel scope='商务工作台' />
+            <AiAssistantPanel
+              scope='商务工作台'
+              context={`当前页签：${tabLabel}。`}
+            />
           </div>
         </TabsContent>
         <TabsContent value='creators' className='mt-5'>
