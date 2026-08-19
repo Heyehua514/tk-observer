@@ -1,5 +1,5 @@
 /** 视频 AI 分析面板：调 WorkBuddy 分析一批并回写（人工触发）。 */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Sparkles, LoaderCircle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import {
   parseVideoAnalysisJson,
 } from '../ai-assistant/workbuddy-runner'
 import { BoundOutput } from './workbuddy-preview'
+import { WorkbuddyConsentDialog } from './workbuddy-consent'
 
 type VideoForAnalysis = {
   id: string
@@ -25,6 +26,9 @@ type VideoForAnalysis = {
 export function VideoAiPanel() {
   const queryClient = useQueryClient()
   const [preview, setPreview] = useState<string | null>(null)
+  const [consentOpen, setConsentOpen] = useState(false)
+  const [consentCount, setConsentCount] = useState(0)
+  const runInFlight = useRef(false)
   const candidates = useQuery({
     queryKey: ['editing', 'videoIdeas', 'ai-candidates'],
     queryFn: async (): Promise<VideoForAnalysis[]> => {
@@ -111,7 +115,10 @@ export function VideoAiPanel() {
           分析标题规律、发布时间与内容偏好，结果供你人工确认。
         </p>
         <Button
-          onClick={() => void analyze.mutate()}
+          onClick={() => {
+            setConsentCount(candidates.data?.length ?? 0)
+            setConsentOpen(true)
+          }}
           disabled={analyze.isPending}
         >
           {analyze.isPending && (
@@ -119,6 +126,17 @@ export function VideoAiPanel() {
           )}
           {analyze.isPending ? 'WorkBuddy 分析中…' : '开始分析'}
         </Button>
+        <WorkbuddyConsentDialog
+          open={consentOpen}
+          request={{ count: consentCount }}
+          onOpenChange={(open) => {
+            setConsentOpen(open)
+            if (open && !runInFlight.current) {
+              runInFlight.current = true
+              void analyze.mutate()
+            }
+          }}
+        />
         <BoundOutput value={preview} />
       </CardContent>
     </Card>
