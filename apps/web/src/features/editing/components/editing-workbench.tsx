@@ -14,7 +14,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { PageHeader } from '@/components/shared/page-header'
+import { TableSkeleton } from '@/components/shared/table-skeleton'
 import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
@@ -59,7 +61,14 @@ function ProductionSkeleton() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value='tasks' className='mt-5'>
-        {tasks.data?.length ? (
+        {tasks.isLoading ? (
+          <TableSkeleton title='正在加载视频任务' rows={4} columns={4} />
+        ) : tasks.isError ? (
+          <LoadStateError
+            title='视频任务加载失败'
+            onRetry={() => void tasks.refetch()}
+          />
+        ) : tasks.data?.length ? (
           <div className='overflow-hidden rounded-lg border'>
             <table className='w-full text-sm'>
               <thead className='bg-muted/50 text-xs tracking-wider text-muted-foreground uppercase'>
