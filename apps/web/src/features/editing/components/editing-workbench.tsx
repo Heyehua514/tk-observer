@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
@@ -268,6 +269,9 @@ export function EditingWorkbench({
               <IdeaAnalytics />
               <div className='mt-5'>
                 <VideoAiPanel />
+              </div>
+              <div className='mt-5'>
+                <AiAssistantPanel scope='剪辑工作台' />
               </div>
             </TabsContent>
           </Tabs>
