@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { SearchBar } from '@/components/shared/search-bar'
 import { heatLevels } from '../constants'
 import {
@@ -209,9 +210,10 @@ export function TrendingWorkbench({
         </Button>
       </div>
       {topics.isError ? (
-        <EmptyState
+        <LoadStateError
           title='热点话题加载失败'
           description={editingPermissionErrorDescription}
+          onRetry={() => void topics.refetch()}
         />
       ) : topics.data?.length ? (
         <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>

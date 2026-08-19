@@ -37,6 +37,7 @@ import {
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { SearchBar } from '@/components/shared/search-bar'
+import { TableSkeleton } from '@/components/shared/table-skeleton'
 import { companyKindLabels, companyKinds, regions } from '../constants'
 import { useCompanies } from '../hooks/use-companies'
 import { useDeleteCompany } from '../hooks/use-company-mutations'
@@ -143,9 +144,7 @@ export function CompanyTable({
         </Button>
       </div>
       {companies.isLoading ? (
-        <div className='flex min-h-64 items-center justify-center text-sm text-muted-foreground'>
-          正在加载公司数据…
-        </div>
+        <TableSkeleton title='正在加载公司数据' rows={4} columns={5} />
       ) : companies.data?.items.length === 0 ? (
         <EmptyState
           title='还没有客户或供应商'

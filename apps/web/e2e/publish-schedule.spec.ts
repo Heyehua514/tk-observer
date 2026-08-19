@@ -39,8 +39,10 @@ test('发布排期-新建可见-状态流转-删除回收', async ({ page }) => 
   await page.getByRole('option', { name: '已发布' }).click()
   await expect(row).toContainText('已发布')
 
-  // 删除回收（window.confirm 接受）
-  page.on('dialog', (dialog) => void dialog.accept())
+  // 删除回收（AlertDialog 自定义确认，替代 window.confirm）
   await row.getByRole('button', { name: `删除 ${title}` }).click()
+  const confirm = page.getByRole('alertdialog')
+  await expect(confirm).toContainText(`确认删除「${title}」`)
+  await confirm.getByRole('button', { name: '确认删除' }).click()
   await expect(page.locator('tbody tr', { hasText: title })).toHaveCount(0)
 })

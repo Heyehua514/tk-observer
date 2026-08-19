@@ -57,6 +57,7 @@ import {
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { SearchBar } from '@/components/shared/search-bar'
+import { TableSkeleton } from '@/components/shared/table-skeleton'
 import {
   cooperationStatuses,
   cooperationStatusLabels,
@@ -368,9 +369,7 @@ export function CreatorTable({
       </div>
 
       {creators.isLoading ? (
-        <div className='flex min-h-64 items-center justify-center text-sm text-muted-foreground'>
-          正在加载达人数据…
-        </div>
+        <TableSkeleton title='正在加载达人数据' rows={4} columns={5} />
       ) : creators.data?.items.length === 0 ? (
         <EmptyState
           title='还没有达人资料'

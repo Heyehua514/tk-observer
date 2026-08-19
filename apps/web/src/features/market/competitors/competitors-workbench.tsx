@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { EmptyState } from '@/components/shared/empty-state'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { useMarketCompetitors } from './use-market-competitors'
 
 const numberText = (value: number) => value.toLocaleString('zh-CN')
@@ -20,9 +21,10 @@ export function CompetitorsWorkbench({ query = '' }: { query?: string }) {
 
   if (competitors.isError) {
     return (
-      <EmptyState
+      <LoadStateError
         title='竞品数据暂时无法加载'
         description='请检查数据服务和当前角色权限。'
+        onRetry={() => void competitors.refetch()}
       />
     )
   }

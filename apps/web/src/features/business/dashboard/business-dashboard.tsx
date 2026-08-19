@@ -19,6 +19,14 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
 import { MetricDeck } from '@/components/shared/metric-deck'
@@ -66,16 +74,16 @@ export function BusinessDashboard({
     mutationFn: async ({
       id,
       stage,
+      lostReason,
     }: {
       id: string
       stage: OpportunityStage
+      lostReason?: string
     }) => {
-      let reason = ''
-      if (stage === 'lost') reason = window.prompt('请输入流失原因') || ''
       await updateDashboardOpportunityStage(undefined, {
         id,
         stage,
-        lostReason: reason,
+        lostReason,
       })
     },
     onSuccess: () => {
@@ -92,6 +100,17 @@ export function BusinessDashboard({
           : '更新失败'
       ),
   })
+
+  const [lostTarget, setLostTarget] = useState<{ id: string } | null>(null)
+  const [lostReason, setLostReason] = useState('')
+  const requestStageChange = (id: string, stage: OpportunityStage) => {
+    if (stage === 'lost') {
+      setLostReason('')
+      setLostTarget({ id })
+      return
+    }
+    updateStage.mutate({ id, stage })
+  }
 
   if (dashboard.isLoading) return <DashboardSkeleton />
   if (dashboard.isError || !dashboard.data) {
@@ -110,7 +129,18 @@ export function BusinessDashboard({
     <BusinessDashboardContent
       summary={dashboard.data}
       onNavigate={onNavigate}
-      onStageChange={(id, stage) => updateStage.mutate({ id, stage })}
+      onStageChange={requestStageChange}
+      lostReasonOpen={Boolean(lostTarget)}
+      lostReasonValue={lostReason}
+      onLostReasonChange={setLostReason}
+      onCloseLostReason={() => setLostTarget(null)}
+      onConfirmLostReason={() => {
+        if (!lostTarget) return
+        updateStage.mutate(
+          { id: lostTarget.id, stage: 'lost', lostReason },
+          { onSettled: () => setLostTarget(null) }
+        )
+      }}
     />
   )
 }
@@ -119,10 +149,21 @@ export function BusinessDashboardContent({
   summary,
   onNavigate,
   onStageChange,
+  lostReasonOpen = false,
+  lostReasonValue = '',
+  onLostReasonChange,
+  onCloseLostReason,
+  onConfirmLostReason,
 }: {
   summary: BusinessDashboardSummary
   onNavigate: (target: BusinessDashboardTarget) => void
   onStageChange?: (id: string, stage: OpportunityStage) => void
+  lostReasonOpen?: boolean
+  lostReasonValue?: string
+  onLostReasonChange?: (value: string) => void
+  onCloseLostReason?: () => void
+  onConfirmLostReason?: () => void
+  lostConfirmDisabled?: boolean
 }) {
   const metricCards = [
     {
@@ -347,6 +388,44 @@ export function BusinessDashboardContent({
           )}
         </ResultSection>
       </div>
+      <Dialog
+        open={lostReasonOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) onCloseLostReason?.()
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>标记为已流失</DialogTitle>
+          </DialogHeader>
+          <p className='text-sm text-muted-foreground'>
+            该商机将进入「已流失」列，请填写流失原因以便沉淀复盘。
+          </p>
+          <div className='space-y-2'>
+            <Label>流失原因（必填）</Label>
+            <Textarea
+              value={lostReasonValue}
+              onChange={(event) => onLostReasonChange?.(event.target.value)}
+              placeholder='填写流失原因，如：客户预算调整、合作未谈拢'
+            />
+          </div>
+          <div className='flex justify-end gap-2'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => onCloseLostReason?.()}
+            >
+              取消
+            </Button>
+            <Button
+              disabled={!lostReasonValue.trim()}
+              onClick={() => onConfirmLostReason?.()}
+            >
+              确认已流失
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

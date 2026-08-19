@@ -31,7 +31,13 @@ import {
 const money = (amount: number) =>
   `$${(amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
 
-export function ActivityDetail({ eventId }: { eventId: string }) {
+export function ActivityDetail({
+  eventId,
+  focusTaskId,
+}: {
+  eventId: string
+  focusTaskId?: string
+}) {
   const detail = useActivityDetail(eventId)
   const metrics = useMemo(
     () =>
@@ -151,7 +157,11 @@ export function ActivityDetail({ eventId }: { eventId: string }) {
           </section>
         </TabsContent>
         <TabsContent value='tasks' className='mt-5'>
-          <TaskBoard eventId={eventId} tasks={tasks} />
+          <TaskBoard
+            eventId={eventId}
+            tasks={tasks}
+            focusTaskId={focusTaskId}
+          />
         </TabsContent>
         <TabsContent value='sponsorships' className='mt-5'>
           <RecordList items={sponsorships} empty='尚未录入招商意向' />
@@ -292,17 +302,30 @@ function RecordList({
   )
 }
 
+function useHighlight(targetId: string | undefined) {
+  const reduceMotion = useReducedMotion()
+  return (node: HTMLDivElement | null) => {
+    if (node && targetId && !reduceMotion) {
+      node.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+    return undefined
+  }
+}
+
 function TaskBoard({
   eventId,
   tasks,
+  focusTaskId,
 }: {
   eventId: string
   tasks: Array<{ id: string; title?: string; status?: string; notes?: string }>
+  focusTaskId?: string
 }) {
   const update = useUpdateActivityTask(eventId)
   const [dragged, setDragged] = useState<string | null>(null)
   const reduceMotion = useReducedMotion()
   const columns = { todo: '待处理', in_progress: '进行中', done: '已完成' }
+  const highlightRef = useHighlight(focusTaskId)
   if (!tasks.length)
     return (
       <EmptyState
@@ -342,7 +365,12 @@ function TaskBoard({
                           boxShadow: '0 1px 2px rgba(15,23,42,.06)',
                         }
                   }
-                  className='cursor-grab rounded-md border bg-background p-3 text-sm shadow-sm'
+                  className={
+                    focusTaskId === task.id
+                      ? 'cursor-grab rounded-md border-2 border-primary bg-primary/5 p-3 text-sm shadow-sm'
+                      : 'cursor-grab rounded-md border bg-background p-3 text-sm shadow-sm'
+                  }
+                  ref={focusTaskId === task.id ? highlightRef : undefined}
                 >
                   <div className='font-medium'>
                     {task.title || '未命名任务'}

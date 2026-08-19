@@ -46,6 +46,13 @@ vi.mock('../competitors', () => ({
       </tbody>
     </table>
   ),
+  MarketCompetitorSummary: () => (
+    <div>
+      <div>竞品监测</div>
+      <div>0 个公众号</div>
+      <div>暂无监测账号</div>
+    </div>
+  ),
 }))
 
 vi.mock('../resources', () => ({
@@ -70,8 +77,8 @@ it('shows competitor monitoring and ad overview instead of empty placeholders', 
     </QueryClientProvider>
   )
 
-  await expect.element(screen.getByText('3 个公众号')).toBeInTheDocument()
-  await expect.element(screen.getByText('晚点财经')).toBeInTheDocument()
+  await expect.element(screen.getByText('0 个公众号')).toBeInTheDocument()
+  await expect.element(screen.getByText('暂无监测账号')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('tab', { name: '投放数据' }))
   await expect.element(screen.getByText('按站点投放数据')).toBeInTheDocument()

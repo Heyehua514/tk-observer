@@ -8,6 +8,8 @@ type NotificationRowLike = {
   title?: unknown
   content?: unknown
   link?: unknown
+  record_type?: unknown
+  record_id?: unknown
   is_read?: unknown
   created_at?: unknown
 }
@@ -22,6 +24,8 @@ export function mapSupabaseNotification(
     title: String(record.title || ''),
     content: String(record.content || ''),
     link: String(record.link || ''),
+    recordType: record.record_type as AppNotification['recordType'],
+    recordId: String(record.record_id || '') || undefined,
     isRead: Boolean(record.is_read),
     created: String(record.created_at || ''),
   }

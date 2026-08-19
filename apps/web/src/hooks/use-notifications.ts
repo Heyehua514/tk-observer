@@ -25,6 +25,8 @@ function mapNotification(record: RecordModel): AppNotification {
     title: String(record.title),
     content: String(record.content),
     link: String(record.link || ''),
+    recordType: record.record_type as AppNotification['recordType'],
+    recordId: String(record.record_id || '') || undefined,
     isRead: Boolean(record.is_read),
     created: String(record.created),
   }

@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useClients } from '../clients'
 import { formatCny, opportunityCreateInput } from './opportunity-amount'
 import { opportunityCreatePayload } from './opportunity-create'
@@ -77,13 +78,13 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
     mutationFn: async ({
       id,
       stage,
+      lostReason,
     }: {
       id: string
       stage: OpportunityStage
+      lostReason?: string
     }) => {
-      let reason = ''
-      if (stage === 'lost') reason = window.prompt('请输入流失原因') || ''
-      const patch = opportunityStagePatch(stage, reason)
+      const patch = opportunityStagePatch(stage, lostReason)
       if (getDataProvider() === 'supabase') {
         const { error } = await getSupabaseClient()
           .from('opportunities')
@@ -165,6 +166,18 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
   const [selected, setSelected] = useState<OpportunityView | null>(null)
   const [client, setClient] = useState('')
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [lostTarget, setLostTarget] = useState<{ id: string } | null>(null)
+  const [lostReason, setLostReason] = useState('')
+
+  /** 统一入口：拖到已流失先弹自定义对话框收集原因，其余阶段直接流转。 */
+  const requestStageChange = (id: string, stage: OpportunityStage) => {
+    if (stage === 'lost') {
+      setLostReason('')
+      setLostTarget({ id })
+      return
+    }
+    mutate.mutate({ id, stage })
+  }
   const reduceMotion = useReducedMotion()
   const consumedFocus = useRef<string | null>(null)
   useEffect(() => {
@@ -191,7 +204,7 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               const id = event.dataTransfer.getData('text/plain')
-              if (id) mutate.mutate({ id, stage })
+              if (id) requestStageChange(id, stage)
             }}
           >
             <div className='mb-3 flex items-center justify-between text-sm font-medium'>
@@ -313,6 +326,49 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
               保存
             </Button>
           </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={Boolean(lostTarget)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setLostTarget(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>标记为已流失</DialogTitle>
+          </DialogHeader>
+          <p className='text-sm text-muted-foreground'>
+            该商机将进入「已流失」列，请填写流失原因以便沉淀复盘。
+          </p>
+          <Field label='流失原因（必填）'>
+            <Textarea
+              value={lostReason}
+              onChange={(event) => setLostReason(event.target.value)}
+              placeholder='填写流失原因，如：客户预算调整、合作未谈拢'
+            />
+          </Field>
+          <div className='flex justify-end gap-2'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => setLostTarget(null)}
+            >
+              取消
+            </Button>
+            <Button
+              disabled={!lostReason.trim() || mutate.isPending}
+              onClick={() => {
+                if (!lostTarget) return
+                mutate.mutate(
+                  { id: lostTarget.id, stage: 'lost', lostReason },
+                  { onSettled: () => setLostTarget(null) }
+                )
+              }}
+            >
+              确认已流失
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
       <OpportunityDetailDialog
