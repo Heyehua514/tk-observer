@@ -31,6 +31,7 @@ import { IdeaAnalytics } from './idea-analytics'
 import { PublishScheduleFormDialog } from './publish-schedule-form'
 import { PublishScheduleTable } from './publish-schedule-table'
 import { TrendingWorkbench } from './trending-workbench'
+import { VideoAiPanel } from './video-ai-panel'
 import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
@@ -265,6 +266,9 @@ export function EditingWorkbench({
             </TabsContent>
             <TabsContent value='analytics' className='mt-5'>
               <IdeaAnalytics />
+              <div className='mt-5'>
+                <VideoAiPanel />
+              </div>
             </TabsContent>
           </Tabs>
         </TabsContent>
