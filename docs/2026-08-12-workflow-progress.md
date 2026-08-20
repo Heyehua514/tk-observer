@@ -16,6 +16,8 @@
 - 修正 Realtime 白名单测试，纳入已有 `status_history` 与 `ai_notes` 表。
 - 验证：typecheck、lint、前端测试 124 文件 / 293 测试、build、Supabase 测试 28 文件 / 495 断言全部通过。
 - 新 migration：`20260820000100_notification_preferences.sql`；仅已应用到本地 Supabase。
+- 新增 `20260820000200_notification_preference_filter.sql`：服务端在通知写入前按偏好过滤 deadline、review 和 follow-up 类别；未配置偏好时默认放行。
+- Supabase 门禁最终结果：29 个测试文件 / 499 条断言全部通过，schema inventory 2/2 通过。
 
 ## 2026-08-17：设计与总览推进（节点 8-13）
 
