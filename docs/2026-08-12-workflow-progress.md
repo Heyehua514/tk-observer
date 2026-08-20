@@ -16,6 +16,13 @@
 - 新增 gate/eval：`core.test.mjs`、`core.eval.test.mjs`，7 条断言通过。
 - 已完成 TypeScript 类型检查；本机缺少 Deno，Edge Function runtime 未启动，真实飞书 API、Secrets 和公网回调仍未验证。
 
+## 2026-08-20：飞书同步 Edge Function 契约收口
+
+- 新增 `supabase/functions/feishu-sync/index.ts` 与 `core.mjs`：按成员连接和来源游标同步 doc/wiki/bitable，最多 100 页、每页失败最多重试 3 次，按 URL 取最新版本，文档写入成功后才提交游标。
+- 连续失败 5 次自动关闭该成员同步；所有 Supabase 写入错误会中断当前同步并保留游标，避免丢数据。
+- 新增 `core.test.mjs`、`core.eval.test.mjs`，8 条通过。
+- 当前仅完成可测试同步契约；本机缺少 Deno，Function runtime、真实飞书 API、Secrets、cron 调度均未验证，`feishu-sync` 未部署。
+
 ## 2026-08-20：C5 设计审核通知收口
 
 - 新增 Supabase migration `20260820000300_design_review_notification.sql`：通知深链 `record_type` 追加 `design_asset`，设计素材状态从其他状态变为 `pending_review` 时，自动给 active boss 创建「设计稿待审核」通知。

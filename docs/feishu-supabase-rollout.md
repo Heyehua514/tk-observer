@@ -7,6 +7,7 @@
 - 前端 Supabase-first 连接状态读取。
 - PocketBase 作为显式 provider 回退。
 - `feishu-oauth` Edge Function 契约与纯逻辑测试：服务端鉴权、token 加密、响应脱敏。
+- `feishu-sync` Edge Function 契约与纯逻辑测试：分页上限、重试、去重、游标提交和失败停用。
 
 ## 上线前必须配置
 
@@ -17,7 +18,7 @@
 5. 由一名测试成员完成授权，验证本人只能看到自己的同步文档。
 6. 验证撤销授权、token 失效、飞书限流和连续五次失败自动停用同步。
 
-当前状态：`feishu-oauth` 代码已完成，但本机没有 Deno，尚未进行 Edge Function runtime 验证；`feishu-sync` 尚未实现。以上两项不能标记为线上可用。
+当前状态：`feishu-oauth` 与 `feishu-sync` 代码及纯逻辑测试已完成，但本机没有 Deno，尚未进行 Edge Function runtime 验证；两项都不能标记为线上可用。
 
 ## 回退
 
