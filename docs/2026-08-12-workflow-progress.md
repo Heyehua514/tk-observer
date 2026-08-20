@@ -1,5 +1,17 @@
 # 2026-08-12 工作台推进记录
 
+## 2026-08-20：C5 设计审核通知收口
+
+- 新增 Supabase migration `20260820000300_design_review_notification.sql`：通知深链 `record_type` 追加 `design_asset`，设计素材状态从其他状态变为 `pending_review` 时，自动给 active boss 创建「设计稿待审核」通知。
+- 通知写入使用 security definer trigger，带素材 ID 深链 `/design`，同一素材重复提审不会重复创建未删除通知。
+- 新增 pgTAP `supabase/tests/design_review_notification.test.sql`，覆盖函数、触发器、record_type 约束、首次提审通知和重复提审去重；新增 `design_review_notification.eval.test.sql` 验收老板通知标题与 `/design` 深链。
+- 验证：本地 migration 已应用；Supabase 数据库测试 31 个文件 / 508 条断言全部通过。
+- 远程生产 Supabase 未推送该 migration，需上线收口时按生产变更流程执行。
+
+### 提交
+
+- `feat(notifications): notify boss on design review`
+
 ## 2026-08-20：C4 活动日历双时区收口
 
 - 团队日历活动项补充举办城市，并在有具体时刻时显示北京时间与活动所在地时间。
