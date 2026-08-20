@@ -24,6 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { useClients } from '../clients'
 import { StatusHistoryChip } from '../history/status-history-chip'
@@ -378,7 +386,7 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
           </div>
         </DialogContent>
       </Dialog>
-      <OpportunityDetailDialog
+      <OpportunityDetailDrawer
         key={selected?.id || 'empty'}
         opportunity={selected}
         saving={updateDetail.isPending}
@@ -393,7 +401,7 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
   )
 }
 
-function OpportunityDetailDialog({
+function OpportunityDetailDrawer({
   opportunity,
   saving,
   onOpenChange,
@@ -414,68 +422,123 @@ function OpportunityDetailDialog({
   if (!opportunity) return null
 
   return (
-    <Dialog open={Boolean(opportunity)} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{opportunity.title}</DialogTitle>
-        </DialogHeader>
-        <div className='space-y-4'>
-          <div className='grid gap-3 sm:grid-cols-2'>
-            <Info label='客户' value={opportunity.clientName} />
-            <Info label='预计金额' value={formatCny(opportunity.amount)} />
+    <Sheet open={Boolean(opportunity)} onOpenChange={onOpenChange}>
+      <SheetContent
+        side='right'
+        className='glass-card w-full gap-0 overflow-hidden border-s sm:max-w-xl'
+      >
+        <SheetHeader className='border-b border-border/60 bg-background/75 pb-4'>
+          <div className='pr-8'>
+            <SheetTitle className='text-lg'>{opportunity.title}</SheetTitle>
+            <SheetDescription className='mt-1'>
+              {opportunity.clientName} · {labels[opportunity.stage]}
+            </SheetDescription>
           </div>
-          <Field label='阶段'>
-            <Select
-              value={draft.stage}
-              onValueChange={(stage) =>
-                setDraft({ ...draft, stage: stage as OpportunityStage })
-              }
+          <div className='grid grid-cols-2 gap-3 rounded-lg border border-border/60 bg-background/55 p-3'>
+            <Info label='预计金额' value={formatCny(opportunity.amount)} />
+            <Info
+              label='预计成交日'
+              value={opportunityDueText(opportunity.expectedClose)}
+            />
+          </div>
+        </SheetHeader>
+        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-5'>
+          <nav
+            className='mb-6 flex gap-2 overflow-x-auto text-xs text-muted-foreground'
+            aria-label='商机详情导航'
+          >
+            <a
+              className='rounded-full border px-3 py-1.5 whitespace-nowrap hover:text-foreground'
+              href='#opportunity-overview'
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {opportunityStages.map((stage) => (
-                  <SelectItem key={stage} value={stage}>
-                    {labels[stage]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label='预计成交日期'>
-            <Input
-              type='date'
-              value={draft.expectedClose}
-              onChange={(event) =>
-                setDraft({ ...draft, expectedClose: event.target.value })
-              }
-            />
-          </Field>
-          <Field label='跟进备注'>
-            <Input
-              value={draft.notes}
-              onChange={(event) =>
-                setDraft({ ...draft, notes: event.target.value })
-              }
-            />
-          </Field>
-          {draft.stage === 'lost' && (
-            <Field label='流失原因'>
+              概览
+            </a>
+            <a
+              className='rounded-full border px-3 py-1.5 whitespace-nowrap hover:text-foreground'
+              href='#opportunity-follow-up'
+            >
+              跟进记录
+            </a>
+            <a
+              className='rounded-full border px-3 py-1.5 whitespace-nowrap hover:text-foreground'
+              href='#opportunity-relations'
+            >
+              关联信息
+            </a>
+          </nav>
+          <section id='opportunity-overview' className='scroll-mt-5 space-y-4'>
+            <h3 className='text-sm font-semibold'>概览</h3>
+            <Field label='阶段'>
+              <Select
+                value={draft.stage}
+                onValueChange={(stage) =>
+                  setDraft({ ...draft, stage: stage as OpportunityStage })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {opportunityStages.map((stage) => (
+                    <SelectItem key={stage} value={stage}>
+                      {labels[stage]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label='预计成交日期'>
               <Input
-                value={draft.lostReason}
+                type='date'
+                value={draft.expectedClose}
                 onChange={(event) =>
-                  setDraft({ ...draft, lostReason: event.target.value })
+                  setDraft({ ...draft, expectedClose: event.target.value })
                 }
               />
             </Field>
-          )}
+          </section>
+          <section
+            id='opportunity-follow-up'
+            className='mt-8 scroll-mt-5 space-y-4'
+          >
+            <h3 className='text-sm font-semibold'>跟进记录</h3>
+            <Field label='跟进备注'>
+              <Textarea
+                value={draft.notes}
+                onChange={(event) =>
+                  setDraft({ ...draft, notes: event.target.value })
+                }
+                rows={5}
+              />
+            </Field>
+            {draft.stage === 'lost' && (
+              <Field label='流失原因'>
+                <Input
+                  value={draft.lostReason}
+                  onChange={(event) =>
+                    setDraft({ ...draft, lostReason: event.target.value })
+                  }
+                />
+              </Field>
+            )}
+          </section>
+          <section
+            id='opportunity-relations'
+            className='mt-8 scroll-mt-5 space-y-3'
+          >
+            <h3 className='text-sm font-semibold'>关联信息</h3>
+            <div className='rounded-lg border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground'>
+              暂无关联订单、内容或设计任务
+            </div>
+          </section>
+        </div>
+        <SheetFooter className='border-t border-border/60 bg-background/75 sm:flex-row sm:justify-end'>
           <Button disabled={saving} onClick={() => onSave(draft)}>
             保存详情
           </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }
 

@@ -8,7 +8,19 @@ const pocketBase = vi.hoisted(() => ({
   create: vi.fn(async (_data: Record<string, unknown>) => ({
     id: 'opportunity-1',
   })),
-  getFullList: vi.fn(async () => []),
+  getFullList: vi.fn(async () => [
+    {
+      id: 'opportunity-1',
+      title: '玻璃水杯联名合作',
+      client: 'client-1',
+      expand: { client: { name: '日报测试客户' } },
+      amount: 1_000_000,
+      stage: 'proposal',
+      probability: 60,
+      expected_close: '2026-09-01',
+      notes: '等待客户确认报价',
+    },
+  ]),
   update: vi.fn(async () => ({ id: 'opportunity-1' })),
 }))
 
@@ -96,4 +108,58 @@ it('submits expected amount entered in RMB yuan as integer fen', async () => {
       expected_close: '',
       notes: '',
     })
+})
+
+it('opens opportunity details in a drawer and saves the edited follow-up note', async () => {
+  pocketBase.update.mockClear()
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <OpportunitiesWorkbench />
+    </QueryClientProvider>
+  )
+
+  await expect.element(screen.getByText('玻璃水杯联名合作')).toBeInTheDocument()
+  await userEvent.click(screen.getByText('玻璃水杯联名合作'))
+  await expect
+    .element(screen.getByRole('heading', { name: '玻璃水杯联名合作' }))
+    .toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('heading', { name: '关联信息' }))
+    .toBeInTheDocument()
+
+  const notes = document.querySelector<HTMLTextAreaElement>('textarea')
+  expect(notes).not.toBeNull()
+  await userEvent.fill(notes!, '客户已确认下周进入合同评审')
+  await userEvent.click(screen.getByRole('button', { name: '保存详情' }))
+
+  await expect
+    .poll(() => pocketBase.update.mock.calls[0])
+    .toEqual([
+      'opportunity-1',
+      {
+        stage: 'proposal',
+        expected_close: '2026-09-01 00:00:00.000Z',
+        notes: '客户已确认下周进入合同评审',
+        lost_reason: '',
+        probability: 30,
+      },
+    ])
+})
+
+it('keeps the opportunity card after the detail drawer is closed', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <OpportunitiesWorkbench />
+    </QueryClientProvider>
+  )
+
+  await userEvent.click(screen.getByText('玻璃水杯联名合作'))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  await expect.element(screen.getByText('玻璃水杯联名合作')).toBeInTheDocument()
 })
