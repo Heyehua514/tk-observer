@@ -34,6 +34,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_notes: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          owner_id: string | null
+          prompt: string
+          result: string
+          scope: string
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string | null
+          prompt: string
+          result: string
+          scope: string
+          task_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string | null
+          prompt?: string
+          result?: string
+          scope?: string
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'ai_notes_owner_id_fkey'
+            columns: ['owner_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -140,6 +184,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           actual_views?: number | null
@@ -159,6 +204,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           actual_views?: number | null
@@ -178,6 +224,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -1312,6 +1359,147 @@ export type Database = {
         }
         Relationships: []
       }
+      feishu_connections: {
+        Row: {
+          access_token_encrypted: string
+          connected_at: string
+          consecutive_failures: number
+          last_synced_at: string | null
+          open_id: string
+          refresh_token_encrypted: string
+          sync_enabled: boolean
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted: string
+          connected_at?: string
+          consecutive_failures?: number
+          last_synced_at?: string | null
+          open_id: string
+          refresh_token_encrypted: string
+          sync_enabled?: boolean
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string
+          connected_at?: string
+          consecutive_failures?: number
+          last_synced_at?: string | null
+          open_id?: string
+          refresh_token_encrypted?: string
+          sync_enabled?: boolean
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'feishu_connections_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: true
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      feishu_documents: {
+        Row: {
+          access_scope: string
+          author_name: string
+          created_at: string
+          feishu_updated_at: string | null
+          id: string
+          owner_user: string
+          raw_content: string
+          source_title: string
+          source_type: string
+          source_url: string
+          sync_status: string
+          synced_at: string
+          updated_at: string
+        }
+        Insert: {
+          access_scope?: string
+          author_name?: string
+          created_at?: string
+          feishu_updated_at?: string | null
+          id?: string
+          owner_user: string
+          raw_content?: string
+          source_title?: string
+          source_type: string
+          source_url: string
+          sync_status?: string
+          synced_at?: string
+          updated_at?: string
+        }
+        Update: {
+          access_scope?: string
+          author_name?: string
+          created_at?: string
+          feishu_updated_at?: string | null
+          id?: string
+          owner_user?: string
+          raw_content?: string
+          source_title?: string
+          source_type?: string
+          source_url?: string
+          sync_status?: string
+          synced_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'feishu_documents_owner_user_fkey'
+            columns: ['owner_user']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      feishu_sync_state: {
+        Row: {
+          consecutive_failures: number
+          id: string
+          last_cursor: string
+          last_synced_at: string | null
+          source_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consecutive_failures?: number
+          id?: string
+          last_cursor?: string
+          last_synced_at?: string | null
+          source_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consecutive_failures?: number
+          id?: string
+          last_cursor?: string
+          last_synced_at?: string | null
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'feishu_sync_state_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       gmv_metrics: {
         Row: {
           amount_minor: number
@@ -1429,6 +1617,41 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          deadline_enabled: boolean
+          follow_up_enabled: boolean
+          review_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline_enabled?: boolean
+          follow_up_enabled?: boolean
+          review_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline_enabled?: boolean
+          follow_up_enabled?: boolean
+          review_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notification_preferences_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: true
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       notifications: {
         Row: {
           content: string
@@ -1439,6 +1662,8 @@ export type Database = {
           legacy_id: string | null
           link: string | null
           recipient_id: string
+          record_id: string | null
+          record_type: string | null
           title: string
           type: string
           updated_at: string
@@ -1452,6 +1677,8 @@ export type Database = {
           legacy_id?: string | null
           link?: string | null
           recipient_id: string
+          record_id?: string | null
+          record_type?: string | null
           title: string
           type: string
           updated_at?: string
@@ -1465,6 +1692,8 @@ export type Database = {
           legacy_id?: string | null
           link?: string | null
           recipient_id?: string
+          record_id?: string | null
+          record_type?: string | null
           title?: string
           type?: string
           updated_at?: string
@@ -1474,41 +1703,6 @@ export type Database = {
             foreignKeyName: 'notifications_recipient_id_fkey'
             columns: ['recipient_id']
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      notification_preferences: {
-        Row: {
-          user_id: string
-          deadline_enabled: boolean
-          review_enabled: boolean
-          follow_up_enabled: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          user_id: string
-          deadline_enabled?: boolean
-          review_enabled?: boolean
-          follow_up_enabled?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          user_id?: string
-          deadline_enabled?: boolean
-          review_enabled?: boolean
-          follow_up_enabled?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'notification_preferences_user_id_fkey'
-            columns: ['user_id']
-            isOneToOne: true
             referencedRelation: 'profiles'
             referencedColumns: ['id']
           },
@@ -1531,6 +1725,7 @@ export type Database = {
           title: string
           type: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           amount?: number
@@ -1548,6 +1743,7 @@ export type Database = {
           title: string
           type: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           amount?: number
@@ -1565,6 +1761,7 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -1791,6 +1988,42 @@ export type Database = {
             referencedColumns: ['id']
           },
         ]
+      }
+      status_history: {
+        Row: {
+          actor_name: string
+          created_at: string
+          deleted_at: string | null
+          entity_id: string
+          entity_type: string
+          from_status: string | null
+          id: string
+          to_status: string
+          updated_at: string
+        }
+        Insert: {
+          actor_name: string
+          created_at?: string
+          deleted_at?: string | null
+          entity_id: string
+          entity_type: string
+          from_status?: string | null
+          id?: string
+          to_status: string
+          updated_at?: string
+        }
+        Update: {
+          actor_name?: string
+          created_at?: string
+          deleted_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          from_status?: string | null
+          id?: string
+          to_status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       team_tasks: {
         Row: {
@@ -2205,6 +2438,17 @@ export type Database = {
       current_user_status: { Args: never; Returns: string }
       generate_daily_report: { Args: { target_date: string }; Returns: string }
       generate_weekly_report: { Args: { target_date: string }; Returns: string }
+      get_my_feishu_connection: {
+        Args: never
+        Returns: {
+          connected: boolean
+          connected_at: string
+          consecutive_failures: number
+          last_synced_at: string
+          open_id: string
+          sync_enabled: boolean
+        }[]
+      }
       has_any_role: { Args: { required_roles: string[] }; Returns: boolean }
       invalidate_import_history: {
         Args: { target_id: string }
@@ -2224,6 +2468,10 @@ export type Database = {
       }
       run_deadline_checks: { Args: never; Returns: Json }
       sweep_overdue_event_tasks: { Args: never; Returns: number }
+      write_video_idea_analysis: {
+        Args: { analysis: string; analyzed: string; target_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

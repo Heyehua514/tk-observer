@@ -1,5 +1,14 @@
 # 2026-08-12 工作台推进记录
 
+## 2026-08-20：飞书 Supabase-first 基础收口
+
+- 新增 `feishu_connections`、`feishu_documents`、`feishu_sync_state` 三张 Supabase 表：token 仅保存加密字段，连接表不向浏览器授予 SELECT；成员通过 `get_my_feishu_connection()` RPC 仅读取连接状态、连接时间和同步状态。
+- 文档与游标仅允许本人按 RLS 读取，Edge Function/service_role 保留写入权限；数据库约束限制文档来源为 doc/wiki/bitable。
+- 前端 `useFeishuConnection` 改为 Supabase-first RPC 读取，PocketBase 保留 provider 显式回退；OAuth 调用预留 `feishu-oauth` Edge Function。
+- 新增 migrations：`20260820000400_feishu_supabase_foundation.sql`、`20260820000410_feishu_document_read_grants.sql`；本地 Supabase 已应用。
+- 新增 gate test/eval：飞书基础 2 个专项文件 / 18 条断言通过；前端连接映射 2 条测试通过。
+- 阻塞：本机缺少 Deno，飞书 Edge Function OAuth 和同步任务待安装本地运行环境及配置飞书 App 凭据、正式 HTTPS 回调地址后实施。远程生产 Supabase 未推送本轮 migration。
+
 ## 2026-08-20：C5 设计审核通知收口
 
 - 新增 Supabase migration `20260820000300_design_review_notification.sql`：通知深链 `record_type` 追加 `design_asset`，设计素材状态从其他状态变为 `pending_review` 时，自动给 active boss 创建「设计稿待审核」通知。
