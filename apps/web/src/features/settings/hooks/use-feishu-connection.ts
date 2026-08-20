@@ -27,6 +27,19 @@ export function mapSupabaseFeishuConnection(
   }
 }
 
+async function readPocketBaseConnection(
+  userId: string
+): Promise<FeishuConnection> {
+  const record = await pb.collection('users').getOne(userId, {
+    fields: 'id,feishu_open_id,feishu_connected_at,feishu_sync_enabled',
+  })
+  return {
+    connected: Boolean(record.feishu_open_id),
+    connectedAt: String(record.feishu_connected_at || ''),
+    syncEnabled: record.feishu_sync_enabled !== false,
+  }
+}
+
 export function useFeishuConnection() {
   const userId = useAuthStore((state) => state.user?.id || '')
   const queryClient = useQueryClient()
@@ -36,31 +49,31 @@ export function useFeishuConnection() {
     enabled: Boolean(userId),
     queryFn: async (): Promise<FeishuConnection> => {
       if (getDataProvider() === 'supabase') {
-        const { data, error } = await getSupabaseClient().rpc(
-          'get_my_feishu_connection'
-        )
-        if (error) throw error
-        return mapSupabaseFeishuConnection(data?.[0] || null)
+        try {
+          const { data, error } = await getSupabaseClient().rpc(
+            'get_my_feishu_connection'
+          )
+          if (error) throw error
+          return mapSupabaseFeishuConnection(data?.[0] || null)
+        } catch {
+          return readPocketBaseConnection(userId)
+        }
       }
-      const record = await pb.collection('users').getOne(userId, {
-        fields: 'id,feishu_open_id,feishu_connected_at,feishu_sync_enabled',
-      })
-      return {
-        connected: Boolean(record.feishu_open_id),
-        connectedAt: String(record.feishu_connected_at || ''),
-        syncEnabled: record.feishu_sync_enabled !== false,
-      }
+      return readPocketBaseConnection(userId)
     },
   })
   const exchangeToken = useMutation({
     mutationFn: async (code: string) => {
       if (getDataProvider() === 'supabase') {
-        const { error } = await getSupabaseClient().functions.invoke(
-          'feishu-oauth',
-          { body: { code } }
-        )
-        if (error) throw error
-        return
+        try {
+          const { error } = await getSupabaseClient().functions.invoke(
+            'feishu-oauth',
+            { body: { code } }
+          )
+          if (!error) return
+        } catch {
+          // Edge Function 未部署时显式回退到 PocketBase OAuth。
+        }
       }
       return pb.send('/api/tk-observer/feishu/exchange-token', {
         method: 'POST',

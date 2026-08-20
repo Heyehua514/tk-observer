@@ -9,6 +9,13 @@
 - 新增 gate test/eval：飞书基础 2 个专项文件 / 18 条断言通过；前端连接映射 2 条测试通过。
 - 阻塞：本机缺少 Deno，飞书 Edge Function OAuth 和同步任务待安装本地运行环境及配置飞书 App 凭据、正式 HTTPS 回调地址后实施。远程生产 Supabase 未推送本轮 migration。
 
+## 2026-08-20：飞书 OAuth Edge Function 契约收口
+
+- 新增 `supabase/functions/feishu-oauth/index.ts` 与 `core.mjs`：服务端校验 Supabase Auth、交换飞书授权码、AES-GCM 加密 access/refresh token、写入 `feishu_connections`，浏览器响应不包含 token 字段。
+- 前端 `useFeishuConnection`：Supabase Edge Function 尚未部署或调用失败时显式回退 PocketBase，连接状态读取同样保留 PocketBase 回退。
+- 新增 gate/eval：`core.test.mjs`、`core.eval.test.mjs`，7 条断言通过。
+- 已完成 TypeScript 类型检查；本机缺少 Deno，Edge Function runtime 未启动，真实飞书 API、Secrets 和公网回调仍未验证。
+
 ## 2026-08-20：C5 设计审核通知收口
 
 - 新增 Supabase migration `20260820000300_design_review_notification.sql`：通知深链 `record_type` 追加 `design_asset`，设计素材状态从其他状态变为 `pending_review` 时，自动给 active boss 创建「设计稿待审核」通知。
