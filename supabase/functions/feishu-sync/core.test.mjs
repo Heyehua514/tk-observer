@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { decryptToken, deduplicateByUrl, nextFailureCount, retry, syncSource } from './core.mjs'
+import { decryptToken, deduplicateByUrl, nextFailureCount, requireSyncConfig, retry, syncSource } from './core.mjs'
+
+test('requires Supabase credentials and a 32-byte encryption key', () => {
+  assert.throws(() => requireSyncConfig({}), /SYNC_NOT_CONFIGURED/)
+  assert.throws(() => requireSyncConfig({ SUPABASE_URL: 'url', SUPABASE_SERVICE_ROLE_KEY: 'key', FEISHU_TOKEN_ENCRYPTION_KEY: 'short' }), /SYNC_NOT_CONFIGURED/)
+  assert.deepEqual(requireSyncConfig({ SUPABASE_URL: ' https://supabase.local ', SUPABASE_SERVICE_ROLE_KEY: ' service-role ', FEISHU_TOKEN_ENCRYPTION_KEY: '12345678901234567890123456789012' }), {
+    supabaseUrl: 'https://supabase.local',
+    serviceRoleKey: 'service-role',
+    encryptionKey: '12345678901234567890123456789012',
+  })
+})
 
 test('keeps the newest item for duplicate document URLs', () => {
   assert.deepEqual(

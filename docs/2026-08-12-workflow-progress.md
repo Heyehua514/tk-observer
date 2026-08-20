@@ -856,3 +856,8 @@
 - `feishu-oauth/index.ts`：Deno check 通过。
 - `feishu-sync/index.ts`：补齐 `SyncItem`、`SyncPage` 及回调参数类型后 Deno check 通过。
 - 未部署函数、未配置 Secrets、未调用外部飞书 API；远程上线仍需生产凭据和正式回调地址。
+
+## 2026-08-20 飞书部署前配置门禁
+
+- 抽出 `requireSyncConfig`，同步函数在 Supabase URL、service role 或 32 字节加密密钥缺失时 fail-closed。
+- 新增同步 gate/eval 配置边界测试，专项 Node 测试 10/10 通过，Deno 静态检查通过。

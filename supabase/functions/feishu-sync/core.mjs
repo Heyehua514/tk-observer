@@ -4,6 +4,16 @@
 export const MAX_ATTEMPTS = 3
 export const MAX_PAGES = 100
 
+export function requireSyncConfig(env) {
+  const supabaseUrl = String(env.SUPABASE_URL || '').trim()
+  const serviceRoleKey = String(env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+  const encryptionKey = String(env.FEISHU_TOKEN_ENCRYPTION_KEY || '')
+  if (!supabaseUrl || !serviceRoleKey || encryptionKey.length !== 32) {
+    throw new Error('SYNC_NOT_CONFIGURED')
+  }
+  return { supabaseUrl, serviceRoleKey, encryptionKey }
+}
+
 export function timestamp(value) {
   const source = String(value || '')
   if (/^\d{9,13}$/.test(source)) {

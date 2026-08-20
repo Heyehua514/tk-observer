@@ -2,7 +2,7 @@
  * 飞书文档同步；权限：仅 cron secret/service_role；用途：按成员游标增量同步，不向客户端返回 token。
  */
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { decryptToken, syncSource } from './core.mjs'
+import { decryptToken, requireSyncConfig, syncSource } from './core.mjs'
 
 type SyncItem = Record<string, unknown>
 type SyncPage = { items: SyncItem[]; nextCursor: string }
@@ -67,12 +67,13 @@ Deno.serve(async (request) => {
   }
   if (request.method !== 'POST') return json({ code: 'METHOD_NOT_ALLOWED' }, 405)
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-  const encryptionKey = Deno.env.get('FEISHU_TOKEN_ENCRYPTION_KEY') || ''
-  if (!supabaseUrl || !serviceRoleKey || encryptionKey.length !== 32) {
+  let config
+  try {
+    config = requireSyncConfig(Deno.env.toObject())
+  } catch {
     return json({ code: 'SYNC_NOT_CONFIGURED' }, 503)
   }
+  const { supabaseUrl, serviceRoleKey, encryptionKey } = config
 
   const admin = createClient(supabaseUrl, serviceRoleKey)
   const { data: connections, error } = await admin
