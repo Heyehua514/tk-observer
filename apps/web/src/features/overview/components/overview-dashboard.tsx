@@ -26,6 +26,7 @@ import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AnchorNavigation } from '@/components/shared/anchor-navigation'
 import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
 import { MetricDeck } from '@/components/shared/metric-deck'
@@ -217,48 +218,61 @@ export function OverviewDashboard() {
         title='总览工作台'
         description='查看经营走势、团队进度和最近业务动态。'
       />
-      <MetricDeck
-        aria-label='经营核心指标'
-        className='sm:grid-cols-2 xl:grid-cols-4'
-      >
-        {metrics.map((metric) => {
-          const navTo =
-            metric.target?.to === 'editing'
-              ? ('/editing' as const)
-              : metric.target?.to === 'business'
-                ? ('/business' as const)
-                : null
-          return (
-            <Card
-              key={metric.label}
-              className={
-                navTo
-                  ? "bento-card h-full overflow-hidden shadow-none transition-colors before:block before:h-0.5 before:w-12 before:bg-primary before:content-[''] hover:border-primary/40"
-                  : "bento-card h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
-              }
-            >
-              {navTo ? (
-                <a
-                  href={navTo}
-                  className='block h-full'
-                  aria-label='跳转到对应工作台'
-                >
+      <AnchorNavigation
+        label='总览目录'
+        items={[
+          { id: 'overview-metrics', label: '核心指标' },
+          { id: 'overview-trends', label: '走势与动态' },
+          { id: 'overview-operations', label: '运营状态' },
+        ]}
+      />
+      <section id='overview-metrics' className='scroll-mt-24'>
+        <MetricDeck
+          aria-label='经营核心指标'
+          className='sm:grid-cols-2 xl:grid-cols-4'
+        >
+          {metrics.map((metric) => {
+            const navTo =
+              metric.target?.to === 'editing'
+                ? ('/editing' as const)
+                : metric.target?.to === 'business'
+                  ? ('/business' as const)
+                  : null
+            return (
+              <Card
+                key={metric.label}
+                className={
+                  navTo
+                    ? "bento-card h-full overflow-hidden shadow-none transition-colors before:block before:h-0.5 before:w-12 before:bg-primary before:content-[''] hover:border-primary/40"
+                    : "bento-card h-full overflow-hidden shadow-none before:block before:h-0.5 before:w-12 before:bg-primary before:content-['']"
+                }
+              >
+                {navTo ? (
+                  <a
+                    href={navTo}
+                    className='block h-full'
+                    aria-label='跳转到对应工作台'
+                  >
+                    <MetricCardBody metric={metric} />
+                  </a>
+                ) : (
                   <MetricCardBody metric={metric} />
-                </a>
-              ) : (
-                <MetricCardBody metric={metric} />
-              )}
-            </Card>
-          )
-        })}{' '}
-      </MetricDeck>
+                )}
+              </Card>
+            )
+          })}{' '}
+        </MetricDeck>
+      </section>
       <div className='mt-1'>
         <AiAssistantPanel
           scope='总览工作台'
           context={`近 ${metricRange === 'all' ? '全部' : metricRange === '7d' ? '7 天' : '30 天'} GMV 总额 ¥${(totalGmv / 100).toLocaleString()}`}
         />
       </div>
-      <div className='grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'>
+      <div
+        id='overview-trends'
+        className='grid scroll-mt-24 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'
+      >
         <Card className='bento-card shadow-none'>
           <CardHeader>
             <div className='flex flex-wrap items-start justify-between gap-3'>
@@ -371,7 +385,10 @@ export function OverviewDashboard() {
           </CardContent>
         </Card>
       </div>
-      <div className='grid gap-6 xl:grid-cols-2'>
+      <div
+        id='overview-operations'
+        className='grid scroll-mt-24 gap-6 xl:grid-cols-2'
+      >
         <UpcomingActivities events={events.data || []} />
         <ActivityStatusChart events={events.data || []} />
       </div>
