@@ -19,6 +19,13 @@
 - 新增 `20260820000200_notification_preference_filter.sql`：服务端在通知写入前按偏好过滤 deadline、review 和 follow-up 类别；未配置偏好时默认放行。
 - Supabase 门禁最终结果：29 个测试文件 / 499 条断言全部通过，schema inventory 2/2 通过。
 
+## 2026-08-20：C5 通知中心列表收口
+
+- 新增 `/notifications` 全量通知列表，支持全部、未读、到期、审核、跟进和成交筛选。
+- 铃铛增加“查看全部”入口，通知深链解析抽为共享模型，避免组件间重复逻辑。
+- 新增筛选模型与页面测试；门禁：前端 126 文件 / 296 测试，typecheck、lint、build、diff check 全部通过。
+- 计划文档：`docs/superpowers/plans/2026-08-20-notification-list-filters.md`。
+
 ## 2026-08-17：设计与总览推进（节点 8-13）
 
 - 市场物料与设计需求建立前端软关联：物料名称或备注包含 `design:<需求ID>` 或需求标题时双向展示，可从市场物料卡打开设计需求详情，也可从设计需求查看关联物料。
