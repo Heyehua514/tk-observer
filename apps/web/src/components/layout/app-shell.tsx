@@ -43,9 +43,9 @@ export function AppShell() {
       <LayoutProvider>
         <SidebarProvider defaultOpen={defaultOpen}>
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className='observatory-inset'>
             <WorkspaceAtmosphere />
-            <Header fixed>
+            <Header fixed className='observatory-header'>
               <div className='text-[11px] font-medium tracking-[0.16em] text-foreground/50 uppercase'>
                 {breadcrumbs[section] || 'TK观察工作台'}
               </div>
@@ -58,7 +58,10 @@ export function AppShell() {
               </div>
             </Header>
             <LoginGreeting />
-            <main className='content-shell relative z-10 min-w-0 flex-1 p-7'>
+            <main
+              id='main-content'
+              className='content-shell relative z-10 min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-7 xl:px-8'
+            >
               <PageTransition transitionKey={pathname}>
                 <Outlet />
               </PageTransition>

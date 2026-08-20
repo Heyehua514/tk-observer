@@ -11,6 +11,8 @@ export function WorkspaceAtmosphere() {
       data-testid='signal-rail'
     >
       <div className='signal-grid pointer-events-none absolute inset-0' />
+      <div className='observatory-halo observatory-halo-start' />
+      <div className='observatory-halo observatory-halo-end' />
       <div className='signal-scan pointer-events-none absolute inset-x-0 top-0 h-px' />
       <div className='signal-marker pointer-events-none absolute top-24 right-[12%] h-1.5 w-1.5 rounded-full bg-[var(--success)]' />
     </div>
