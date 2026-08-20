@@ -36,7 +36,7 @@ export function useTeamCalendar(date = new Date()) {
         ] = await Promise.allSettled([
           getSupabaseClient()
             .from('events')
-            .select('id,name,start_date')
+            .select('id,name,start_date,location_city')
             .is('deleted_at', null)
             .order('start_date'),
           getSupabaseClient()
@@ -122,6 +122,7 @@ export function useTeamCalendar(date = new Date()) {
             title: String(record.name || '活动'),
             date: String(record.start_date || ''),
             type: 'activity' as const,
+            locationCity: String(record.location_city || '') || undefined,
           }))
         )
       }

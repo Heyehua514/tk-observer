@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildCalendarMonth } from './team-calendar-model'
+import {
+  buildCalendarMonth,
+  formatCalendarDualTime,
+  resolveCityTimeZone,
+} from './team-calendar-model'
 
 describe('buildCalendarMonth', () => {
   it('places events on their Beijing calendar day and keeps empty cells stable', () => {
@@ -29,5 +33,24 @@ describe('buildCalendarMonth', () => {
       '厦门闭门沙龙',
       '设计稿截止',
     ])
+  })
+})
+
+describe('formatCalendarDualTime', () => {
+  it('shows Beijing and local time for an overseas activity', () => {
+    expect(
+      formatCalendarDualTime('2026-08-12T01:00:00.000Z', '东京')
+    ).toContain('北京时间')
+    expect(
+      formatCalendarDualTime('2026-08-12T01:00:00.000Z', '东京')
+    ).toContain('东京')
+  })
+
+  it('does not invent a clock time for date-only activities', () => {
+    expect(formatCalendarDualTime('2026-08-12', '厦门')).toBe('8月12日 · 厦门')
+  })
+
+  it('falls back to Beijing for unknown cities', () => {
+    expect(resolveCityTimeZone('未知城市')).toBe('Asia/Shanghai')
   })
 })

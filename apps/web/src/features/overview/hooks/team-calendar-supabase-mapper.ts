@@ -9,6 +9,7 @@ export function mapSupabaseCalendarEvent(record: Row): TeamCalendarItem {
     title: String(record.name || '活动'),
     date: String(record.start_date || ''),
     type: 'activity',
+    locationCity: String(record.location_city || '') || undefined,
   }
 }
 

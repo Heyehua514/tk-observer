@@ -8,7 +8,10 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { calendarWeekdays } from '../constants'
 import { useTeamCalendar } from '../hooks/use-team-calendar'
-import type { TeamCalendarItemType } from '../team-calendar-model'
+import {
+  formatCalendarDualTime,
+  type TeamCalendarItemType,
+} from '../team-calendar-model'
 
 const typeLabel: Record<TeamCalendarItemType, string> = {
   activity: '活动',
@@ -85,9 +88,18 @@ export function TeamCalendar() {
                     'truncate rounded border px-1.5 py-1 text-[11px] leading-none',
                     typeClass[calendarItem.type]
                   )}
-                  title={`${typeLabel[calendarItem.type]}：${calendarItem.title}`}
+                  title={`${typeLabel[calendarItem.type]}：${calendarItem.title} · ${formatCalendarDualTime(calendarItem.date, calendarItem.locationCity, calendarItem.locationTimeZone)}`}
                 >
                   {typeLabel[calendarItem.type]} · {calendarItem.title}
+                  {calendarItem.type === 'activity' && (
+                    <span className='ml-1 text-[10px] opacity-70'>
+                      {formatCalendarDualTime(
+                        calendarItem.date,
+                        calendarItem.locationCity,
+                        calendarItem.locationTimeZone
+                      )}
+                    </span>
+                  )}
                 </div>
               ))}
               {item.items.length > 3 && (
