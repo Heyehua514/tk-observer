@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useClients } from '../clients'
+import { StatusHistoryChip } from '../history/status-history-chip'
 import { formatCny, opportunityCreateInput } from './opportunity-amount'
 import { opportunityCreatePayload } from './opportunity-create'
 import {
@@ -257,6 +258,12 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
                         {item.notes}
                       </div>
                     )}
+                    <div className='mt-2'>
+                      <StatusHistoryChip
+                        entityType='opportunity'
+                        entityId={item.id}
+                      />
+                    </div>
                   </motion.article>
                 ))}
             </div>
