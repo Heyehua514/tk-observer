@@ -1,4 +1,5 @@
 /** 市场工作台主体：选品库、竞品、投放数据和活动排期骨架。 */
+import { useState } from 'react'
 import {
   BarChart3,
   CalendarDays,
@@ -18,6 +19,7 @@ import {
   YAxis,
 } from 'recharts'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -35,10 +37,12 @@ import { buildAdOverview } from '../ads/ad-overview'
 import { CompetitorsWorkbench, MarketCompetitorSummary } from '../competitors'
 import { useMarketWorkbench } from '../hooks/use-market-workbench'
 import { useProductCatalog } from '../hooks/use-product-catalog'
+import { useDeleteProduct } from '../hooks/use-product-crud'
 import { MarketResourcesWorkbench } from '../resources'
 import { VenuesWorkbench } from '../venues'
 import { marketEmptyTitles } from './market-empty-copy'
 import { EventsPanel } from './market-records'
+import { ProductFormDialog, type ProductFormData } from './product-form'
 
 export function MarketWorkbench({
   query,
@@ -47,6 +51,11 @@ export function MarketWorkbench({
   query: string
   onQueryChange: (query: string) => void
 }) {
+  const [productFormOpen, setProductFormOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<ProductFormData | null>(
+    null
+  )
+  const removeProduct = useDeleteProduct()
   const activeQuery = useMarketWorkbench(query)
   const products = useProductCatalog(activeQuery)
   const adOverview = buildAdOverview()
@@ -127,11 +136,21 @@ export function MarketWorkbench({
               onChange={onQueryChange}
               placeholder='搜索商品名称、类目或站点'
             />
-            {activeQuery && (
-              <span className='text-sm text-muted-foreground'>
-                搜索：{activeQuery}
-              </span>
-            )}
+            <div className='flex items-center gap-2'>
+              {activeQuery && (
+                <span className='text-sm text-muted-foreground'>
+                  搜索：{activeQuery}
+                </span>
+              )}
+              <Button
+                onClick={() => {
+                  setEditingProduct(null)
+                  setProductFormOpen(true)
+                }}
+              >
+                新增商品
+              </Button>
+            </div>
           </div>
           {products.data?.length ? (
             <div className='overflow-hidden rounded-lg border'>
@@ -145,6 +164,7 @@ export function MarketWorkbench({
                     <TableHead>毛利</TableHead>
                     <TableHead>站点</TableHead>
                     <TableHead>状态</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -171,6 +191,28 @@ export function MarketWorkbench({
                       <TableCell>
                         <Badge variant='secondary'>{product.status}</Badge>
                       </TableCell>
+                      <TableCell className='text-right'>
+                        <div className='flex justify-end gap-2'>
+                          <Button
+                            size='sm'
+                            variant='ghost'
+                            onClick={() => {
+                              setEditingProduct(product)
+                              setProductFormOpen(true)
+                            }}
+                          >
+                            编辑
+                          </Button>
+                          <Button
+                            size='sm'
+                            variant='ghost'
+                            className='text-destructive'
+                            onClick={() => removeProduct.mutate(product.id)}
+                          >
+                            删除
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -188,6 +230,11 @@ export function MarketWorkbench({
               }
             />
           )}
+          <ProductFormDialog
+            open={productFormOpen}
+            onOpenChange={setProductFormOpen}
+            product={editingProduct}
+          />
         </TabsContent>
         <TabsContent value='competitors' className='mt-5'>
           <CompetitorsWorkbench query={activeQuery} />
