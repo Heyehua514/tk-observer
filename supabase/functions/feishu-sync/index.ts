@@ -4,6 +4,9 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { decryptToken, syncSource } from './core.mjs'
 
+type SyncItem = Record<string, unknown>
+type SyncPage = { items: SyncItem[]; nextCursor: string }
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
@@ -92,15 +95,15 @@ Deno.serve(async (request) => {
           .maybeSingle()
         const result = await syncSource({
           initialCursor: state?.last_cursor || '',
-          fetchPage: (cursor) => fetchPage(accessToken, sourceType, cursor),
-          upsert: async (items) => {
+          fetchPage: (cursor: string): Promise<SyncPage> => fetchPage(accessToken, sourceType, cursor),
+          upsert: async (items: SyncItem[]) => {
             const { error: upsertError } = await admin.from('feishu_documents').upsert(
-              items.map((item) => ({ ...item, owner_user: connection.user_id })),
+              items.map((item: SyncItem) => ({ ...item, owner_user: connection.user_id })),
               { onConflict: 'owner_user,source_url' }
             )
             if (upsertError) throw new Error('FEISHU_DOCUMENTS_WRITE_FAILED')
           },
-          saveCursor: async (cursor) => {
+          saveCursor: async (cursor: string) => {
             const { error: cursorError } = await admin.from('feishu_sync_state').upsert({
               user_id: connection.user_id,
               source_type: sourceType,

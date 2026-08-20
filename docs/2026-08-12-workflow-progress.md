@@ -850,3 +850,9 @@
 ### 提交
 
 - `feat(data): 回退演练 dry-run 自动判定与验收勾选`
+## 2026-08-20 飞书运行时静态检查
+
+- 本地安装 Deno 2.9.5（Apple Silicon），用于 Edge Function runtime 检查。
+- `feishu-oauth/index.ts`：Deno check 通过。
+- `feishu-sync/index.ts`：补齐 `SyncItem`、`SyncPage` 及回调参数类型后 Deno check 通过。
+- 未部署函数、未配置 Secrets、未调用外部飞书 API；远程上线仍需生产凭据和正式回调地址。
