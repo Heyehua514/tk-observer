@@ -6,7 +6,16 @@
 - 日期-only 数据不虚构时刻；未知城市回退 `Asia/Shanghai`。
 - 新增时区纯函数与 4 条模型测试，覆盖海外城市、日期-only、未知城市和月视图回归。
 - 验证：`pnpm typecheck`、`pnpm lint`、`pnpm test`（123 文件 / 291 测试）、`pnpm build`、`git diff --check` 全部通过。
-- 提交：待本轮提交。
+- 提交：`8ccdfeb feat(overview): add activity dual-timezone calendar`。
+
+## 2026-08-20：C5 通知偏好首轮收口
+
+- 新增 Supabase `notification_preferences` 表，按用户保存到期、审核、合作跟进三类提醒开关。
+- 新增 `/settings/notifications` 页面，并从系统设置进入；PocketBase 回退时使用默认开启值。
+- 新增本人读写 RLS、数据库类型、模型测试和 pgTAP 表结构/策略测试。
+- 修正 Realtime 白名单测试，纳入已有 `status_history` 与 `ai_notes` 表。
+- 验证：typecheck、lint、前端测试 124 文件 / 293 测试、build、Supabase 测试 28 文件 / 495 断言全部通过。
+- 新 migration：`20260820000100_notification_preferences.sql`；仅已应用到本地 Supabase。
 
 ## 2026-08-17：设计与总览推进（节点 8-13）
 

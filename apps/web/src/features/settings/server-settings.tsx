@@ -148,6 +148,9 @@ export function ServerSettings() {
           <Button variant='outline' asChild>
             <Link to='/settings/feishu'>管理飞书连接</Link>
           </Button>
+          <Button variant='outline' asChild className='ml-2'>
+            <Link to='/settings/notifications'>通知偏好</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

@@ -1479,6 +1479,41 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          user_id: string
+          deadline_enabled: boolean
+          review_enabled: boolean
+          follow_up_enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          deadline_enabled?: boolean
+          review_enabled?: boolean
+          follow_up_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          deadline_enabled?: boolean
+          review_enabled?: boolean
+          follow_up_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notification_preferences_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: true
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       opportunities: {
         Row: {
           amount: number

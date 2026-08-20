@@ -22,6 +22,7 @@ import { Route as AppOverviewIndexRouteImport } from './routes/_app/overview/ind
 import { Route as AppOverviewCalendarRouteImport } from './routes/_app/overview/calendar'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppSettingsFeishuRouteImport } from './routes/_app/settings/feishu'
+import { Route as AppSettingsNotificationsRouteImport } from './routes/_app/settings/notifications'
 import { Route as AppMarketEventsEventIdRouteImport } from './routes/_app/market/events/$eventId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -87,6 +88,12 @@ const AppSettingsFeishuRoute = AppSettingsFeishuRouteImport.update({
   path: '/settings/feishu',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsNotificationsRoute =
+  AppSettingsNotificationsRouteImport.update({
+    id: '/settings/notifications',
+    path: '/settings/notifications',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppMarketEventsEventIdRoute = AppMarketEventsEventIdRouteImport.update({
   id: '/market/events/$eventId',
   path: '/market/events/$eventId',
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/overview/calendar': typeof AppOverviewCalendarRoute
   '/settings/feishu': typeof AppSettingsFeishuRoute
+  '/settings/notifications': typeof AppSettingsNotificationsRoute
   '/business/': typeof AppBusinessIndexRoute
   '/design/': typeof AppDesignIndexRoute
   '/editing/': typeof AppEditingIndexRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/overview/calendar': typeof AppOverviewCalendarRoute
   '/settings/feishu': typeof AppSettingsFeishuRoute
+  '/settings/notifications': typeof AppSettingsNotificationsRoute
   '/business': typeof AppBusinessIndexRoute
   '/design': typeof AppDesignIndexRoute
   '/editing': typeof AppEditingIndexRoute
@@ -130,6 +139,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_app/overview/calendar': typeof AppOverviewCalendarRoute
   '/_app/settings/feishu': typeof AppSettingsFeishuRoute
+  '/_app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/_app/business/': typeof AppBusinessIndexRoute
   '/_app/design/': typeof AppDesignIndexRoute
   '/_app/editing/': typeof AppEditingIndexRoute
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/overview/calendar'
     | '/settings/feishu'
+    | '/settings/notifications'
     | '/business/'
     | '/design/'
     | '/editing/'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/overview/calendar'
     | '/settings/feishu'
+    | '/settings/notifications'
     | '/business'
     | '/design'
     | '/editing'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_app/overview/calendar'
     | '/_app/settings/feishu'
+    | '/_app/settings/notifications'
     | '/_app/business/'
     | '/_app/design/'
     | '/_app/editing/'
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsFeishuRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/notifications': {
+      id: '/_app/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof AppSettingsNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/market/events/$eventId': {
       id: '/_app/market/events/$eventId'
       path: '/market/events/$eventId'
@@ -298,6 +318,7 @@ interface AppRouteChildren {
   AppSearchRoute: typeof AppSearchRoute
   AppOverviewCalendarRoute: typeof AppOverviewCalendarRoute
   AppSettingsFeishuRoute: typeof AppSettingsFeishuRoute
+  AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
   AppBusinessIndexRoute: typeof AppBusinessIndexRoute
   AppDesignIndexRoute: typeof AppDesignIndexRoute
   AppEditingIndexRoute: typeof AppEditingIndexRoute
@@ -311,6 +332,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSearchRoute: AppSearchRoute,
   AppOverviewCalendarRoute: AppOverviewCalendarRoute,
   AppSettingsFeishuRoute: AppSettingsFeishuRoute,
+  AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
   AppBusinessIndexRoute: AppBusinessIndexRoute,
   AppDesignIndexRoute: AppDesignIndexRoute,
   AppEditingIndexRoute: AppEditingIndexRoute,
