@@ -7,21 +7,21 @@
 - 前端 `useFeishuConnection` 改为 Supabase-first RPC 读取，PocketBase 保留 provider 显式回退；OAuth 调用预留 `feishu-oauth` Edge Function。
 - 新增 migrations：`20260820000400_feishu_supabase_foundation.sql`、`20260820000410_feishu_document_read_grants.sql`；本地 Supabase 已应用。
 - 新增 gate test/eval：飞书基础 2 个专项文件 / 18 条断言通过；前端连接映射 2 条测试通过。
-- 阻塞：本机缺少 Deno，飞书 Edge Function OAuth 和同步任务待安装本地运行环境及配置飞书 App 凭据、正式 HTTPS 回调地址后实施。远程生产 Supabase 未推送本轮 migration。
+- 阻塞：飞书 Edge Function OAuth 和同步任务仍待配置飞书 App 凭据、正式 HTTPS 回调地址后实施。远程生产 Supabase 未推送本轮 migration。
 
 ## 2026-08-20：飞书 OAuth Edge Function 契约收口
 
 - 新增 `supabase/functions/feishu-oauth/index.ts` 与 `core.mjs`：服务端校验 Supabase Auth、交换飞书授权码、AES-GCM 加密 access/refresh token、写入 `feishu_connections`，浏览器响应不包含 token 字段。
 - 前端 `useFeishuConnection`：Supabase Edge Function 尚未部署或调用失败时显式回退 PocketBase，连接状态读取同样保留 PocketBase 回退。
 - 新增 gate/eval：`core.test.mjs`、`core.eval.test.mjs`，7 条断言通过。
-- 已完成 TypeScript 类型检查；本机缺少 Deno，Edge Function runtime 未启动，真实飞书 API、Secrets 和公网回调仍未验证。
+- 已完成 TypeScript 与 Deno 静态类型检查；Edge Function runtime 未启动，真实飞书 API、Secrets 和公网回调仍未验证。
 
 ## 2026-08-20：飞书同步 Edge Function 契约收口
 
 - 新增 `supabase/functions/feishu-sync/index.ts` 与 `core.mjs`：按成员连接和来源游标同步 doc/wiki/bitable，最多 100 页、每页失败最多重试 3 次，按 URL 取最新版本，文档写入成功后才提交游标。
 - 连续失败 5 次自动关闭该成员同步；所有 Supabase 写入错误会中断当前同步并保留游标，避免丢数据。
 - 新增 `core.test.mjs`、`core.eval.test.mjs`，8 条通过。
-- 当前仅完成可测试同步契约；本机缺少 Deno，Function runtime、真实飞书 API、Secrets、cron 调度均未验证，`feishu-sync` 未部署。
+- 当前仅完成可测试同步契约；Function runtime、真实飞书 API、Secrets、cron 调度均未验证，`feishu-sync` 未部署。
 
 ## 2026-08-20：C5 设计审核通知收口
 

@@ -18,7 +18,7 @@
 5. 由一名测试成员完成授权，验证本人只能看到自己的同步文档。
 6. 验证撤销授权、token 失效、飞书限流和连续五次失败自动停用同步。
 
-当前状态：`feishu-oauth` 与 `feishu-sync` 代码及纯逻辑测试已完成，但本机没有 Deno，尚未进行 Edge Function runtime 验证；两项都不能标记为线上可用。
+当前状态：`feishu-oauth` 与 `feishu-sync` 代码、纯逻辑测试和本地 Deno 2.9.5 静态类型检查已完成；尚未启动带凭据的 Edge Function runtime，两项都不能标记为线上可用。
 
 ## 回退
 
