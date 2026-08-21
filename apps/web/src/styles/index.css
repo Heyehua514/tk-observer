@@ -230,6 +230,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+
   .signal-scan {
     animation: none;
     opacity: 0;
