@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 import { Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { DatePicker } from '@/components/date-picker'
 import { EmptyState } from '@/components/shared/empty-state'
 import {
   eventStatusLabels,
@@ -54,10 +56,16 @@ export function EventsPanel({ query }: { query: string }) {
           value={draft.name}
           onChange={(e) => setDraft({ ...draft, name: e.target.value })}
         />
-        <Input
-          type='date'
-          value={draft.startDate}
-          onChange={(e) => setDraft({ ...draft, startDate: e.target.value })}
+        <DatePicker
+          selected={draft.startDate ? parseISO(draft.startDate) : undefined}
+          onSelect={(date) =>
+            setDraft({
+              ...draft,
+              startDate: date ? format(date, 'yyyy-MM-dd') : '',
+            })
+          }
+          allowFuture
+          placeholder='选择活动日期'
         />
         <Input
           placeholder='城市'
