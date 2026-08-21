@@ -867,3 +867,4 @@
 - 追加 migration `20260821000100_search_performance.sql`，启用 `pg_trgm`，为 creators、clients、events、opportunities、video_ideas、companies、products 的常用搜索字段建立软删除条件 GIN 索引。
 - 全局搜索输入防抖从 300ms 调整为 250ms，保持现有结果、权限和 provider 回退逻辑不变。
 - 本地 migration 已应用；搜索 gate/eval 10/10 通过。
+- 用户确认后已推送远程 Supabase；`supabase migration list` 核对本地/远程均为 `20260821000100`。
