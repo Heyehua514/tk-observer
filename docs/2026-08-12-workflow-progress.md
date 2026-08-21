@@ -897,3 +897,9 @@
 - `pnpm supabase:schema:test`：2/2 通过。
 - `pnpm supabase:test`：阻塞，当前本机 PostgreSQL 未启动，连接 `127.0.0.1:54322` 返回 `ECONNREFUSED`；按安全约束未启动 Docker/Supabase 服务。
 - 待办：用户允许启动本地 Supabase 后，补跑 pgTAP 全量数据库测试；不涉及历史 migration 修改。
+
+## 2026-08-21 回退演练复核
+
+- `node scripts/supabase/pocketbase-rollback.mjs --drill` 复核结果：`DRILL_READY_FAIL`。
+- 原因：`/tmp/tk-observer-supabase` Supabase 导出目录不存在；PocketBase 数据文件和 21 个 migration 仍存在。
+- 未创建伪造导出目录、未删除数据、未启动服务。回退前必须先重新执行 Supabase 导出流程并核对行数。
