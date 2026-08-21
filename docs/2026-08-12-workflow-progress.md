@@ -889,4 +889,4 @@
 - `useNotificationPreferences` 暴露 `isError`、`refetch`，继续保持 Supabase-first 与 PocketBase 默认值回退。
 - 新增 `apps/web/src/features/settings/notification-preferences.test.tsx`，覆盖失败态 UI。
 - 验证：前端 133 文件 / 305 测试通过，typecheck、lint、build、git diff --check 全部通过。
-- 尚未部署线上，需在下一次 Cloudflare Pages 发布时一并带上。
+- Cloudflare Pages 已部署预览 `https://bf2f0b83.tk-observer.pages.dev`，`/login` 返回 HTTP 200。
