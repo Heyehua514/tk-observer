@@ -14,6 +14,7 @@ type DatePickerProps = {
   onSelect: (date: Date | undefined) => void
   placeholder?: string
   allowFuture?: boolean
+  className?: string
 }
 
 export function DatePicker({
@@ -21,6 +22,7 @@ export function DatePicker({
   onSelect,
   placeholder = 'Pick a date',
   allowFuture = false,
+  className,
 }: DatePickerProps) {
   return (
     <Popover>
@@ -28,7 +30,7 @@ export function DatePicker({
         <Button
           variant='outline'
           data-empty={!selected}
-          className='w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground'
+          className={`w-full justify-start text-start font-normal data-[empty=true]:text-muted-foreground sm:w-60 ${className ?? ''}`}
         >
           {selected ? (
             format(selected, 'MMM d, yyyy')
