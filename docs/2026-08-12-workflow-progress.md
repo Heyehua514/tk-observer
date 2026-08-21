@@ -868,3 +868,9 @@
 - 全局搜索输入防抖从 300ms 调整为 250ms，保持现有结果、权限和 provider 回退逻辑不变。
 - 本地 migration 已应用；搜索 gate/eval 10/10 通过。
 - 用户确认后已推送远程 Supabase；`supabase migration list` 核对本地/远程均为 `20260821000100`。
+
+## 2026-08-21 搜索索引命中修正
+
+- 追加 `20260821000200_search_column_trgm.sql`，将拼接表达式索引改为按实际 `ilike` 查询列拆分的 12 个 trigram GIN 索引。
+- 专项 gate/eval 15/15 通过；前端门禁通过。
+- 远程推送待重新登录 Supabase CLI；本地 Supabase 服务停止导致全量 pgTAP 暂无法重跑。
