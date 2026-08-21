@@ -16,8 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
 import { PageHeader } from '@/components/shared/page-header'
-import { AiAssistantPanel } from '@/features/shared-ai'
 import { TableSkeleton } from '@/components/shared/table-skeleton'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { useUpdateVideoTask } from '../hooks/use-create-video-task'
 import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
@@ -172,7 +172,7 @@ function ProductionSkeleton() {
             {archive.data.map((item) => (
               <article
                 key={item.id}
-                className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30'
+                className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30 motion-reduce:transform-none motion-reduce:transition-none'
               >
                 <div className='font-medium'>{item.title}</div>
                 <div className='mt-1 text-sm text-muted-foreground'>
