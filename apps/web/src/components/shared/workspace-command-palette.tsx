@@ -17,6 +17,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '@/components/ui/command'
+import { useRecentPages } from '@/hooks/use-recent-pages'
 
 const destinations = [
   { label: '总览工作台', to: '/overview', icon: BarChart3 },
@@ -27,9 +28,14 @@ const destinations = [
   { label: '全局搜索', to: '/search', icon: Search },
 ] as const
 
+const destinationByPath = Object.fromEntries(
+  destinations.map((destination) => [destination.to, destination])
+) as Record<(typeof destinations)[number]['to'], (typeof destinations)[number]>
+
 export function WorkspaceCommandPalette() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const recentPages = useRecentPages()
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -53,6 +59,28 @@ export function WorkspaceCommandPalette() {
       <CommandInput placeholder='搜索工作台或功能...' />
       <CommandList>
         <CommandEmpty>没有匹配的快捷入口</CommandEmpty>
+        {recentPages.length > 0 && (
+          <CommandGroup heading='最近访问'>
+            {recentPages.map((to) => {
+              const destination = destinationByPath[to]
+              if (!destination) return null
+              const Icon = destination.icon
+              return (
+                <CommandItem
+                  key={`recent-${to}`}
+                  value={`最近访问 ${destination.label}`}
+                  onSelect={() => {
+                    setOpen(false)
+                    void navigate({ to })
+                  }}
+                >
+                  <Icon />
+                  <span>{destination.label}</span>
+                </CommandItem>
+              )
+            })}
+          </CommandGroup>
+        )}
         <CommandGroup heading='快捷导航'>
           {destinations.map(({ label, to, icon: Icon }) => (
             <CommandItem
