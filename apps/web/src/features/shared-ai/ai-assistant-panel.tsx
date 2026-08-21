@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { getAiProfile } from './ai-profile'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -42,6 +43,8 @@ export function AiAssistantPanel({
   scope: string
   context?: string
 }) {
+  const role = useAuthStore((state) => state.user?.role)
+  const profile = getAiProfile(role)
   const [prompt, setPrompt] = useState('')
   const [taskType, setTaskType] = useState<AiTaskType>('分析')
   const [busy, setBusy] = useState(false)
@@ -122,9 +125,12 @@ export function AiAssistantPanel({
   return (
     <Card className='bento-card'>
       <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-base'>
-          <Sparkles className='size-4 text-primary' />
-          AI 助手（WorkBuddy）
+          <CardTitle className='flex items-center gap-2 text-base'>
+            <Sparkles className='size-4 text-primary' />
+          <span>AI 助手（WorkBuddy）</span>
+          <span className='rounded-full border px-2 py-0.5 text-xs font-normal text-muted-foreground'>
+            {profile.assistantName}
+          </span>
         </CardTitle>
         <CardDescription>
           由你本机的 WorkBuddy 执行，会消耗你的额度；结果需你人工确认后再采用。
@@ -159,6 +165,9 @@ export function AiAssistantPanel({
             />
           </div>
         </div>
+        <p className='text-xs text-muted-foreground'>
+          当前重点：{profile.focus.join('、')}
+        </p>
         <Button
           onClick={() => void run()}
           disabled={busy || !prompt.trim()}

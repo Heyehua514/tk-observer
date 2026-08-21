@@ -5,6 +5,11 @@ import { AiAssistantPanel } from './ai-assistant-panel'
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
+vi.mock('@/stores/auth-store', () => ({
+  useAuthStore: (selector: (state: { user: { role: string } }) => unknown) =>
+    selector({ user: { role: 'business' } }),
+}))
+
 it('renders scope and options', async () => {
   const screen = await render(<AiAssistantPanel scope='商务工作台' />)
   await expect
@@ -13,6 +18,8 @@ it('renders scope and options', async () => {
   await expect
     .element(screen.getByText(/由你本机的 WorkBuddy 执行/))
     .toBeInTheDocument()
+  await expect.element(screen.getByText('商务助手')).toBeInTheDocument()
+  await expect.element(screen.getByText(/客户跟进/)).toBeInTheDocument()
   await expect.element(screen.getByText('需求描述')).toBeInTheDocument()
   await expect
     .element(
