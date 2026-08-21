@@ -890,3 +890,10 @@
 - 新增 `apps/web/src/features/settings/notification-preferences.test.tsx`，覆盖失败态 UI。
 - 验证：前端 133 文件 / 305 测试通过，typecheck、lint、build、git diff --check 全部通过。
 - Cloudflare Pages 已部署预览 `https://bf2f0b83.tk-observer.pages.dev`，`/login` 返回 HTTP 200。
+
+## 2026-08-21 C5 权限核对与数据库门禁
+
+- 静态核对：通知列表 Supabase 查询按 `recipient_id` 精确过滤；已读更新由本人 RLS 限制；Realtime 仅触发列表失效，不直接信任事件 payload。
+- `pnpm supabase:schema:test`：2/2 通过。
+- `pnpm supabase:test`：阻塞，当前本机 PostgreSQL 未启动，连接 `127.0.0.1:54322` 返回 `ECONNREFUSED`；按安全约束未启动 Docker/Supabase 服务。
+- 待办：用户允许启动本地 Supabase 后，补跑 pgTAP 全量数据库测试；不涉及历史 migration 修改。
