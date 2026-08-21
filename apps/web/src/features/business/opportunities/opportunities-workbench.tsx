@@ -1,5 +1,6 @@
 // 商务工作台商机 Pipeline；权限：business 与 boss 可操作。
 import { useEffect, useRef, useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Plus } from 'lucide-react'
@@ -25,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import { useClients } from '../clients'
 import { StatusHistoryChip } from '../history/status-history-chip'
 import { formatCny, opportunityCreateInput } from './opportunity-amount'
@@ -166,6 +168,7 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<OpportunityView | null>(null)
   const [client, setClient] = useState('')
+  const [createExpectedClose, setCreateExpectedClose] = useState('')
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [lostTarget, setLostTarget] = useState<{ id: string } | null>(null)
   const [lostReason, setLostReason] = useState('')
@@ -274,7 +277,10 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
         open={open}
         onOpenChange={(nextOpen) => {
           setOpen(nextOpen)
-          if (!nextOpen) setClient('')
+          if (!nextOpen) {
+            setClient('')
+            setCreateExpectedClose('')
+          }
         }}
       >
         <DialogContent>
@@ -324,7 +330,24 @@ export function OpportunitiesWorkbench({ focusId }: { focusId?: string }) {
               <Input type='number' name='amount' min='0' step='0.01' required />
             </Field>
             <Field label='预计成交日期'>
-              <Input type='date' name='expectedClose' />
+              <DatePicker
+                selected={
+                  createExpectedClose
+                    ? parseISO(createExpectedClose)
+                    : undefined
+                }
+                onSelect={(date) =>
+                  setCreateExpectedClose(date ? format(date, 'yyyy-MM-dd') : '')
+                }
+                allowFuture
+                placeholder='选择预计成交日期'
+              />
+              <input
+                name='expectedClose'
+                type='hidden'
+                value={createExpectedClose}
+                readOnly
+              />
             </Field>
             <Field label='跟进备注'>
               <Input name='notes' placeholder='记录下一步动作或客户反馈' />
@@ -444,12 +467,18 @@ function OpportunityDetailDialog({
             </Select>
           </Field>
           <Field label='预计成交日期'>
-            <Input
-              type='date'
-              value={draft.expectedClose}
-              onChange={(event) =>
-                setDraft({ ...draft, expectedClose: event.target.value })
+            <DatePicker
+              selected={
+                draft.expectedClose ? parseISO(draft.expectedClose) : undefined
               }
+              onSelect={(date) =>
+                setDraft({
+                  ...draft,
+                  expectedClose: date ? format(date, 'yyyy-MM-dd') : '',
+                })
+              }
+              allowFuture
+              placeholder='选择预计成交日期'
             />
           </Field>
           <Field label='跟进备注'>
