@@ -1,5 +1,6 @@
 /** 市场工作台场地新增/编辑表单。权限：market、boss。 */
 import { useState, type FormEvent } from 'react'
+import { format, parseISO } from 'date-fns'
 import { LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import {
   venueTypeLabels,
   venueTypes,
@@ -194,10 +196,14 @@ function VenueFormContent({
           />
         </Field>
         <Field label='最近踩点日期'>
-          <Input
-            type='date'
-            value={input.siteVisitDate.slice(0, 10)}
-            onChange={(e) => set('siteVisitDate', e.target.value)}
+          <DatePicker
+            selected={
+              input.siteVisitDate ? parseISO(input.siteVisitDate) : undefined
+            }
+            onSelect={(date) =>
+              set('siteVisitDate', date ? format(date, 'yyyy-MM-dd') : '')
+            }
+            placeholder='选择踩点日期'
           />
         </Field>
         <Field label='踩点记录'>
