@@ -17,24 +17,30 @@ beforeEach(() => {
   recentPages.mockReturnValue([])
 })
 
-it('opens with Ctrl K and lists existing workspace routes', async () => {
+it.each([
+  ['Ctrl', 'Control'],
+  ['Cmd', 'Meta'],
+] as const)('opens with %s + K and lists existing workspace routes', async (_label, modifier) => {
   const screen = await render(<WorkspaceCommandPalette />)
-  await userEvent.keyboard('{Control>}k{/Control}')
+  await userEvent.keyboard(`{${modifier}>}k{/${modifier}}`)
 
   await expect.element(screen.getByRole('dialog')).toBeInTheDocument()
   await expect.element(screen.getByText('总览工作台')).toBeInTheDocument()
   await expect.element(screen.getByText('剪辑工作台')).toBeInTheDocument()
+  await expect.element(screen.getByText('情报中心')).not.toBeInTheDocument()
 })
 
-it('shows recent workspaces in session order and navigates to the selected route', async () => {
-  recentPages.mockReturnValue(['/editing', '/business'])
+it('searches recent workspaces and navigates to the selected formal route', async () => {
+  recentPages.mockReturnValue(['/editing', '/business', '/intelligence'])
   const screen = await render(<WorkspaceCommandPalette />)
   await userEvent.keyboard('{Control>}k{/Control}')
 
   await expect.element(screen.getByText('最近访问')).toBeInTheDocument()
   await expect.element(screen.getByText('剪辑工作台').last()).toBeInTheDocument()
   await expect.element(screen.getByText('商务工作台').last()).toBeInTheDocument()
+  await expect.element(screen.getByText('情报中心')).not.toBeInTheDocument()
 
+  await userEvent.fill(screen.getByPlaceholder('搜索工作台或功能...'), '商务')
   await userEvent.click(screen.getByText('商务工作台').last())
 
   expect(navigate).toHaveBeenCalledWith({ to: '/business' })
