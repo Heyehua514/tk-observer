@@ -881,4 +881,4 @@
 - 映射兼容 `name` / `company_name`、`contact_name` / `contact_phone`，保留原有公司结果类型和跳转逻辑。
 - 新增 gate/eval：`global-search-core.test.ts`、`global-search-core.eval.test.ts`，前端专项 132 文件 / 304 测试通过。
 - 完整门禁：`pnpm typecheck`、`pnpm lint`、`pnpm test`、`pnpm build`、`git diff --check` 全部通过。
-- 当前状态：代码已验证，尚未部署 Cloudflare Pages；部署后需线上输入「测试客户」验收。
+- 当前状态：已部署 Cloudflare Pages 预览 `https://59a1683c.tk-observer.pages.dev`，`/login` HTTP 200；线上输入「测试客户」验收即可。
