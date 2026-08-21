@@ -16,8 +16,8 @@ export function mapSupabaseCompanySearch(record: Row): SearchResult {
   return {
     id: String(record.id || ''),
     kind: 'company',
-    label: String(record.company_name || ''),
-    description: String(record.contact_name || '暂无联系人'),
+    label: String(record.company_name || record.name || ''),
+    description: String(record.contact_name || record.contact_phone || '暂无联系人'),
   }
 }
 

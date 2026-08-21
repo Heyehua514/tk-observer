@@ -874,3 +874,11 @@
 - 追加 `20260821000200_search_column_trgm.sql`，将拼接表达式索引改为按实际 `ilike` 查询列拆分的 12 个 trigram GIN 索引。
 - 专项 gate/eval 15/15 通过；前端门禁通过。
 - 远程推送待重新登录 Supabase CLI；本地 Supabase 服务停止导致全量 pgTAP 暂无法重跑。
+
+## 2026-08-21 客户全局搜索修复
+
+- 修复全局搜索查询错误表名：`companies` 改为业务实际使用的 `clients`，支持客户名称、联系人和公司字段。
+- 映射兼容 `name` / `company_name`、`contact_name` / `contact_phone`，保留原有公司结果类型和跳转逻辑。
+- 新增 gate/eval：`global-search-core.test.ts`、`global-search-core.eval.test.ts`，前端专项 132 文件 / 304 测试通过。
+- 完整门禁：`pnpm typecheck`、`pnpm lint`、`pnpm test`、`pnpm build`、`git diff --check` 全部通过。
+- 当前状态：代码已验证，尚未部署 Cloudflare Pages；部署后需线上输入「测试客户」验收。

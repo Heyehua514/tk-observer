@@ -19,8 +19,8 @@ describe('global search Supabase mapper', () => {
     ).toMatchObject({ kind: 'creator', label: '跨境达人' })
     expect(
       mapSupabaseCompanySearch({
-        id: 'company-1',
-        company_name: '品牌客户',
+        id: 'client-1',
+        name: '品牌客户',
         contact_name: '李总',
       })
     ).toMatchObject({ kind: 'company', label: '品牌客户' })

@@ -144,9 +144,9 @@ async function runSupabaseGlobalSearch(
   }
   if (allowed.includes('company')) {
     const { data } = await getSupabaseClient()
-      .from('companies')
+      .from('clients')
       .select('*')
-      .or(`company_name.ilike.%${query}%,contact_name.ilike.%${query}%`)
+      .or(`name.ilike.%${query}%,contact_name.ilike.%${query}%,company.ilike.%${query}%`)
       .is('deleted_at', null)
       .limit(5)
     if (data?.length) {
