@@ -22,7 +22,7 @@ export function FilterBar({
           variant='ghost'
           size='sm'
           onClick={onReset}
-          className='ml-auto'
+          className='w-full justify-center sm:ml-auto sm:w-auto'
         >
           <RotateCcw className='size-4' />
           重置
