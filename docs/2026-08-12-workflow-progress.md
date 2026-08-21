@@ -926,3 +926,4 @@
 - 未推送 `20260821000300_ai_memory.sql` 到远程 Supabase，生产 schema 变更待单独确认。
 - Cloudflare Pages 预览已发布：`https://31c1d562.tk-observer.pages.dev`，`/login` HTTP 200。
 - 用户确认后已应用远程 Supabase migration `20260821000300_ai_memory`；迁移列表核对本地/远程一致。
+- 已用同一构建刷新 Cloudflare Pages 正式项目；正式地址 `/login` 返回 HTTP 200，部署版本 `https://85ca73ff.tk-observer.pages.dev`。
