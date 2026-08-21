@@ -29,4 +29,10 @@ curl http://127.0.0.1:8877/health
 
 ## 开机自启（可选）
 
-把启动命令加入 macOS 登录项或使用 pm2/launchd，网关随登录自动运行。
+首次安装：双击 `install-launch-agent.command`，或在项目根目录执行：
+
+```bash
+bash scripts/workbuddy-gateway/install-launch-agent.command
+```
+
+安装后由 macOS `launchd` 在登录时自动启动，异常退出会自动拉起。网关仍只监听 `127.0.0.1`，WorkBuddy App 需保持已登录。

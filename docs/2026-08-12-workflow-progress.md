@@ -898,6 +898,12 @@
 - `pnpm supabase:test`：阻塞，当前本机 PostgreSQL 未启动，连接 `127.0.0.1:54322` 返回 `ECONNREFUSED`；按安全约束未启动 Docker/Supabase 服务。
 - 待办：用户允许启动本地 Supabase 后，补跑 pgTAP 全量数据库测试；不涉及历史 migration 修改。
 
+## 2026-08-21 WorkBuddy 网关自动启动
+
+- 新增 macOS launchd 配置与一键安装脚本；首次安装后登录自动启动，异常退出自动恢复。
+- 本机已验证 LaunchAgent running，`/health` 返回 `ok=true`；前端无需每次手动打开终端网关。
+- 网关仍只绑定 loopback，WorkBuddy App 需保持登录；首次授权仍由用户完成。
+
 ## 2026-08-21 回退演练复核
 
 - `node scripts/supabase/pocketbase-rollback.mjs --drill` 复核结果：`DRILL_READY_FAIL`。

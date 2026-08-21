@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tkobserver.workbuddy-gateway</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/liyuzhen/.local/bin/node</string>
+    <string>/Users/liyuzhen/Desktop/TK观察工作台/scripts/workbuddy-gateway/server.mjs</string>
+    <string>--port</string>
+    <string>8877</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/liyuzhen/Desktop/TK观察工作台</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/tk-observer-workbuddy-gateway.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/tk-observer-workbuddy-gateway.error.log</string>
+</dict>
+</plist>
