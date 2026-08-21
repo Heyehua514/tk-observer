@@ -25,6 +25,37 @@ export type SearchGroup = {
   items: SearchResult[]
 }
 
+export type SearchNextAction = {
+  label: string
+  reason: string
+}
+
+/** 根据已选搜索结果生成只读推进建议，不写入任务或业务数据。 */
+export function buildSearchNextActions(
+  groups: SearchGroup[]
+): SearchNextAction[] {
+  const actions: SearchNextAction[] = []
+  if (groups.some((group) => group.kind === 'company')) {
+    actions.push({
+      label: '查看客户关联商机',
+      reason: '搜索结果包含客户，可继续检查跟进状态。',
+    })
+  }
+  if (groups.some((group) => group.kind === 'creator')) {
+    actions.push({
+      label: '补充达人合作记录',
+      reason: '搜索结果包含达人，可核对合作阶段与下一次跟进。',
+    })
+  }
+  if (groups.some((group) => group.kind === 'video')) {
+    actions.push({
+      label: '加入视频分析队列',
+      reason: '搜索结果包含视频，可人工确认是否发起 WorkBuddy 分析。',
+    })
+  }
+  return actions.slice(0, 3)
+}
+
 export async function runGlobalSearch(
   query: string,
   role: string
@@ -146,7 +177,9 @@ async function runSupabaseGlobalSearch(
     const { data } = await getSupabaseClient()
       .from('clients')
       .select('*')
-      .or(`name.ilike.%${query}%,contact_name.ilike.%${query}%,company.ilike.%${query}%`)
+      .or(
+        `name.ilike.%${query}%,contact_name.ilike.%${query}%,company.ilike.%${query}%`
+      )
       .is('deleted_at', null)
       .limit(5)
     if (data?.length) {

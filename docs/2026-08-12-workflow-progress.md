@@ -917,3 +917,10 @@
 - `node scripts/supabase/pocketbase-rollback.mjs --drill` 复核结果：`DRILL_READY_FAIL`。
 - 原因：`/tmp/tk-observer-supabase` Supabase 导出目录不存在；PocketBase 数据文件和 21 个 migration 仍存在。
 - 未创建伪造导出目录、未删除数据、未启动服务。回退前必须先重新执行 Supabase 导出流程并核对行数。
+## 2026-08-21 个人 AI 第二阶段（已完成）
+
+- 个人记忆管理面板已接入总览，可查看并软删除本人记忆；专项测试修复后通过。
+- WorkBuddy 调用统一为 `features/shared-ai/workbuddy-gateway.ts`，视频 AI 不再返回等待配置的占位结果。
+- 总览成员任务支持一键填充 AI 分析请求；全局搜索结果新增确定性推进建议。
+- 门禁：typecheck、lint、前端 137 文件 / 312 测试、build、git diff --check 通过。
+- 未推送 `20260821000300_ai_memory.sql` 到远程 Supabase，生产 schema 变更待单独确认。

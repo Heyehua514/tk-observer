@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildTaskContext } from './ai-context'
+import { buildTaskAnalysisRequest, buildTaskContext } from './ai-context'
 
 describe('AI task context', () => {
   it('removes sensitive fields and limits context to twelve prioritized tasks', () => {
@@ -18,4 +18,15 @@ describe('AI task context', () => {
     expect(context[0]).not.toHaveProperty('password')
     expect(context[0]).not.toHaveProperty('token')
   })
+})
+
+it('builds a bounded analysis request for a selected task', () => {
+  expect(
+    buildTaskAnalysisRequest({
+      title: '跟进重点客户',
+      status: 'todo',
+      dueAt: '2026-08-22',
+      notes: '确认预算和排期',
+    })
+  ).toContain('跟进重点客户')
 })

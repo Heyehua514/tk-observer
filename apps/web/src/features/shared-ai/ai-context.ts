@@ -26,3 +26,15 @@ export function buildTaskContext(tasks: RawTask[]): AiTaskContext[] {
     .sort((a, b) => priority(a) - priority(b) || a.dueAt.localeCompare(b.dueAt))
     .slice(0, 12)
 }
+
+export function buildTaskAnalysisRequest(task: AiTaskContext): string {
+  return [
+    `任务：${task.title}`,
+    `状态：${task.status}`,
+    task.dueAt ? `截止：${task.dueAt}` : '',
+    task.notes ? `备注：${task.notes}` : '',
+    '请只给出下一步可执行建议，不要自动修改任务数据。',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}

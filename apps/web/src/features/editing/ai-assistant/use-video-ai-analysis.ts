@@ -9,7 +9,11 @@ import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
-import { buildVideoAnalysisPrompt } from './workbuddy-runner'
+import { callWorkBuddyGateway } from '@/features/shared-ai/workbuddy-gateway'
+import {
+  buildVideoAnalysisPrompt,
+  parseVideoAnalysisJson,
+} from './workbuddy-runner'
 
 export function useVideoAiAnalysis() {
   const queryClient = useQueryClient()
@@ -24,8 +28,8 @@ export function useVideoAiAnalysis() {
       }>
     ) => {
       const prompt = buildVideoAnalysisPrompt(videos)
-      // WorkBuddy 由本地网关执行；这里预留端点。返回单条结构化结论。
-      const summary = await runWorkBuddy(prompt)
+      const raw = await callWorkBuddyGateway(prompt)
+      const summary = parseVideoAnalysisJson(raw)
       // 将结论写回远程库（security definer RPC）
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
@@ -60,14 +64,4 @@ export function useVideoAiAnalysis() {
     },
     onError: () => toast.error('AI 分析失败，请检查 WorkBuddy 是否可用'),
   })
-}
-
-async function runWorkBuddy(_prompt: string) {
-  // 真实调用通过本地 WorkBuddy 网关执行；未接通网关时返回占位，避免误用。
-  return {
-    titlePatterns: [],
-    publishTimePatterns: [],
-    contentTypePreferences: [],
-    summary: '等待配置本地 WorkBuddy 网关',
-  }
 }

@@ -13,8 +13,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
-import { getAiProfile } from './ai-profile'
-import { useAiMemory } from './hooks/use-ai-memory'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,6 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { getAiProfile } from './ai-profile'
+import { useAiMemory } from './hooks/use-ai-memory'
+import { callWorkBuddyGateway } from './workbuddy-gateway'
 
 export type AiTaskType = '调研' | '文案' | '总结复盘' | '分析' | '自定义'
 const TASK_TYPES: AiTaskType[] = ['调研', '文案', '总结复盘', '分析', '自定义']
@@ -40,14 +41,16 @@ const TASK_TYPES: AiTaskType[] = ['调研', '文案', '总结复盘', '分析', 
 export function AiAssistantPanel({
   scope,
   context,
+  initialPrompt,
 }: {
   scope: string
   context?: string
+  initialPrompt?: string
 }) {
   const role = useAuthStore((state) => state.user?.role)
   const profile = getAiProfile(role)
   const memories = useAiMemory()
-  const [prompt, setPrompt] = useState('')
+  const [prompt, setPrompt] = useState(initialPrompt || '')
   const [taskType, setTaskType] = useState<AiTaskType>('分析')
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<string | null>(null)
@@ -67,8 +70,9 @@ export function AiAssistantPanel({
         memories.data.length
           ? `以下是用户确认保存的个人偏好记忆：\n${memories.data
               .slice(0, 8)
-              .map((item: { memoryKey: string; memoryValue: string }) =>
-                `${item.memoryKey}：${item.memoryValue}`
+              .map(
+                (item: { memoryKey: string; memoryValue: string }) =>
+                  `${item.memoryKey}：${item.memoryValue}`
               )
               .join('\n')}`
           : '',
@@ -77,7 +81,7 @@ export function AiAssistantPanel({
       ]
         .filter(Boolean)
         .join('\n')
-      const text = await callGateway(fullPrompt)
+      const text = await callWorkBuddyGateway(fullPrompt)
       setResult(text)
       toast.success('AI 已完成，请确认是否采用')
     } catch (e) {
@@ -151,8 +155,8 @@ export function AiAssistantPanel({
   return (
     <Card className='bento-card'>
       <CardHeader>
-          <CardTitle className='flex items-center gap-2 text-base'>
-            <Sparkles className='size-4 text-primary' />
+        <CardTitle className='flex items-center gap-2 text-base'>
+          <Sparkles className='size-4 text-primary' />
           <span>AI 助手（WorkBuddy）</span>
           <span className='rounded-full border px-2 py-0.5 text-xs font-normal text-muted-foreground'>
             {profile.assistantName}
@@ -244,19 +248,4 @@ export function AiAssistantPanel({
       </CardContent>
     </Card>
   )
-}
-
-async function callGateway(prompt: string): Promise<string> {
-  const endpoint =
-    localStorage.getItem('tk.workbuddy.gateway') ||
-    'http://127.0.0.1:8877/analyze'
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt }),
-  })
-  if (!response.ok) throw new Error('GATEWAY_UNAVAILABLE')
-  const data = (await response.json()) as { ok: boolean; text?: string }
-  if (!data.ok || !data.text) throw new Error('GATEWAY_UNAVAILABLE')
-  return data.text
 }

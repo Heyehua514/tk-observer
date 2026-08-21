@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Clapperboard,
   UsersRound,
+  Sparkles,
 } from 'lucide-react'
 import {
   CartesianGrid,
@@ -33,7 +34,12 @@ import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
 import { useEvents } from '@/features/market/hooks/use-market-records'
-import { AiAssistantPanel, AiNotesView } from '@/features/shared-ai'
+import {
+  AiAssistantPanel,
+  AiMemoryView,
+  AiNotesView,
+} from '@/features/shared-ai'
+import { buildTaskAnalysisRequest } from '@/features/shared-ai/ai-context'
 import { TeamMemory } from '../team-memory'
 import { ActivityStatusChart } from './activity-status-chart'
 import { GmvEntryDialog } from './gmv-entry-dialog'
@@ -72,6 +78,7 @@ type OverviewDashboardData = {
 
 export function OverviewDashboard() {
   const [metricRange, setMetricRange] = useState<OverviewMetricRange>('30d')
+  const [taskPrompt, setTaskPrompt] = useState('')
   const events = useEvents()
   const data = useQuery({
     queryKey: ['overview-dashboard'],
@@ -395,7 +402,13 @@ export function OverviewDashboard() {
       <TeamMemory />
       <div className='mt-5'>
         <AiNotesView />
+        <AiMemoryView />
       </div>
+      {taskPrompt && (
+        <div className='mt-5'>
+          <AiAssistantPanel scope='总览工作台' initialPrompt={taskPrompt} />
+        </div>
+      )}
       <Card className='bento-card shadow-none'>
         <CardHeader>
           <CardTitle className='text-base'>成员任务进度</CardTitle>
@@ -406,7 +419,7 @@ export function OverviewDashboard() {
               {data.data.teamTasks.map((task) => (
                 <div
                   key={task.id}
-                  className='grid grid-cols-[34px_72px_1fr_44px] items-center gap-3 text-sm'
+                  className='grid grid-cols-[34px_72px_1fr_44px_32px] items-center gap-3 text-sm'
                 >
                   <RoleAvatar
                     name={task.assigneeName}
@@ -422,6 +435,23 @@ export function OverviewDashboard() {
                   <span className='text-right text-muted-foreground'>
                     {task.progress}%
                   </span>
+                  <Button
+                    size='icon'
+                    variant='ghost'
+                    aria-label={`分析任务：${task.assigneeName}`}
+                    onClick={() =>
+                      setTaskPrompt(
+                        buildTaskAnalysisRequest({
+                          title: `${task.assigneeName} 的团队任务`,
+                          status: task.progress >= 100 ? 'done' : 'todo',
+                          dueAt: '',
+                          notes: `当前完成度 ${task.progress}%`,
+                        })
+                      )
+                    }
+                  >
+                    <Sparkles className='size-4' />
+                  </Button>
                 </div>
               ))}
             </div>

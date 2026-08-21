@@ -10,23 +10,29 @@ vi.mock('@/stores/auth-store', () => ({
     selector({ user: { role: 'boss' } }),
 }))
 
-vi.mock('@/components/shared/global-search-core', () => ({
-  runGlobalSearch: vi.fn(async () => [
-    {
-      kind: 'creator',
-      title: '达人',
-      total: 8,
-      items: [
-        {
-          id: 'c1',
-          kind: 'creator',
-          label: '跨境班长',
-          description: 'US · 128000 粉丝',
-        },
-      ],
-    },
-  ]),
-}))
+vi.mock('@/components/shared/global-search-core', async () => {
+  const actual = await vi.importActual<
+    typeof import('@/components/shared/global-search-core')
+  >('@/components/shared/global-search-core')
+  return {
+    ...actual,
+    runGlobalSearch: vi.fn(async () => [
+      {
+        kind: 'creator',
+        title: '达人',
+        total: 8,
+        items: [
+          {
+            id: 'c1',
+            kind: 'creator',
+            label: '跨境班长',
+            description: 'US · 128000 粉丝',
+          },
+        ],
+      },
+    ]),
+  }
+})
 
 it('renders grouped results with totals and item rows', async () => {
   const screen = await render(
@@ -36,6 +42,8 @@ it('renders grouped results with totals and item rows', async () => {
   )
   await expect.element(screen.getByText('达人 · 共 8 条')).toBeInTheDocument()
   await expect.element(screen.getByText('跨境班长')).toBeInTheDocument()
+  await expect.element(screen.getByText('推进建议')).toBeInTheDocument()
+  await expect.element(screen.getByText('补充达人合作记录')).toBeInTheDocument()
 })
 
 it('shows an empty-state when no query is provided', async () => {

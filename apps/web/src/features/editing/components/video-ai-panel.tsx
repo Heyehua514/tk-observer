@@ -8,12 +8,13 @@ import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { callWorkBuddyGateway } from '@/features/shared-ai/workbuddy-gateway'
 import {
   buildVideoAnalysisPrompt,
   parseVideoAnalysisJson,
 } from '../ai-assistant/workbuddy-runner'
-import { BoundOutput } from './workbuddy-preview'
 import { WorkbuddyConsentDialog } from './workbuddy-consent'
+import { BoundOutput } from './workbuddy-preview'
 
 type VideoForAnalysis = {
   id: string
@@ -66,7 +67,7 @@ export function VideoAiPanel() {
       const videos = candidates.data ?? []
       if (!videos.length) throw new Error('NO_DATA')
       const prompt = buildVideoAnalysisPrompt(videos)
-      const raw = await runWorkBuddy(prompt)
+      const raw = await callWorkBuddyGateway(prompt)
       const parsed = parseVideoAnalysisJson(raw)
 
       if (getDataProvider() === 'supabase') {
@@ -78,9 +79,7 @@ export function VideoAiPanel() {
           analysis: string
           analyzed: string
         }) => Promise<{ error: { message: string } | null }>
-        const insightMap = new Map(
-          parsed.videos.map((v) => [v.id, v.insight])
-        )
+        const insightMap = new Map(parsed.videos.map((v) => [v.id, v.insight]))
         for (const v of videos) {
           const insight = insightMap.get(v.id)
           const text = insight
@@ -168,17 +167,3 @@ export function VideoAiPanel() {
 }
 
 const videoIdeaInvalidKeys = ['editing', 'videoIdeas'] as const
-
-async function runWorkBuddy(prompt: string): Promise<string> {
-  const endpoint =
-    localStorage.getItem('tk.workbuddy.gateway') || 'http://127.0.0.1:8877/analyze'
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt }),
-  })
-  if (!response.ok) throw new Error('GATEWAY_UNAVAILABLE')
-  const data = (await response.json()) as { ok: boolean; text?: string }
-  if (!data.ok || !data.text) throw new Error('GATEWAY_UNAVAILABLE')
-  return data.text
-}
