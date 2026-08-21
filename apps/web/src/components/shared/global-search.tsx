@@ -1,6 +1,6 @@
 /**
  * 顶部栏全局搜索弹窗。
- * @description 300ms 输入即搜，按权限跨工作台分组，每组最多五条。
+ * @description 250ms 输入即搜，按权限跨工作台分组，每组最多五条。
  */
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -32,7 +32,7 @@ const resultIcons: Record<GlobalSearchKind, typeof FileVideo> = {
 
 export function GlobalSearch() {
   const [query, setQuery] = useState('')
-  const debouncedQuery = useDebouncedValue(query, 300)
+  const debouncedQuery = useDebouncedValue(query, 250)
   const { open, setOpen } = useSearch()
   const role = useAuthStore((state) => state.user?.role)
   const navigate = useNavigate()

@@ -861,3 +861,9 @@
 
 - 抽出 `requireSyncConfig`，同步函数在 Supabase URL、service role 或 32 字节加密密钥缺失时 fail-closed。
 - 新增同步 gate/eval 配置边界测试，专项 Node 测试 10/10 通过，Deno 静态检查通过。
+
+## 2026-08-21 搜索性能切片
+
+- 追加 migration `20260821000100_search_performance.sql`，启用 `pg_trgm`，为 creators、clients、events、opportunities、video_ideas、companies、products 的常用搜索字段建立软删除条件 GIN 索引。
+- 全局搜索输入防抖从 300ms 调整为 250ms，保持现有结果、权限和 provider 回退逻辑不变。
+- 本地 migration 已应用；搜索 gate/eval 10/10 通过。
