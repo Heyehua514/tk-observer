@@ -87,8 +87,8 @@ function ProductionSkeleton() {
             onRetry={() => void tasks.refetch()}
           />
         ) : tasks.data?.length ? (
-          <div className='overflow-hidden rounded-lg border'>
-            <table className='w-full text-sm'>
+          <div className='overflow-x-auto rounded-lg border'>
+            <table className='w-full min-w-[680px] text-sm'>
               <thead className='bg-muted/50 text-xs tracking-wider text-muted-foreground uppercase'>
                 <tr>
                   <th className='px-4 py-3 text-left font-medium'>任务</th>
