@@ -882,3 +882,11 @@
 - 新增 gate/eval：`global-search-core.test.ts`、`global-search-core.eval.test.ts`，前端专项 132 文件 / 304 测试通过。
 - 完整门禁：`pnpm typecheck`、`pnpm lint`、`pnpm test`、`pnpm build`、`git diff --check` 全部通过。
 - 当前状态：已部署 Cloudflare Pages 预览 `https://59a1683c.tk-observer.pages.dev`，`/login` HTTP 200；线上输入「测试客户」验收即可。
+
+## 2026-08-21 通知偏好失败态修复
+
+- 修复通知偏好查询失败时无限加载的问题：页面现在显示错误说明和重新加载入口。
+- `useNotificationPreferences` 暴露 `isError`、`refetch`，继续保持 Supabase-first 与 PocketBase 默认值回退。
+- 新增 `apps/web/src/features/settings/notification-preferences.test.tsx`，覆盖失败态 UI。
+- 验证：前端 133 文件 / 305 测试通过，typecheck、lint、build、git diff --check 全部通过。
+- 尚未部署线上，需在下一次 Cloudflare Pages 发布时一并带上。

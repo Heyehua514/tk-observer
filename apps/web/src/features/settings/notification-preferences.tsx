@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { PageHeader } from '@/components/shared/page-header'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { useNotificationPreferences } from './hooks/use-notification-preferences'
 import {
   notificationPreferenceItems,
@@ -50,8 +51,14 @@ export function NotificationPreferencesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className='space-y-1'>
-          {preferences.isLoading || !data ? (
+          {preferences.isLoading ? (
             <LoaderCircle className='size-4 animate-spin text-muted-foreground' />
+          ) : preferences.isError || !data ? (
+            <LoadStateError
+              title='通知偏好加载失败'
+              description='请检查数据服务后重试。'
+              onRetry={() => void preferences.refetch()}
+            />
           ) : (
             notificationPreferenceItems.map((item) => (
               <div
