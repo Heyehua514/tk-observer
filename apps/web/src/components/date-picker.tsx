@@ -13,6 +13,7 @@ type DatePickerProps = {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
   placeholder?: string
+  ariaLabel?: string
   allowFuture?: boolean
   className?: string
 }
@@ -21,6 +22,7 @@ export function DatePicker({
   selected,
   onSelect,
   placeholder = 'Pick a date',
+  ariaLabel,
   allowFuture = false,
   className,
 }: DatePickerProps) {
@@ -30,6 +32,7 @@ export function DatePicker({
         <Button
           variant='outline'
           data-empty={!selected}
+          aria-label={ariaLabel ?? placeholder}
           className={`w-full justify-start text-start font-normal data-[empty=true]:text-muted-foreground sm:w-60 ${className ?? ''}`}
         >
           {selected ? (

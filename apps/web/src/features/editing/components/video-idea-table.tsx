@@ -386,6 +386,7 @@ export function VideoIdeaTable({
             })
           }
           placeholder='开始日期'
+          ariaLabel='筛选开始日期'
         />
         <DatePicker
           selected={params.dateTo ? parseISO(params.dateTo) : undefined}
@@ -396,6 +397,7 @@ export function VideoIdeaTable({
             })
           }
           placeholder='结束日期'
+          ariaLabel='筛选结束日期'
         />
         <Select
           value={params.viral}
