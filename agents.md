@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 公共协议挂载：`/Users/liyuzhen/skill/docs/通用开发协议.md`（所有工作台公共底线：交付/测试/记忆/自主执行/章节制/每日接力/效率开关/隔离与学习；冲突时以本文件为准，公共协议只作公共层）。
+
 ## How to work (high-level mindset)
 
 **This section is non-negotiable and must never be removed.**
@@ -162,3 +164,61 @@ STOP. Name the ambiguity in one sentence. Present 2-3 options with real trade-of
 - End responses with the next action, not a recap of what was just done.
 
 When Julien asks for something, the answer is the finished product — not a plan. Tests included. Evals included. Docs included.
+
+
+## Task routing and scheduling
+
+Apply this policy to development, writing, research, analysis, planning, review, and other tasks. The model names below are team-supplied aliases. Do not infer capability from their names or silently replace them with other models.
+
+### Runtime modes
+
+- `AUTO`: when the runtime supports per-task model and effort selection, apply the routing rules automatically.
+- `GUIDED`: when the runtime cannot enforce selection, report the recommended model and effort, then continue with the available model.
+- `MANUAL`: when the user specifies a model or effort, follow that choice unless a high-risk action requires a warning first.
+
+At task start, determine the runtime mode before claiming that a model or effort was actually selected.
+
+### Priority and ordering
+
+- `P0`: urgent blocker, production failure, data or security risk, or irreversible action. Handle immediately and require appropriate review.
+- `P1`: core workflow impact, explicit current user request, or a prerequisite that blocks other work. Handle next.
+- `P2`: normal feature, quality improvement, routine analysis, or documentation. Schedule after blockers and prerequisites.
+- `P3`: optional polish, non-blocking refactor, or long-term improvement. Batch when practical.
+
+Within the same priority, process prerequisites before dependents, then tasks with wider impact, shorter paths to unblock other work, and earlier deadlines. Re-evaluate priority when new information, failures, or completed dependencies change the queue. Do not start a dependent task while its prerequisite is unresolved.
+
+### Difficulty, risk, model, and effort
+
+Evaluate reasoning difficulty and result risk separately. Difficulty controls effort; risk controls the model ceiling.
+
+- `轻度`: direct answer or deterministic operation with little ambiguity.
+- `中度`: context is needed, but the path is mostly clear.
+- `高度`: several constraints, alternatives, or verification steps must be compared.
+- `极高`: deep reasoning, broad dependencies, or substantial uncertainty.
+- `最高`: irreversible impact, production or security exposure, or final approval-level review.
+
+Only use `gpt 5.6 terra`. Select the effort level by task difficulty and risk; do not switch to another model.
+
+Default combinations:
+
+- Low difficulty and low risk: `terra + 轻度`.
+- Medium difficulty and bounded risk: `terra + 中度`.
+- High difficulty and bounded risk: `terra + 高度/极高`.
+- Irreversible, production, security, or final acceptance work: `terra + 最高`.
+
+Use the lowest `terra` effort that can meet the task's difficulty and risk. Increase effort before changing the approach, and do not use `最高` only because a task is long.
+
+### Context and tools
+
+- Pass only the goal, constraints, relevant context, examples, and acceptance criteria needed for the current task.
+- Prefer deterministic tools for file lookup, calculations, parsing, formatting, test execution, and log filtering. Use model reasoning for judgment, ambiguity, planning, and explanation.
+- For `极高` and `最高`, include failure modes, counterexamples, prior decisions, and explicit verification criteria.
+- Keep handoffs concise: include the goal, priority, dependencies, changed files or artifacts, constraints, failure evidence, and remaining decision.
+
+### Escalation and completion
+
+- Start with one routing decision. Increase effort before changing models when the task remains bounded and low-risk.
+- Increase `terra` effort after two verification failures, a newly discovered data/permission/security risk, an unresolved architectural choice, or an active-worktree conflict.
+- Allow at most one automatic effort increase per task. Do not alternate between effort levels repeatedly.
+- After execution, verify the stated acceptance criteria and record the selected model, effort, priority, whether escalation occurred, and whether rework was needed.
+- Model or effort selection cannot guarantee lower token use. Optimize for the lowest configuration that passes verification, not the lowest label.
