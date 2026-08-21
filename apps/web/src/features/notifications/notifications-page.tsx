@@ -21,6 +21,7 @@ import { PageHeader } from '@/components/shared/page-header'
 import {
   filterNotifications,
   notificationFilterLabels,
+  groupNotificationsByDay,
   type NotificationFilter,
 } from './notification-list-model'
 import { resolveNotificationTarget } from './notification-target'
@@ -49,6 +50,7 @@ export function NotificationsPage() {
   const [filter, setFilter] = useState<NotificationFilter>('all')
   const items = notifications.data || []
   const visible = filterNotifications(items, filter)
+  const groups = groupNotificationsByDay(visible)
 
   const openNotification = async (notification: AppNotification) => {
     try {
@@ -98,6 +100,7 @@ export function NotificationsPage() {
               key={value}
               variant={filter === value ? 'default' : 'outline'}
               size='sm'
+              aria-pressed={filter === value}
               onClick={() => setFilter(value)}
             >
               {notificationFilterLabels[value]}{' '}
@@ -119,43 +122,76 @@ export function NotificationsPage() {
             onRetry={() => void notifications.refetch()}
           />
         ) : visible.length === 0 ? (
-          <EmptyState
-            title={filter === 'all' ? '消息都处理完了' : '这个分类暂时没有提醒'}
-            description='新的审批、成交和协作提醒会自动出现在这里。'
-          />
+          <div className='space-y-4 p-5'>
+            <EmptyState
+              title={
+                filter === 'all' ? '消息都处理完了' : '这个分类暂时没有提醒'
+              }
+              description='新的审批、成交和协作提醒会自动出现在这里。'
+            />
+            {filter !== 'all' && (
+              <div className='flex justify-center'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => void navigate({ to: '/notifications' })}
+                >
+                  查看全部通知
+                </Button>
+              </div>
+            )}
+          </div>
         ) : (
           <div>
-            {visible.map((notification) => {
-              const Icon = notificationIcons[notification.type]
-              return (
-                <button
-                  key={notification.id}
-                  type='button'
-                  className='flex w-full gap-4 border-b px-5 py-4 text-left transition-colors last:border-0 hover:bg-muted/50'
-                  onClick={() => void openNotification(notification)}
+            {groups.map((group) => (
+              <section
+                key={group.label}
+                aria-labelledby={`notification-${group.label}`}
+              >
+                <h2
+                  id={`notification-${group.label}`}
+                  className='border-b bg-muted/20 px-5 py-2 text-xs font-semibold tracking-wide text-muted-foreground'
                 >
-                  <span className='mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border bg-background'>
-                    <Icon className='size-4' />
-                  </span>
-                  <span className='min-w-0 flex-1'>
-                    <span className='flex items-center gap-2'>
-                      <span className='truncate text-sm font-medium'>
-                        {notification.title}
+                  {group.label}
+                </h2>
+                {group.items.map((notification) => {
+                  const Icon = notificationIcons[notification.type]
+                  return (
+                    <button
+                      key={notification.id}
+                      type='button'
+                      className={`flex w-full gap-4 border-b px-5 py-4 text-left transition-colors last:border-0 hover:bg-muted/50 ${notification.isRead ? '' : 'bg-primary/[0.04]'}`}
+                      onClick={() => void openNotification(notification)}
+                    >
+                      <span className='mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border bg-background'>
+                        <Icon className='size-4' />
                       </span>
-                      {!notification.isRead && (
-                        <span className='size-1.5 shrink-0 rounded-full bg-primary' />
-                      )}
-                    </span>
-                    <span className='mt-1 block text-sm text-muted-foreground'>
-                      {notification.content}
-                    </span>
-                    <span className='mt-2 block text-xs text-muted-foreground'>
-                      {formatBeijingTime(notification.created)}
-                    </span>
-                  </span>
-                </button>
-              )
-            })}
+                      <span className='min-w-0 flex-1'>
+                        <span className='flex items-center gap-2'>
+                          <span
+                            className={`truncate text-sm ${notification.isRead ? 'font-medium' : 'font-semibold'}`}
+                          >
+                            {notification.title}
+                          </span>
+                          {!notification.isRead && (
+                            <span
+                              className='size-1.5 shrink-0 rounded-full bg-primary'
+                              aria-label='未读'
+                            />
+                          )}
+                        </span>
+                        <span className='mt-1 block text-sm text-muted-foreground'>
+                          {notification.content}
+                        </span>
+                        <span className='mt-2 block text-xs text-muted-foreground'>
+                          {formatBeijingTime(notification.created)}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </section>
+            ))}
           </div>
         )}
       </section>
