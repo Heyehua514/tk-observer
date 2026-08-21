@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { combineLocalDateTime } from './publish-schedule-form'
+import { combineLocalDateTime } from './publish-schedule-model'
 
 describe('combineLocalDateTime', () => {
   it('combines a selected date and time for the existing form contract', () => {

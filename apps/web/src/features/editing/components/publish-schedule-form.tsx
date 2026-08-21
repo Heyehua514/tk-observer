@@ -46,6 +46,7 @@ import type {
   VideoAccount,
 } from '../types'
 import { publishScheduleStatusLabels as statusLabels } from './production-model'
+import { combineLocalDateTime } from './publish-schedule-model'
 
 const platforms = ['微信视频号', 'TikTok', '抖音', 'YouTube'] as const
 const statuses = [
@@ -97,10 +98,6 @@ function toLocalInput(value: string) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
     date.getDate()
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
-
-export function combineLocalDateTime(date: string, time: string) {
-  return date ? `${date.slice(0, 10)}T${time || '09:00'}` : ''
 }
 
 export function PublishScheduleFormDialog({
