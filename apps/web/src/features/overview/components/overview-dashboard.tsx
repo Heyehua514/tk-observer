@@ -10,7 +10,6 @@ import {
   ClipboardList,
   Clapperboard,
   UsersRound,
-  Sparkles,
 } from 'lucide-react'
 import {
   CartesianGrid,
@@ -38,6 +37,7 @@ import {
   AiAssistantPanel,
   AiMemoryView,
   AiNotesView,
+  TaskAiEntry,
 } from '@/features/shared-ai'
 import { buildTaskAnalysisRequest } from '@/features/shared-ai/ai-context'
 import { TeamMemory } from '../team-memory'
@@ -435,23 +435,17 @@ export function OverviewDashboard() {
                   <span className='text-right text-muted-foreground'>
                     {task.progress}%
                   </span>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    aria-label={`分析任务：${task.assigneeName}`}
-                    onClick={() =>
-                      setTaskPrompt(
-                        buildTaskAnalysisRequest({
-                          title: `${task.assigneeName} 的团队任务`,
-                          status: task.progress >= 100 ? 'done' : 'todo',
-                          dueAt: '',
-                          notes: `当前完成度 ${task.progress}%`,
-                        })
-                      )
+                  <TaskAiEntry
+                    task={{
+                      title: `${task.assigneeName} 的团队任务`,
+                      status: task.progress >= 100 ? 'done' : 'todo',
+                      dueAt: '',
+                      notes: `当前完成度 ${task.progress}%`,
+                    }}
+                    onSelect={(selectedTask) =>
+                      setTaskPrompt(buildTaskAnalysisRequest(selectedTask))
                     }
-                  >
-                    <Sparkles className='size-4' />
-                  </Button>
+                  />
                 </div>
               ))}
             </div>

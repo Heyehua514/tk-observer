@@ -2,3 +2,4 @@
 export { AiAssistantPanel, type AiTaskType } from './ai-assistant-panel'
 export { AiNotesView } from './ai-notes-view'
 export { AiMemoryView } from './ai-memory-view'
+export { TaskAiEntry } from './task-ai-entry'
