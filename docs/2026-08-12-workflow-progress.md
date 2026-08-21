@@ -924,3 +924,4 @@
 - 总览成员任务支持一键填充 AI 分析请求；全局搜索结果新增确定性推进建议。
 - 门禁：typecheck、lint、前端 137 文件 / 312 测试、build、git diff --check 通过。
 - 未推送 `20260821000300_ai_memory.sql` 到远程 Supabase，生产 schema 变更待单独确认。
+- Cloudflare Pages 预览已发布：`https://31c1d562.tk-observer.pages.dev`，`/login` HTTP 200。
