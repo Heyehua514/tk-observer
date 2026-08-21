@@ -1,5 +1,6 @@
 /** 成片归档上传对话框：标题/站点/发布日期/产品/达人 + 视频文件（Storage video-files）。 */
 import { useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { regions } from '@/types/commerce'
 import { LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DatePicker } from '@/components/date-picker'
 import { useCreateVideoArchive } from '../hooks/use-create-video-archive'
 import type { VideoArchiveInput } from '../types'
 import { isSupportedVideoFile } from './video-archive-upload'
@@ -112,12 +114,17 @@ export function VideoArchiveUploadDialog({
             </div>
             <div className='space-y-2'>
               <Label>发布日期</Label>
-              <Input
-                type='date'
-                value={values.publishAt}
-                onChange={(event) =>
-                  setValues({ ...values, publishAt: event.target.value })
+              <DatePicker
+                selected={
+                  values.publishAt ? parseISO(values.publishAt) : undefined
                 }
+                onSelect={(date) =>
+                  setValues({
+                    ...values,
+                    publishAt: date ? format(date, 'yyyy-MM-dd') : '',
+                  })
+                }
+                placeholder='选择发布日期'
               />
             </div>
           </div>
