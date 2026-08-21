@@ -1,5 +1,6 @@
 /** 设计任务四列看板：支持新建与拖拽状态流转。 */
 import { useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { regions, type Region } from '@/types/commerce'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Plus } from 'lucide-react'
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DatePicker } from '@/components/date-picker'
 import { designTaskStatuses, type DesignTaskStatus } from './types'
 import {
   useCreateDesignTask,
@@ -41,6 +43,7 @@ export function DesignTasksBoard() {
   const reduceMotion = useReducedMotion()
   const [open, setOpen] = useState(false)
   const [region, setRegion] = useState<Region>('US')
+  const [dueAt, setDueAt] = useState('')
   const [dragging, setDragging] = useState('')
   return (
     <div className='space-y-4'>
@@ -131,7 +134,15 @@ export function DesignTasksBoard() {
               <Input name='title' required />
             </Field>
             <Field label='截止日期'>
-              <Input name='dueAt' type='date' />
+              <DatePicker
+                selected={dueAt ? parseISO(dueAt) : undefined}
+                onSelect={(date) =>
+                  setDueAt(date ? format(date, 'yyyy-MM-dd') : '')
+                }
+                allowFuture
+                placeholder='选择截止日期'
+              />
+              <input name='dueAt' type='hidden' value={dueAt} readOnly />
             </Field>
             <Field label='站点'>
               <Select
