@@ -4,8 +4,10 @@ import {
   BarChart3,
   BriefcaseBusiness,
   CalendarDays,
+  ChartSpline,
   Palette,
   Search,
+  Target,
   Video,
 } from 'lucide-react'
 import {
@@ -18,6 +20,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command'
 import { useRecentPages } from '@/hooks/use-recent-pages'
+import { defaultEditingSearch } from '@/features/editing/constants'
 
 const destinations = [
   { label: '总览工作台', to: '/overview', icon: BarChart3 },
@@ -28,6 +31,19 @@ const destinations = [
   { label: '全局搜索', to: '/search', icon: Search },
 ] as const
 
+const shortcutActions = [
+  {
+    key: 'business-opportunities',
+    label: '查看商务商机',
+    icon: Target,
+  },
+  {
+    key: 'editing-analytics',
+    label: '查看剪辑数据分析',
+    icon: ChartSpline,
+  },
+] as const
+
 const destinationByPath = Object.fromEntries(
   destinations.map((destination) => [destination.to, destination])
 ) as Record<(typeof destinations)[number]['to'], (typeof destinations)[number]>
@@ -36,6 +52,34 @@ export function WorkspaceCommandPalette() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const recentPages = useRecentPages()
+
+  const runShortcut = (key: (typeof shortcutActions)[number]['key']) => {
+    if (key === 'business-opportunities') {
+      void navigate({
+        to: '/business',
+        search: {
+          page: 1,
+          perPage: 20,
+          query: '',
+          region: 'all',
+          status: 'all',
+          bizOnly: false,
+          sort: '-updated',
+          tab: 'opportunities',
+          companyPage: 1,
+          companyQuery: '',
+          companyRegion: 'all',
+          companyKind: 'all',
+          companySort: '-updated',
+        },
+      })
+      return
+    }
+    void navigate({
+      to: '/editing',
+      search: { ...defaultEditingSearch, tab: 'analytics' },
+    })
+  }
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -81,6 +125,21 @@ export function WorkspaceCommandPalette() {
             })}
           </CommandGroup>
         )}
+        <CommandGroup heading='快捷操作'>
+          {shortcutActions.map(({ key, label, icon: Icon }) => (
+            <CommandItem
+              key={label}
+              value={label}
+              onSelect={() => {
+                setOpen(false)
+                runShortcut(key)
+              }}
+            >
+              <Icon />
+              <span>{label}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
         <CommandGroup heading='快捷导航'>
           {destinations.map(({ label, to, icon: Icon }) => (
             <CommandItem

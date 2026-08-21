@@ -45,3 +45,20 @@ it('searches recent workspaces and navigates to the selected formal route', asyn
 
   expect(navigate).toHaveBeenCalledWith({ to: '/business' })
 })
+
+it('lists shortcut actions that preset existing workspace tabs through URL search', async () => {
+  const screen = await render(<WorkspaceCommandPalette />)
+  await userEvent.keyboard('{Control>}k{/Control}')
+
+  await expect.element(screen.getByText('快捷操作')).toBeInTheDocument()
+  await expect.element(screen.getByText('查看商务商机')).toBeInTheDocument()
+  await expect.element(screen.getByText('查看剪辑数据分析')).toBeInTheDocument()
+  await expect.element(screen.getByText('查看市场工作台')).not.toBeInTheDocument()
+
+  await userEvent.fill(screen.getByPlaceholder('搜索工作台或功能...'), '商务商机')
+  await userEvent.click(screen.getByText('查看商务商机'))
+
+  const [navigation] = navigate.mock.calls
+  expect(navigation[0]).toMatchObject({ to: '/business' })
+  expect(navigation[0].search.tab).toBe('opportunities')
+})
