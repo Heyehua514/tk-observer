@@ -904,6 +904,14 @@
 - 本机已验证 LaunchAgent running，`/health` 返回 `ok=true`；前端无需每次手动打开终端网关。
 - 网关仍只绑定 loopback，WorkBuddy App 需保持登录；首次授权仍由用户完成。
 
+## 2026-08-21 个人 AI 助手与记忆第一阶段
+
+- 角色化 AI 已接入共享面板：当前登录角色显示对应助手名称与工作重点。
+- 新增 `ai-context` 纯函数，限制任务上下文数量并剔除敏感字段；当前仅在用户点击 AI 时读取。
+- 新增个人记忆 migration `20260821000300_ai_memory.sql` 与 `use-ai-memory` hook；只有用户点击「记住这条」才保存，RLS 按 owner 隔离。
+- 门禁：前端 135 文件 / 308 测试，typecheck、lint、build、schema inventory 2/2、diff check 通过。
+- 下一步：补任务卡一键分析、推进搜索结果模型和视频 AI 占位路径收口；远程 migration 待生产验收后推送。
+
 ## 2026-08-21 回退演练复核
 
 - `node scripts/supabase/pocketbase-rollback.mjs --drill` 复核结果：`DRILL_READY_FAIL`。

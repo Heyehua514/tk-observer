@@ -1,6 +1,7 @@
 /** 通用 AI 助手面板测试。 */
 import { expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AiAssistantPanel } from './ai-assistant-panel'
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
@@ -11,7 +12,11 @@ vi.mock('@/stores/auth-store', () => ({
 }))
 
 it('renders scope and options', async () => {
-  const screen = await render(<AiAssistantPanel scope='商务工作台' />)
+  const screen = await render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AiAssistantPanel scope='商务工作台' />
+    </QueryClientProvider>
+  )
   await expect
     .element(screen.getByText('AI 助手（WorkBuddy）'))
     .toBeInTheDocument()

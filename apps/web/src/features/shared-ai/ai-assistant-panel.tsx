@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { getAiProfile } from './ai-profile'
+import { useAiMemory } from './hooks/use-ai-memory'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -45,6 +46,7 @@ export function AiAssistantPanel({
 }) {
   const role = useAuthStore((state) => state.user?.role)
   const profile = getAiProfile(role)
+  const memories = useAiMemory()
   const [prompt, setPrompt] = useState('')
   const [taskType, setTaskType] = useState<AiTaskType>('分析')
   const [busy, setBusy] = useState(false)
@@ -62,6 +64,14 @@ export function AiAssistantPanel({
       const fullPrompt = [
         `工作台：${scope}；任务类型：${taskType}。`,
         context ? `以下是当前页面/工作台相关数据，供你参考：\n${context}` : '',
+        memories.data.length
+          ? `以下是用户确认保存的个人偏好记忆：\n${memories.data
+              .slice(0, 8)
+              .map((item: { memoryKey: string; memoryValue: string }) =>
+                `${item.memoryKey}：${item.memoryValue}`
+              )
+              .join('\n')}`
+          : '',
         prompt,
         '请给出清晰、可直接使用的中文结果。只输出结果本身，不要提问或寒暄。',
       ]
@@ -108,6 +118,22 @@ export function AiAssistantPanel({
       toast.error('保存失败')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const rememberResult = async () => {
+    if (!result || memories.isPending) return
+    try {
+      await memories.save({
+        memoryType: 'accepted_ai',
+        memoryKey: `${scope}:${taskType}`,
+        memoryValue: result.slice(0, 2000),
+        confidence: 0.7,
+        source: 'accepted_ai',
+      })
+      toast.success('已记住这条建议')
+    } catch {
+      toast.error('记忆保存失败')
     }
   }
 
@@ -195,6 +221,15 @@ export function AiAssistantPanel({
               >
                 <Save />
                 {saving ? '保存中…' : '保存到记录'}
+              </Button>
+              <Button
+                size='sm'
+                variant='outline'
+                onClick={() => void rememberResult()}
+                disabled={memories.isPending}
+              >
+                <Sparkles />
+                记住这条
               </Button>
               <Button size='sm' variant='outline' onClick={() => void copy()}>
                 {copied ? <Check /> : <ClipboardCopy />}
