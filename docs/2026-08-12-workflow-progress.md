@@ -925,3 +925,4 @@
 - 门禁：typecheck、lint、前端 137 文件 / 312 测试、build、git diff --check 通过。
 - 未推送 `20260821000300_ai_memory.sql` 到远程 Supabase，生产 schema 变更待单独确认。
 - Cloudflare Pages 预览已发布：`https://31c1d562.tk-observer.pages.dev`，`/login` HTTP 200。
+- 用户确认后已应用远程 Supabase migration `20260821000300_ai_memory`；迁移列表核对本地/远程一致。
