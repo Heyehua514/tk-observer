@@ -10,3 +10,7 @@ export function filterAiNotes(
       (!filters.scope || note.scope === filters.scope)
   )
 }
+
+export function hasAiNoteFilters(query: string, taskType: string, scope: string) {
+  return Boolean(query.trim() || taskType || scope)
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filterAiNotes } from './ai-notes-utils'
+import { filterAiNotes, hasAiNoteFilters } from './ai-notes-utils'
 import type { AiNote } from './ai-notes-view'
 
 const notes: AiNote[] = [
@@ -10,5 +10,10 @@ const notes: AiNote[] = [
 describe('filterAiNotes', () => {
   it('filters by type and source together', () => {
     expect(filterAiNotes(notes, { taskType: '调研', scope: '市场' })).toEqual([notes[0]])
+  })
+
+  it('detects when the memory list has active filters', () => {
+    expect(hasAiNoteFilters('', '', '')).toBe(false)
+    expect(hasAiNoteFilters('选题', '', '')).toBe(true)
   })
 })

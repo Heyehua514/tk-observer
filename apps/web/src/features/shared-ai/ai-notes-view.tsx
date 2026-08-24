@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/shared/empty-state'
-import { filterAiNotes } from './ai-notes-utils'
+import { filterAiNotes, hasAiNoteFilters } from './ai-notes-utils'
 
 export type AiNote = {
   id: string
@@ -40,6 +40,11 @@ export function AiNotesView() {
   const [query, setQuery] = useState('')
   const [taskType, setTaskType] = useState('')
   const [scope, setScope] = useState('')
+  const clearFilters = () => {
+    setQuery('')
+    setTaskType('')
+    setScope('')
+  }
   useEffect(() => {
     if (getDataProvider() !== 'supabase') return
     const channel = getSupabaseClient()
@@ -131,6 +136,11 @@ export function AiNotesView() {
             <option value=''>全部来源</option>
             {[...new Set(notes.data?.map((note) => note.scope) ?? [])].map((value) => <option key={value}>{value}</option>)}
           </select>
+          {hasAiNoteFilters(query, taskType, scope) && (
+            <Button variant='ghost' size='sm' onClick={clearFilters}>
+              清除筛选
+            </Button>
+          )}
           {role === 'boss' && (
             <span className='self-center text-xs text-muted-foreground'>
               全部成员记录可见
@@ -141,6 +151,12 @@ export function AiNotesView() {
           <div className='flex min-h-40 items-center justify-center'>
             <LoaderCircle className='size-5 animate-spin text-muted-foreground' />
           </div>
+        ) : notes.isError ? (
+          <EmptyState
+            title='AI 记忆加载失败'
+            description='请检查网络后重试，已保存的记忆不会被修改。'
+            action={<Button onClick={() => void notes.refetch()}>重试</Button>}
+          />
         ) : filterAiNotes(notes.data ?? [], { taskType, scope }).length ? (
           <div className='space-y-3'>
             {filterAiNotes(notes.data ?? [], { taskType, scope }).map((note) => (
