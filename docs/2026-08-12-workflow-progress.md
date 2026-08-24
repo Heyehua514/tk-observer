@@ -970,3 +970,10 @@
 - 新增浏览器回归：所有者可见语义明确的删除入口，负责人跨成员查看时保持只读。数据库的 owner-only update RLS 保留为最终越权防线。
 - 只读核对远程 migration 后发现 `20260824000100_ai_notes_decisions.sql` 尚未应用。未推送 migration、未写入远程 Supabase，也未触碰 Cloudflare 部署。
 - 验证：schema inventory 2/2、pgTAP 39 文件 / 567 条、前端 143 文件 / 326 条、UI eval 11 文件 / 14 条、typecheck、lint、build、diff check 通过。
+
+## 2026-08-24 AI 人工决策上线
+
+- 已应用远程 Supabase migration `20260824000100_ai_notes_decisions.sql`，回读 migration 清单确认本地与远程版本一致。
+- 已将当前生产构建部署到 Cloudflare Pages：`https://d839e2c9.tk-observer.pages.dev`。正式地址 `https://tk-observer.pages.dev/login` 与部署地址登录页均返回 HTTP 200。
+- 生产操作范围仅包含该追加 migration 与静态前端部署；未改账号、凭据、飞书配置、Storage 或历史业务数据。
+- 仍待正式成员真会话验收：所有者保存 AI 记录后可采用或忽略，负责人查看其他成员记录时保持只读。
