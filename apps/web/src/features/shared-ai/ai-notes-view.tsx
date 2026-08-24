@@ -16,8 +16,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/shared/empty-state'
+import { filterAiNotes } from './ai-notes-utils'
 
-type AiNote = {
+export type AiNote = {
   id: string
   scope: string
   taskType: string
@@ -37,6 +38,8 @@ export function AiNotesView() {
   const queryClient = useQueryClient()
   const role = useAuthStore((state) => state.user?.role)
   const [query, setQuery] = useState('')
+  const [taskType, setTaskType] = useState('')
+  const [scope, setScope] = useState('')
   useEffect(() => {
     if (getDataProvider() !== 'supabase') return
     const channel = getSupabaseClient()
@@ -110,7 +113,7 @@ export function AiNotesView() {
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
-        <div className='flex gap-2'>
+        <div className='flex flex-wrap gap-2'>
           <div className='relative flex-1'>
             <Search className='absolute top-2.5 left-3 size-4 text-muted-foreground' />
             <Input
@@ -120,6 +123,14 @@ export function AiNotesView() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
+          <select aria-label='记忆类型筛选' value={taskType} onChange={(e) => setTaskType(e.target.value)} className='rounded-md border bg-background px-2 text-sm'>
+            <option value=''>全部类型</option>
+            {[...new Set(notes.data?.map((note) => note.taskType) ?? [])].map((value) => <option key={value}>{value}</option>)}
+          </select>
+          <select aria-label='记忆来源筛选' value={scope} onChange={(e) => setScope(e.target.value)} className='rounded-md border bg-background px-2 text-sm'>
+            <option value=''>全部来源</option>
+            {[...new Set(notes.data?.map((note) => note.scope) ?? [])].map((value) => <option key={value}>{value}</option>)}
+          </select>
           {role === 'boss' && (
             <span className='self-center text-xs text-muted-foreground'>
               全部成员记录可见
@@ -130,13 +141,16 @@ export function AiNotesView() {
           <div className='flex min-h-40 items-center justify-center'>
             <LoaderCircle className='size-5 animate-spin text-muted-foreground' />
           </div>
-        ) : notes.data?.length ? (
+        ) : filterAiNotes(notes.data ?? [], { taskType, scope }).length ? (
           <div className='space-y-3'>
-            {notes.data.map((note) => (
+            {filterAiNotes(notes.data ?? [], { taskType, scope }).map((note) => (
               <div key={note.id} className='rounded-lg border bg-muted/20 p-3'>
                 <div className='mb-1 flex items-center gap-2'>
                   <Badge variant='secondary'>{note.scope}</Badge>
                   <Badge>{note.taskType}</Badge>
+                  <span className='text-xs text-muted-foreground'>
+                    来源：{note.scope || '未提供'} · 置信度：未提供
+                  </span>
                   <span className='text-xs text-muted-foreground'>
                     {new Date(note.created).toLocaleString('zh-CN')}
                   </span>
@@ -144,7 +158,9 @@ export function AiNotesView() {
                     size='sm'
                     variant='ghost'
                     className='ml-auto text-destructive'
-                    onClick={() => void remove(note.id)}
+                    onClick={() => {
+                      if (window.confirm('确定删除这条 AI 记忆吗？删除后无法恢复。')) void remove(note.id)
+                    }}
                   >
                     <Trash2 className='size-3' />
                   </Button>
@@ -158,7 +174,7 @@ export function AiNotesView() {
           </div>
         ) : (
           <EmptyState
-            title='还没有保存的 AI 记录'
+            title={taskType || scope ? '没有匹配的 AI 记忆' : '还没有保存的 AI 记录'}
             description='在工作台使用 AI 助手并点击「保存到记录」后会显示在这里。'
           />
         )}

@@ -9,6 +9,10 @@ import {
 } from '../constants'
 import type { VideoIdea, VideoIdeaInput } from '../types'
 
+export function formatImportFeedback(result: { newCount: number; skippedCount: number }) {
+  return `导入完成：新增 ${result.newCount} 条，跳过 ${result.skippedCount} 条重复数据。请人工确认新增记录后再继续后续操作。`
+}
+
 const csvRowSchema = z.object({
   标题: z.string().trim().min(1, '标题不能为空'),
   账号: z.string().trim(),

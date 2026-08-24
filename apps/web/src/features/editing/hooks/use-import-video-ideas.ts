@@ -16,6 +16,7 @@ import {
   serializeSupabaseVideoIdea,
 } from './editing-supabase-mappers'
 import { videoIdeaKeys } from './use-video-ideas'
+import { formatImportFeedback } from './video-idea-csv'
 
 export function useImportVideoIdeas() {
   const queryClient = useQueryClient()
@@ -115,9 +116,7 @@ export function useImportVideoIdeas() {
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: videoIdeaKeys.all })
       void queryClient.invalidateQueries({ queryKey: ['import-history'] })
-      toast.success(
-        `导入完成：新增 ${result.newCount} 条，跳过 ${result.skippedCount} 条重复数据`
-      )
+      toast.success(formatImportFeedback(result))
     },
   })
 }
