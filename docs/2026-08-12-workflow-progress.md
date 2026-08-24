@@ -1005,3 +1005,14 @@
 
 - 通知中心的主要问题是扫描成本，不是数据模型。按日期分组和筛选计数直接改善定位速度，改动集中在展示模型，避免扩大数据层风险。
 - 浏览器测试必须使用 `apps/web` 的 headless 配置；从仓库根目录按路径执行会把其他 worktree 同名测试纳入普通 forks 模式，产生误导性失败。后续统一使用前端工作区脚本验证。
+
+## 2026-08-24 每日情报中心生产发布
+
+- 已按确认执行 `20260824000200_intelligence_items.sql`，Supabase 远程 migration 清单回读显示本地与远程一致。
+- 已部署当前构建到 Cloudflare Pages：`https://f2adbaa5.tk-observer.pages.dev`；正式地址 `https://tk-observer.pages.dev/login` 和部署地址登录页均返回 HTTP 200。
+- 未改账号、凭据、飞书配置、Storage 或历史业务数据；未跟踪的密码和工作流文件仍未纳入提交。
+- 线上 `/intelligence` 由 SPA 返回入口页，未登录访问的实际跳转仍需真实浏览器会话验证；本轮未伪造成员登录。
+
+### 反思
+
+生产发布拆成「单条追加 migration → 回读版本 → 静态部署 → 公网 HTTP 检查」四步，任何一步失败都不会继续扩大范围。未登录路由不能只用 curl 判断，因为 Cloudflare Pages 会返回 SPA 入口，最终权限行为仍以浏览器会话为准。
