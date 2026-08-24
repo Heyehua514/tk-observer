@@ -243,6 +243,20 @@ export function IdeaAnalytics() {
                     animationDuration={1000}
                   />
                   <Bar
+                    yAxisId='views'
+                    dataKey='likes'
+                    name='点赞数'
+                    fill='var(--chart-3)'
+                    animationDuration={1000}
+                  />
+                  <Bar
+                    yAxisId='views'
+                    dataKey='comments'
+                    name='评论数'
+                    fill='var(--chart-5)'
+                    animationDuration={1000}
+                  />
+                  <Bar
                     yAxisId='completion'
                     dataKey='averageCompletionRate'
                     name='平均完播率'

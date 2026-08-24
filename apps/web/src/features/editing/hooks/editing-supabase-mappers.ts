@@ -36,7 +36,11 @@ type CompetitorStyleAnalysisRow = PublicDb['competitor_style_analysis']['Row']
 type VideoIdeaSummaryRow =
   Database['public']['Views']['video_idea_summary']['Row']
 type VideoIdeaAccountStatsRow =
-  Database['public']['Views']['video_idea_account_stats']['Row']
+  Database['public']['Views']['video_idea_account_stats']['Row'] & {
+    likes?: number | null
+    comments?: number | null
+    follower_gain?: number | null
+  }
 type VideoIdeaTypeStatsRow =
   Database['public']['Views']['video_idea_type_stats']['Row']
 type VideoIdeaViralFeatureRow =
@@ -304,6 +308,9 @@ export function mapSupabaseVideoIdeaAccountAnalytics(
     account: record.account as VideoIdeaAccountAnalytics['account'],
     views: Number(record.views || 0),
     averageCompletionRate: Number(record.average_completion_rate || 0),
+    likes: Number(record.likes || 0),
+    comments: Number(record.comments || 0),
+    followerGain: Number(record.follower_gain || 0),
     viralCount: Number(record.viral_count || 0),
   }
 }

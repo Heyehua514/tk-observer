@@ -51,6 +51,9 @@ export function mapVideoIdeaAccountAnalytics(
     account: record.account as VideoIdeaAccountAnalytics['account'],
     views: Number(record.views || 0),
     averageCompletionRate: Number(record.average_completion_rate || 0),
+    likes: Number(record.likes || 0),
+    comments: Number(record.comments || 0),
+    followerGain: Number(record.follower_gain || 0),
     viralCount: Number(record.viral_count || 0),
   }
 }

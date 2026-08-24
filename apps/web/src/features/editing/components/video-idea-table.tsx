@@ -182,6 +182,16 @@ export function VideoIdeaTable({
         header: '涨粉',
         cell: ({ row }) => row.original.followerGain.toLocaleString(),
       },
+      {
+        accessorKey: 'likes',
+        header: '点赞',
+        cell: ({ row }) => row.original.likes.toLocaleString(),
+      },
+      {
+        accessorKey: 'comments',
+        header: '评论',
+        cell: ({ row }) => row.original.comments.toLocaleString(),
+      },
       { accessorKey: 'publishDate', header: '发布日期' },
       {
         accessorKey: 'isViral',

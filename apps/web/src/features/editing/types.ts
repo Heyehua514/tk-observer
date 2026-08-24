@@ -108,7 +108,24 @@ export type VideoIdeaAccountAnalytics = {
   account: VideoAccount
   views: number
   averageCompletionRate: number
+  likes: number
+  comments: number
+  followerGain: number
   viralCount: number
+}
+
+export type VideoSyncRunStatus = 'running' | 'completed' | 'partial' | 'failed'
+export type VideoSyncRun = {
+  id: string
+  idempotencyKey: string
+  source: string
+  status: VideoSyncRunStatus
+  startedAt: string
+  finishedAt?: string
+  totalRows: number
+  insertedRows: number
+  updatedRows: number
+  errorMessage?: string
 }
 
 export type VideoIdeaTypeAnalytics = {
