@@ -20,12 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { designTaskStatuses, type DesignTaskStatus } from './types'
 import {
   useCreateDesignTask,
   useDesignTasks,
   useUpdateDesignTask,
-} from './use-design-tasks'
+} from '@/features/design/tasks/use-design-tasks'
+import { AiAssistantPanel, TaskAiEntry } from '@/features/shared-ai'
+import { buildTaskAnalysisRequest } from '@/features/shared-ai/ai-context'
+import { designTaskStatuses, type DesignTaskStatus } from './types'
 
 const labels: Record<DesignTaskStatus, string> = {
   todo: '待设计',
@@ -42,6 +44,7 @@ export function DesignTasksBoard() {
   const [open, setOpen] = useState(false)
   const [region, setRegion] = useState<Region>('US')
   const [dragging, setDragging] = useState('')
+  const [analysisPrompt, setAnalysisPrompt] = useState('')
   return (
     <div className='space-y-4'>
       <div className='flex justify-end'>
@@ -94,7 +97,23 @@ export function DesignTasksBoard() {
                     }
                     className='cursor-grab rounded-md border bg-background p-3'
                   >
-                    <div className='text-sm font-medium'>{task.title}</div>
+                    <div className='flex items-start justify-between gap-2'>
+                      <div className='text-sm font-medium'>{task.title}</div>
+                      <TaskAiEntry
+                        task={{
+                          title: task.title,
+                          status: task.status,
+                          dueAt: task.dueAt,
+                          notes: `设计站点：${task.region}`,
+                          source: 'design_tasks',
+                        }}
+                        onSelect={(selectedTask) =>
+                          setAnalysisPrompt(
+                            buildTaskAnalysisRequest(selectedTask)
+                          )
+                        }
+                      />
+                    </div>
                     <div className='mt-2 flex justify-between text-xs text-muted-foreground'>
                       <span>{task.region}</span>
                       <span>
@@ -107,6 +126,9 @@ export function DesignTasksBoard() {
           </section>
         ))}
       </div>
+      {analysisPrompt && (
+        <AiAssistantPanel scope='设计工作台' initialPrompt={analysisPrompt} />
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>

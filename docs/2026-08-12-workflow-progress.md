@@ -928,3 +928,4 @@
 - 用户确认后已应用远程 Supabase migration `20260821000300_ai_memory`；迁移列表核对本地/远程一致。
 - 已用同一构建刷新 Cloudflare Pages 正式项目；正式地址 `/login` 返回 HTTP 200，部署版本 `https://85ca73ff.tk-observer.pages.dev`。
 - 任务 AI 入口已抽成共享 `TaskAiEntry` 组件，总览任务卡接入；138 个测试文件 / 313 个测试通过。
+- 设计任务四列看板已接入 `TaskAiEntry`，设计角色可从任务卡打开只读 AI 分析；139 个测试文件 / 314 个测试通过。
