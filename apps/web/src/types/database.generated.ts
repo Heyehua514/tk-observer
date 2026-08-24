@@ -34,6 +34,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      video_accounts: {
+        Row: {
+          id: string
+          name: string
+          platform: string
+          external_account_id: string | null
+          wechat_owner_label: string | null
+          status: string
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          platform?: string
+          external_account_id?: string | null
+          wechat_owner_label?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          platform?: string
+          external_account_id?: string | null
+          wechat_owner_label?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      video_account_snapshots: {
+        Row: {
+          id: string
+          video_account_id: string
+          snapshot_date: string
+          follower_count: number
+          captured_at: string
+        }
+        Insert: {
+          id?: string
+          video_account_id: string
+          snapshot_date: string
+          follower_count: number
+          captured_at?: string
+        }
+        Update: {
+          id?: string
+          video_account_id?: string
+          snapshot_date?: string
+          follower_count?: number
+          captured_at?: string
+        }
+        Relationships: []
+      }
+      video_sync_runs: {
+        Row: {
+          id: string
+          idempotency_key: string
+          source: string
+          status: string
+          started_at: string
+          finished_at: string | null
+          total_rows: number
+          inserted_rows: number
+          updated_rows: number
+          error_message: string | null
+          metadata: Json
+        }
+        Insert: {
+          id?: string
+          idempotency_key: string
+          source?: string
+          status?: string
+          started_at?: string
+          finished_at?: string | null
+          total_rows?: number
+          inserted_rows?: number
+          updated_rows?: number
+          error_message?: string | null
+          metadata?: Json
+        }
+        Update: {
+          id?: string
+          idempotency_key?: string
+          source?: string
+          status?: string
+          started_at?: string
+          finished_at?: string | null
+          total_rows?: number
+          inserted_rows?: number
+          updated_rows?: number
+          error_message?: string | null
+          metadata?: Json
+        }
+        Relationships: []
+      }
       ai_memory: {
         Row: {
           confidence: number
@@ -2340,6 +2442,10 @@ export type Database = {
           updated_at: string
           video_type: string
           views: number
+          video_account_id: string | null
+          external_video_id: string | null
+          sync_source: string | null
+          last_synced_at: string | null
         }
         Insert: {
           account: string
@@ -2363,6 +2469,10 @@ export type Database = {
           updated_at?: string
           video_type: string
           views?: number
+          video_account_id?: string | null
+          external_video_id?: string | null
+          sync_source?: string | null
+          last_synced_at?: string | null
         }
         Update: {
           account?: string
@@ -2386,6 +2496,10 @@ export type Database = {
           updated_at?: string
           video_type?: string
           views?: number
+          video_account_id?: string | null
+          external_video_id?: string | null
+          sync_source?: string | null
+          last_synced_at?: string | null
         }
         Relationships: []
       }
@@ -2525,10 +2639,24 @@ export type Database = {
       }
     }
     Views: {
+      video_account_daily_stats: {
+        Row: {
+          video_account_id: string | null
+          name: string | null
+          snapshot_date: string | null
+          follower_count: number | null
+          previous_follower_count: number | null
+          follower_gain: number | null
+        }
+        Relationships: []
+      }
       video_idea_account_stats: {
         Row: {
           account: string | null
           average_completion_rate: number | null
+          likes: number | null
+          comments: number | null
+          follower_gain: number | null
           views: number | null
           viral_count: number | null
         }

@@ -40,6 +40,7 @@ import { VideoAiPanel } from './video-ai-panel'
 import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
+import { VideoAccountSyncPanel } from './video-account-sync-panel'
 import { VideoTaskFormDialog } from './video-task-form'
 
 function ProductionSkeleton() {
@@ -324,6 +325,8 @@ export function EditingWorkbench({
               <TabsTrigger value='analytics'>数据分析</TabsTrigger>
             </TabsList>
             <TabsContent value='list' className='mt-5'>
+              <VideoAccountSyncPanel />
+              <div className='mt-5'>
               <VideoIdeaTable
                 params={params}
                 onParamsChange={onParamsChange}
@@ -331,6 +334,7 @@ export function EditingWorkbench({
                 onCreate={openCreate}
                 onEdit={openEdit}
               />
+              </div>
             </TabsContent>
             <TabsContent value='analytics' className='mt-5'>
               <IdeaAnalytics />
