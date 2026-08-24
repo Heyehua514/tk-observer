@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildTaskAnalysisRequest, buildTaskContext } from './ai-context'
+import {
+  buildTaskAnalysisRequest,
+  buildTaskContext,
+  redactAiText,
+} from './ai-context'
 
 describe('AI task context', () => {
   it('removes sensitive fields and limits context to twelve prioritized tasks', () => {
@@ -17,6 +21,12 @@ describe('AI task context', () => {
     expect(context[0].status).toBe('overdue')
     expect(context[0]).not.toHaveProperty('password')
     expect(context[0]).not.toHaveProperty('token')
+  })
+
+  it('redacts secret-like values embedded in notes before AI sees them', () => {
+    expect(redactAiText('password=abc token:xyz Bearer abc.def')).toBe(
+      '[已脱敏] [已脱敏] [已脱敏]'
+    )
   })
 })
 

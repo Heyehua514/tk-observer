@@ -8,6 +8,18 @@ export type AiTaskContext = {
 
 type RawTask = Record<string, unknown>
 
+const secretPatterns = [
+  /(password|passwd|token|secret|api[_ -]?key)\s*[:=]\s*[^\s,;]+/giu,
+  /Bearer\s+[A-Za-z0-9._-]+/giu,
+]
+
+export function redactAiText(value: string): string {
+  return secretPatterns.reduce(
+    (text, pattern) => text.replace(pattern, '[已脱敏]'),
+    value
+  )
+}
+
 function priority(task: AiTaskContext) {
   if (task.status === 'overdue') return 0
   if (task.status === 'todo' || task.status === 'pending') return 1
@@ -20,7 +32,7 @@ export function buildTaskContext(tasks: RawTask[]): AiTaskContext[] {
       title: String(task.title || task.name || '未命名任务'),
       status: String(task.status || 'todo'),
       dueAt: String(task.dueAt || task.due_date || task.due_at || ''),
-      notes: String(task.notes || task.description || ''),
+      notes: redactAiText(String(task.notes || task.description || '')),
       source: task.source ? String(task.source) : undefined,
     }))
     .sort((a, b) => priority(a) - priority(b) || a.dueAt.localeCompare(b.dueAt))
@@ -32,7 +44,7 @@ export function buildTaskAnalysisRequest(task: AiTaskContext): string {
     `任务：${task.title}`,
     `状态：${task.status}`,
     task.dueAt ? `截止：${task.dueAt}` : '',
-    task.notes ? `备注：${task.notes}` : '',
+    task.notes ? `备注：${redactAiText(task.notes)}` : '',
     '请只给出下一步可执行建议，不要自动修改任务数据。',
   ]
     .filter(Boolean)

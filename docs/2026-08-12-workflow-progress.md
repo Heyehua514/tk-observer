@@ -929,3 +929,12 @@
 - 已用同一构建刷新 Cloudflare Pages 正式项目；正式地址 `/login` 返回 HTTP 200，部署版本 `https://85ca73ff.tk-observer.pages.dev`。
 - 任务 AI 入口已抽成共享 `TaskAiEntry` 组件，总览任务卡接入；138 个测试文件 / 313 个测试通过。
 - 设计任务四列看板已接入 `TaskAiEntry`，设计角色可从任务卡打开只读 AI 分析；139 个测试文件 / 314 个测试通过。
+
+## 2026-08-24 AI 记忆安全收口与对标流量信号
+
+- AI 任务上下文新增确定性凭据脱敏，覆盖 `password/passwd/token/secret/api key/Bearer` 形式；原任务记录保持不变，只有发往本机 WorkBuddy 的文本被替换。
+- 新增 `rankAiMemories`：先保留当前工作台或同任务类型记忆，再按当前工作台、置信度、最近使用时间排序，最多发送 8 条。数据读取仍只走 `useAiMemory` 的 owner-scoped RLS 查询。
+- 攻击回归覆盖：敏感备注、12 条任务上限、当前工作台抵抗其他工作台高置信度项、置信度与时间并列排序、8 条提示词上限。
+- 并行完成 `299bffe feat(editing): show competitor traffic signals`：对标账号和视频增加紧凑指标、互动率和相对均播标签；不连接未授权平台接口，不将手工录入样本标为实时平台数据。
+- 验证：typecheck、lint、当前改动 Prettier、前端测试 142 文件 / 322 条、build、diff check 均通过。仓库全量 Prettier 仍由 15 个历史文件报错，本轮未扩大修改范围。
+- 反思：凭据检测与排序都是同输入同输出的确定性问题，已固化为纯函数和回归测试，避免把 token 花在可脚本化判断上；采用/拒绝结果的长期学习需要单独设计数据保留和权限边界，后续用追加 migration 处理。

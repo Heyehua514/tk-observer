@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { rankAiMemories } from './ai-memory-ranking'
 import { getAiProfile } from './ai-profile'
 import { useAiMemory } from './hooks/use-ai-memory'
 import { callWorkBuddyGateway } from './workbuddy-gateway'
@@ -52,6 +53,7 @@ export function AiAssistantPanel({
   const memories = useAiMemory()
   const [prompt, setPrompt] = useState(initialPrompt || '')
   const [taskType, setTaskType] = useState<AiTaskType>('分析')
+  const rankedMemories = rankAiMemories(memories.data, scope, taskType)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -67,9 +69,8 @@ export function AiAssistantPanel({
       const fullPrompt = [
         `工作台：${scope}；任务类型：${taskType}。`,
         context ? `以下是当前页面/工作台相关数据，供你参考：\n${context}` : '',
-        memories.data.length
-          ? `以下是用户确认保存的个人偏好记忆：\n${memories.data
-              .slice(0, 8)
+        rankedMemories.length
+          ? `以下是用户确认保存的个人偏好记忆：\n${rankedMemories
               .map(
                 (item: { memoryKey: string; memoryValue: string }) =>
                   `${item.memoryKey}：${item.memoryValue}`
