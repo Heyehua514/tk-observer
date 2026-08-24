@@ -15,6 +15,11 @@ import { useCompetitorVideos } from '../hooks/use-competitor-videos'
 import { useStyleAnalyses } from '../hooks/use-style-analyses'
 import type { CompetitorAccount, CompetitorVideo } from '../types'
 import { CompetitorAccountForm } from './competitor-account-form'
+import {
+  formatMetric,
+  getEngagementRate,
+  getTrafficLabel,
+} from './competitor-metrics'
 import { CompetitorVideoForm } from './competitor-video-form'
 import { editingPermissionErrorDescription } from './editing-empty-copy'
 import {
@@ -91,13 +96,13 @@ export function CompetitorWorkbench({
                   <div>
                     <div className='text-muted-foreground'>粉丝数</div>
                     <div className='mt-1 font-medium'>
-                      {account.followerCount.toLocaleString()}
+                      {formatMetric(account.followerCount)}
                     </div>
                   </div>
                   <div>
                     <div className='text-muted-foreground'>平均播放量</div>
                     <div className='mt-1 font-medium'>
-                      {account.averageViews.toLocaleString()}
+                      {formatMetric(account.averageViews)}
                     </div>
                   </div>
                 </div>
@@ -157,10 +162,25 @@ export function CompetitorWorkbench({
                       <h3 className='font-medium'>{video.title}</h3>
                       <div className='mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground'>
                         <Badge variant='secondary'>
-                          播放 {video.views.toLocaleString()}
+                          播放 {formatMetric(video.views)}
                         </Badge>
                         <Badge variant='secondary'>
-                          点赞 {video.likes.toLocaleString()}
+                          点赞 {formatMetric(video.likes)}
+                        </Badge>
+                        <Badge variant='outline'>
+                          互动率 {getEngagementRate(video.views, video.likes)}%
+                        </Badge>
+                        <Badge
+                          variant={
+                            getTrafficLabel(
+                              video.views,
+                              selected.averageViews
+                            ) === '高于均播'
+                              ? 'default'
+                              : 'secondary'
+                          }
+                        >
+                          {getTrafficLabel(video.views, selected.averageViews)}
                         </Badge>
                         <span>{video.publishDate || '未填日期'}</span>
                       </div>
