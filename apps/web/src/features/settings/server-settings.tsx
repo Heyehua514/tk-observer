@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { CheckCircle2, Link2, LoaderCircle, Server } from 'lucide-react'
+import { CheckCircle2, Link2, LoaderCircle, RefreshCw, Server } from 'lucide-react'
 import PocketBase from 'pocketbase'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/shared/page-header'
+import { getClientUpdateSurface } from './client-update-model'
 
 const schema = z.object({
   url: z.string().trim().url('请输入完整的 http 或 https 地址'),
@@ -43,6 +44,10 @@ export function ServerSettings() {
     resolver: zodResolver(schema),
     defaultValues: { url: getStoredServerUrl() },
   })
+  const updateSurface = getClientUpdateSurface(
+    Boolean((window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__),
+    Boolean(import.meta.env.VITE_TAURI_UPDATER_ENDPOINT)
+  )
 
   const test = async () => {
     const valid = await form.trigger()
@@ -132,6 +137,20 @@ export function ServerSettings() {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+      <Card className='glass-card max-w-2xl rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2 text-base'>
+            <RefreshCw className='size-4 text-primary' />
+            {updateSurface.title}
+          </CardTitle>
+          <CardDescription>{updateSurface.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant='outline' disabled={!updateSurface.enabled}>
+            {updateSurface.actionLabel}
+          </Button>
         </CardContent>
       </Card>
       <Card className='glass-card max-w-2xl rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>

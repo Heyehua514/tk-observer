@@ -34,4 +34,8 @@ it('labels the server setting as the PocketBase fallback endpoint', async () => 
   await expect
     .element(screen.getByText('PocketBase 回退服务器'))
     .toBeInTheDocument()
+  await expect.element(screen.getByText('客户端更新')).toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '网页端已自动更新' }))
+    .toBeDisabled()
 })
