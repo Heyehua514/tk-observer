@@ -5,7 +5,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { CheckCircle2, Link2, LoaderCircle, RefreshCw, Server } from 'lucide-react'
+import {
+  CheckCircle2,
+  Link2,
+  LoaderCircle,
+  RefreshCw,
+  Server,
+} from 'lucide-react'
 import PocketBase from 'pocketbase'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
@@ -45,8 +51,13 @@ export function ServerSettings() {
     defaultValues: { url: getStoredServerUrl() },
   })
   const updateSurface = getClientUpdateSurface(
-    Boolean((window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__),
-    Boolean(import.meta.env.VITE_TAURI_UPDATER_ENDPOINT)
+    Boolean(
+      (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__
+    ),
+    Boolean(
+      import.meta.env.VITE_TAURI_UPDATER_ENDPOINT?.trim() &&
+      import.meta.env.VITE_TAURI_UPDATER_PUBLIC_KEY?.trim()
+    )
   )
 
   const test = async () => {

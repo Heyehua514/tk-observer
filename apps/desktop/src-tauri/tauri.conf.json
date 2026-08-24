@@ -35,7 +35,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "shortDescription": "TK观察内部跨境电商工作台"
+    "shortDescription": "TK观察内部跨境电商工作台",
+    "createUpdaterArtifacts": false
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "${TAURI_UPDATER_PUBLIC_KEY}",
+      "endpoints": ["${TAURI_UPDATER_ENDPOINT}"]
+    }
   }
 }
-

@@ -68,7 +68,11 @@ import {
   fetchVideoIdeasForExport,
   useVideoIdeas,
 } from '../hooks/use-video-ideas'
-import { parseVideoIdeaCsv, exportVideoIdeasCsv } from '../hooks/video-idea-csv'
+import {
+  parseVideoIdeaCsv,
+  preflightVideoIdeaCsv,
+  exportVideoIdeasCsv,
+} from '../hooks/video-idea-csv'
 import type { VideoIdea, VideoIdeaListParams } from '../types'
 import { editingDataErrorDescription } from './editing-empty-copy'
 import { VideoIdeaDetail } from './video-idea-detail'
@@ -284,7 +288,7 @@ export function VideoIdeaTable({
     event.target.value = ''
     if (!file) return
     try {
-      const rows = await parseVideoIdeaCsv(file)
+      const rows = preflightVideoIdeaCsv(await parseVideoIdeaCsv(file)).rows
       importIdeas.mutate({ fileName: file.name, rows })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'CSV 导入失败')

@@ -2,8 +2,10 @@
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(feature = "updater")]
+    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    builder
         .run(tauri::generate_context!())
         .expect("TK观察工作台启动失败");
 }
-

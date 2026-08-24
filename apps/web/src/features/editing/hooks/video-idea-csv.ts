@@ -9,6 +9,11 @@ import {
 } from '../constants'
 import type { VideoIdea, VideoIdeaInput } from '../types'
 
+export type VideoIdeaCsvPreflight = {
+  rows: VideoIdeaInput[]
+  duplicateKeys: string[]
+}
+
 const csvRowSchema = z.object({
   标题: z.string().trim().min(1, '标题不能为空'),
   账号: z.string().trim(),
@@ -53,12 +58,25 @@ function normalizeDate(value: string) {
 
 export async function parseVideoIdeaCsv(file: File): Promise<VideoIdeaInput[]> {
   const text = await file.text()
+  return parseVideoIdeaCsvText(text)
+}
+
+export function parseVideoIdeaCsvText(text: string): VideoIdeaInput[] {
   const parsed = Papa.parse<Record<string, string>>(text, {
     header: true,
     skipEmptyLines: true,
   })
   if (parsed.errors.length)
     throw new Error(`CSV 解析失败：${parsed.errors[0].message}`)
+  const headers = parsed.meta.fields || []
+  const requiredHeaders = ['标题', '账号', '视频类型', '发布日期']
+  const missingHeaders = requiredHeaders.filter(
+    (header) => !headers.includes(header)
+  )
+  if (missingHeaders.length) {
+    throw new Error(`CSV 缺少必需列：${missingHeaders.join('、')}`)
+  }
+  if (!parsed.data.length) throw new Error('CSV 没有可导入的数据行')
   return parsed.data.map((raw, index) => {
     const row = csvRowSchema.safeParse(raw)
     if (!row.success) {
@@ -97,6 +115,22 @@ export async function parseVideoIdeaCsv(file: File): Promise<VideoIdeaInput[]> {
       followerGain: integer(value.涨粉, '涨粉'),
     }
   })
+}
+
+export function preflightVideoIdeaCsv(
+  rows: VideoIdeaInput[]
+): VideoIdeaCsvPreflight {
+  const seen = new Set<string>()
+  const duplicateKeys = new Set<string>()
+  for (const row of rows) {
+    const key = `${row.title}\u0000${row.publishDate}`
+    if (seen.has(key)) duplicateKeys.add(`${row.title}（${row.publishDate}）`)
+    seen.add(key)
+  }
+  if (duplicateKeys.size) {
+    throw new Error(`CSV 存在重复视频：${[...duplicateKeys].join('、')}`)
+  }
+  return { rows, duplicateKeys: [] }
 }
 
 export function exportVideoIdeasCsv(ideas: readonly VideoIdea[]) {
