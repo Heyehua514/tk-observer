@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppIntelligenceRouteImport } from './routes/_app/intelligence'
 import { Route as AppNotificationsRouteImport } from './routes/_app/notifications'
 import { Route as AppSearchRouteImport } from './routes/_app/search'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -38,6 +39,11 @@ const AppRoute = AppRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
+  id: '/intelligence',
+  path: '/intelligence',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
   id: '/notifications',
@@ -108,6 +114,7 @@ const AppMarketEventsEventIdRoute = AppMarketEventsEventIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/intelligence': typeof AppIntelligenceRoute
   '/notifications': typeof AppNotificationsRoute
   '/search': typeof AppSearchRoute
   '/login': typeof AuthLoginRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/intelligence': typeof AppIntelligenceRoute
   '/notifications': typeof AppNotificationsRoute
   '/search': typeof AppSearchRoute
   '/login': typeof AuthLoginRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/search': typeof AppSearchRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/intelligence'
     | '/notifications'
     | '/search'
     | '/login'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/intelligence'
     | '/notifications'
     | '/search'
     | '/login'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_auth'
+    | '/_app/intelligence'
     | '/_app/notifications'
     | '/_app/search'
     | '/_auth/login'
@@ -238,6 +250,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/intelligence': {
+      id: '/_app/intelligence'
+      path: '/intelligence'
+      fullPath: '/intelligence'
+      preLoaderRoute: typeof AppIntelligenceRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/notifications': {
       id: '/_app/notifications'
@@ -334,6 +353,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppSearchRoute: typeof AppSearchRoute
   AppOverviewCalendarRoute: typeof AppOverviewCalendarRoute
@@ -349,6 +369,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppIntelligenceRoute: AppIntelligenceRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppSearchRoute: AppSearchRoute,
   AppOverviewCalendarRoute: AppOverviewCalendarRoute,

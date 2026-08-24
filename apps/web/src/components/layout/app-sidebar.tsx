@@ -12,6 +12,7 @@ import {
   Palette,
   Settings,
   Store,
+  Newspaper,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useLayout } from '@/context/layout-provider'
@@ -50,6 +51,12 @@ const navigation = [
     to: '/overview/calendar' as const,
     role: 'boss' as const,
     icon: CalendarDays,
+  },
+  {
+    title: '每日情报',
+    to: '/intelligence' as const,
+    role: 'business' as const,
+    icon: Newspaper,
   },
   {
     title: '商务工作台',

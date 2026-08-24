@@ -1634,6 +1634,80 @@ export type Database = {
         }
         Relationships: []
       }
+      intelligence_items: {
+        Row: {
+          captured_at: string
+          confidence: number
+          created_at: string
+          created_by: string
+          dedupe_key: string
+          deleted_at: string | null
+          heat_score: number
+          id: string
+          language: string
+          region: string
+          source_name: string
+          source_type: string
+          source_url: string
+          status: string
+          summary: string
+          title: string
+          topic: string
+          updated_at: string
+          workspaces: string[]
+        }
+        Insert: {
+          captured_at?: string
+          confidence?: number
+          created_at?: string
+          created_by: string
+          dedupe_key: string
+          deleted_at?: string | null
+          heat_score?: number
+          id?: string
+          language?: string
+          region?: string
+          source_name: string
+          source_type: string
+          source_url: string
+          status?: string
+          summary?: string
+          title: string
+          topic?: string
+          updated_at?: string
+          workspaces?: string[]
+        }
+        Update: {
+          captured_at?: string
+          confidence?: number
+          created_at?: string
+          created_by?: string
+          dedupe_key?: string
+          deleted_at?: string | null
+          heat_score?: number
+          id?: string
+          language?: string
+          region?: string
+          source_name?: string
+          source_type?: string
+          source_url?: string
+          status?: string
+          summary?: string
+          title?: string
+          topic?: string
+          updated_at?: string
+          workspaces?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'intelligence_items_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       member_invitations: {
         Row: {
           accepted_at: string | null

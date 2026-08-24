@@ -78,4 +78,3 @@
 - [ ] Run `git diff --check`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm supabase:schema:test`, `pnpm supabase:test`, and `pnpm build`.
 - [ ] Run `python3 /Users/liyuzhen/skill/tools/效率模式生成器.py tk report ...` and `... tk todo`.
 - [ ] Commit docs and delivery record. Do not deploy or push remote migration in this slice.
-
