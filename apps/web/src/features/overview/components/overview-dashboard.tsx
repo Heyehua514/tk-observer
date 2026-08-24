@@ -406,7 +406,11 @@ export function OverviewDashboard() {
       </div>
       {taskPrompt && (
         <div className='mt-5'>
-          <AiAssistantPanel scope='总览工作台' initialPrompt={taskPrompt} />
+          <AiAssistantPanel
+            key={taskPrompt}
+            scope='总览工作台'
+            initialPrompt={taskPrompt}
+          />
         </div>
       )}
       <Card className='bento-card shadow-none'>

@@ -127,7 +127,11 @@ export function DesignTasksBoard() {
         ))}
       </div>
       {analysisPrompt && (
-        <AiAssistantPanel scope='设计工作台' initialPrompt={analysisPrompt} />
+        <AiAssistantPanel
+          key={analysisPrompt}
+          scope='设计工作台'
+          initialPrompt={analysisPrompt}
+        />
       )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

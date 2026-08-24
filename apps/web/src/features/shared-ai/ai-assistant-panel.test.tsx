@@ -1,7 +1,7 @@
 /** 通用 AI 助手面板测试。 */
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AiAssistantPanel } from './ai-assistant-panel'
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
