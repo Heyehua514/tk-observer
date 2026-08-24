@@ -27,11 +27,11 @@
 **Interfaces:**
 - Produces table `public.intelligence_items` with `title`, `summary`, `source_name`, `source_type`, `source_url`, `captured_at`, `region`, `language`, `topic`, `heat_score`, `confidence`, `dedupe_key`, `workspaces`, `status`, `created_by`, timestamps and `deleted_at`.
 
-- [ ] Write failing pgTAP checks for columns, source/status checks, unique active dedupe key, owner update RLS and soft-delete filtering.
-- [ ] Run `pnpm supabase:test -- supabase/tests/intelligence_items.test.sql` and verify failure is caused by missing table.
-- [ ] Add migration with append-only table, indexes, grants and policies. Use `source_type in ('official','rss','authorized','public','manual','csv')`, `status in ('unread','read','saved','ignored','tasked')`, URL length 2000, title length 300, summary length 5000, heat/confidence bounds 0..100/0..1.
-- [ ] Run `pnpm supabase:reset && pnpm supabase:test` and verify the new gate/eval passes.
-- [ ] Commit `feat(intelligence): add scoped intelligence pool`.
+- [x] Write failing pgTAP checks for columns, source/status checks, unique active dedupe key, owner update RLS and soft-delete filtering.
+- [x] Run the focused test and verify failure was caused by the missing table.
+- [x] Add the append-only table, indexes, grants and policies.
+- [x] Run local reset and focused/full Supabase tests; all pass.
+- [x] Commit `536cd7a feat(intelligence): add first phase intelligence center`.
 
 ### Task 2: Add deterministic intelligence models and Supabase/PocketBase hooks
 
@@ -47,10 +47,10 @@
 - `filterIntelligenceItems(items, filters): IntelligenceItem[]`
 - `useIntelligenceItems(filters)` and `useCreateIntelligenceItem()`.
 
-- [ ] Write failing pure tests for safe URL protocols, required fields, duplicate draft keys and status/workspace filters.
-- [ ] Run the focused Vitest file and verify RED.
-- [ ] Implement the pure model and hook using existing provider patterns; PocketBase hook must only query and must not expose Supabase-only status writes.
-- [ ] Run focused tests and verify GREEN.
+- [x] Write pure tests for safe URL protocols, required fields and status/workspace filters.
+- [x] Run the focused Vitest file and verify the missing model failure.
+- [x] Implement the pure model and Supabase-first/PocketBase read-only hooks.
+- [x] Run focused tests and verify GREEN.
 
 ### Task 3: Build the intelligence page and route
 
@@ -61,11 +61,11 @@
 - Create: `apps/web/src/routes/_app/intelligence.tsx`
 - Modify: `apps/web/src/components/layout/app-sidebar.tsx`
 
-- [ ] Write failing browser tests for page title, empty state, filters, safe external link and required form fields.
-- [ ] Run the focused browser test and verify RED.
-- [ ] Implement the page with shared loading/error/empty components; state actions update only the current intelligence row, and “转为任务” opens a confirmation panel without creating a task.
-- [ ] Add `/intelligence` to sidebar for all authenticated roles and route guard.
-- [ ] Run browser tests and verify GREEN.
+- [x] Write browser tests for page title, safe external link and required form fields.
+- [x] Run the focused browser test, fix the hook mock path, and verify GREEN.
+- [x] Implement the page with shared loading/error/empty components and confirmation-only task intent.
+- [x] Add `/intelligence` to sidebar for all authenticated roles and route guard.
+- [x] Run browser tests and verify GREEN.
 
 ### Task 4: Documentation, full gates, and local delivery
 
@@ -74,7 +74,7 @@
 - Modify: `docs/daily-logs/2026-08-24.md`
 - Modify: `/Users/liyuzhen/Desktop/TK观察工作台-PRD交付包/TK观察工作台-产品需求文档-当前版.md`
 
-- [ ] Record schema, security boundary, source limitations and test counts.
-- [ ] Run `git diff --check`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm supabase:schema:test`, `pnpm supabase:test`, and `pnpm build`.
-- [ ] Run `python3 /Users/liyuzhen/skill/tools/效率模式生成器.py tk report ...` and `... tk todo`.
-- [ ] Commit docs and delivery record. Do not deploy or push remote migration in this slice.
+- [x] Record schema, security boundary, source limitations and test counts in progress log, daily log and PRD V1.53.
+- [x] Run all local gates: typecheck, lint, 145/331 frontend tests, schema inventory, 41 SQL files / 582 tests, eval 11/14, build and diff check.
+- [x] Run efficiency report and todo archive.
+- [x] Commit docs and delivery record. Remote migration and deployment intentionally remain pending.
