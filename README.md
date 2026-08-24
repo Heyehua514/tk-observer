@@ -115,6 +115,7 @@ pnpm dev
 - 微信视频号多账号分析基础：现有三个视频号维度继续复用；表格展示点赞与评论，账号分析纳入互动/视频涨粉，Supabase 新增账号粉丝日快照、每日涨粉计算视图和幂等同步批次。采集端契约见 [`docs/video-account-sync-contract.md`](docs/video-account-sync-contract.md)，不保存微信密码或设备凭据。
 - GitHub 采集适配器：`services/wechat-video-sync` 接入 `FisJing/wechat-video-analytics` 的 JSON 产物，负责标准化、幂等同步、多账号顺序任务和每日调度；原项目的 Android/ADB/OCR 仍需在已登录微信的 Android 设备上运行。
 - 视频数据导入员：追加 migration 会为已有的杨振康 profile 授予视频数据导入能力；该能力可写入视频指标、账号粉丝快照和同步批次，不扩展成员管理、删除权限或其他工作台权限。
+- 工作台维护者：`20260824000500_promote_yang_owner.sql` 将杨振康升级为 `owner`；owner 可维护成员、权限、全部业务数据与系统配置。
 - 市场活动数据基础：新增共享活动、阶段、任务、报名、招商、场地、文案模板、物料和财务 collections，供市场与其他工作台关联使用。
 - 市场活动运营：活动列表与六 Tab 详情、任务拖拽看板、报名/招商/协作进度、财务录入与指标；场地资源支持多图上传、筛选、详情和快速匹配；模板、物料及财务支持新增、预览和复盘导出。
 - 商务拓展：客户 CRUD、六阶段商机 Pipeline、渠道商单、朋友圈计划、活动招商协作，以及达人商务可用性、报价和备注字段。

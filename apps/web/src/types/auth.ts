@@ -3,6 +3,7 @@
  * role 值与 PocketBase users.role 选择字段保持严格一致。
  */
 export const roles = [
+  'owner',
   'boss',
   'business',
   'market',

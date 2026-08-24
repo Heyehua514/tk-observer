@@ -5,5 +5,5 @@ export function canSeeNavigationItem(
   item: { role: UserRole; to: string }
 ) {
   if (item.to === '/intelligence') return true
-  return role === 'boss' || role === item.role
+  return role === 'owner' || role === 'boss' || role === item.role
 }

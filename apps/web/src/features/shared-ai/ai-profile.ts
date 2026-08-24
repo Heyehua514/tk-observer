@@ -7,6 +7,11 @@ export type AiProfile = {
 }
 
 const profiles: Record<UserRole, AiProfile> = {
+  owner: {
+    assistantName: '系统维护助手',
+    focus: ['系统维护', '权限管理', '数据质量', '工作台配置'],
+    taskTypes: ['分析', '总结复盘'],
+  },
   boss: {
     assistantName: '经营助手',
     focus: ['经营分析', '审批风险', '团队进度', '复盘'],

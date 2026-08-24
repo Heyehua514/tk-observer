@@ -63,7 +63,7 @@ export async function runGlobalSearch(
   if (getDataProvider() === 'supabase')
     return runSupabaseGlobalSearch(query, role)
   const tasks: Promise<SearchGroup>[] = []
-  if (role === 'boss' || role === 'business') {
+  if (role === 'owner' || role === 'boss' || role === 'business') {
     tasks.push(
       pb
         .collection('creators')
@@ -104,7 +104,7 @@ export async function runGlobalSearch(
         }))
     )
   }
-  if (role === 'boss' || role === 'market') {
+  if (role === 'owner' || role === 'boss' || role === 'market') {
     tasks.push(
       pb
         .collection('products')
@@ -124,7 +124,7 @@ export async function runGlobalSearch(
         }))
     )
   }
-  if (role === 'boss' || role === 'editing') {
+  if (role === 'owner' || role === 'boss' || role === 'editing') {
     tasks.push(
       pb
         .collection('videos')

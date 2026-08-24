@@ -279,6 +279,7 @@ export async function logout() {
 
 export function getDefaultRoute(role: UserRole): WorkbenchPath {
   const routes: Record<UserRole, WorkbenchPath> = {
+    owner: '/overview',
     boss: '/overview',
     business: '/business',
     market: '/market',
@@ -299,7 +300,7 @@ export function requireAuthentication() {
 
 export function requireRoles(allowedRoles: readonly UserRole[]) {
   const user = requireAuthentication()
-  if (user.role !== 'boss' && !allowedRoles.includes(user.role)) {
+  if (user.role !== 'owner' && user.role !== 'boss' && !allowedRoles.includes(user.role)) {
     sessionStorage.setItem(ACCESS_DENIED_SESSION_KEY, 'true')
     throw redirect({ to: getDefaultRoute(user.role) })
   }

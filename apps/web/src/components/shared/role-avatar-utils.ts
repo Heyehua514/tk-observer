@@ -1,6 +1,7 @@
 import type { UserRole } from '@/types/auth'
 
 const roleColors: Record<UserRole, string> = {
+  owner: 'bg-emerald-500',
   boss: '#3B82F6',
   business: '#8B5CF6',
   market: '#10B981',
