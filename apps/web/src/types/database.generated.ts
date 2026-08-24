@@ -34,9 +34,61 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_memory: {
+        Row: {
+          confidence: number
+          created_at: string
+          deleted_at: string | null
+          id: string
+          last_used_at: string | null
+          memory_key: string
+          memory_type: string
+          memory_value: string
+          owner_id: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          memory_key: string
+          memory_type: string
+          memory_value: string
+          owner_id: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          memory_key?: string
+          memory_type?: string
+          memory_value?: string
+          owner_id?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'ai_memory_owner_id_fkey'
+            columns: ['owner_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       ai_notes: {
         Row: {
           created_at: string
+          decided_at: string | null
+          decision: string
           deleted_at: string | null
           id: string
           owner_id: string | null
@@ -48,6 +100,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          decided_at?: string | null
+          decision?: string
           deleted_at?: string | null
           id?: string
           owner_id?: string | null
@@ -59,6 +113,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          decided_at?: string | null
+          decision?: string
           deleted_at?: string | null
           id?: string
           owner_id?: string | null
@@ -2467,6 +2523,8 @@ export type Database = {
         Returns: undefined
       }
       run_deadline_checks: { Args: never; Returns: Json }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { '': string }; Returns: string[] }
       sweep_overdue_event_tasks: { Args: never; Returns: number }
       write_video_idea_analysis: {
         Args: { analysis: string; analyzed: string; target_id: string }

@@ -5,9 +5,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- ai_notes 未在生成类型内，数据访问走轻量包装 */
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { LoaderCircle, Search, Trash2 } from 'lucide-react'
+import { Check, LoaderCircle, Search, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { recordAudit } from '@/lib/audit'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -23,6 +24,9 @@ type AiNote = {
   taskType: string
   prompt: string
   result: string
+  ownerId: string | null
+  decision: 'pending' | 'adopted' | 'dismissed'
+  decidedAt: string | null
   created: string
 }
 const aiNoteKeys = ['ai-notes'] as const
@@ -35,7 +39,8 @@ function db() {
 
 export function AiNotesView() {
   const queryClient = useQueryClient()
-  const role = useAuthStore((state) => state.user?.role)
+  const user = useAuthStore((state) => state.user)
+  const role = user?.role
   const [query, setQuery] = useState('')
   useEffect(() => {
     if (getDataProvider() !== 'supabase') return
@@ -55,7 +60,9 @@ export function AiNotesView() {
     queryFn: async (): Promise<AiNote[]> => {
       if (getDataProvider() === 'supabase') {
         let builder: any = db().from('ai_notes')
-        builder = builder.select('id,scope,task_type,prompt,result,created_at')
+        builder = builder.select(
+          'id,scope,task_type,prompt,result,owner_id,decision,decided_at,created_at'
+        )
         builder = builder.is('deleted_at', null)
         builder = builder.order('created_at', { ascending: false })
         builder = builder.limit(100)
@@ -71,6 +78,12 @@ export function AiNotesView() {
           taskType: String(r.task_type || ''),
           prompt: String(r.prompt || ''),
           result: String(r.result || ''),
+          ownerId: r.owner_id ? String(r.owner_id) : null,
+          decision:
+            r.decision === 'adopted' || r.decision === 'dismissed'
+              ? r.decision
+              : 'pending',
+          decidedAt: r.decided_at ? String(r.decided_at) : null,
           created: String(r.created_at || ''),
         }))
       }
@@ -83,6 +96,9 @@ export function AiNotesView() {
         taskType: String(r.task_type || ''),
         prompt: String(r.prompt || ''),
         result: String(r.result || ''),
+        ownerId: String(r.owner || '') || null,
+        decision: 'pending',
+        decidedAt: null,
         created: String(r.created || ''),
       }))
     },
@@ -100,6 +116,22 @@ export function AiNotesView() {
     }
     void queryClient.invalidateQueries({ queryKey: aiNoteKeys })
     toast.success('已删除')
+  }
+
+  const decide = async (note: AiNote, decision: 'adopted' | 'dismissed') => {
+    if (getDataProvider() !== 'supabase' || note.ownerId !== user?.id) return
+    const { error } = await db()
+      .from('ai_notes')
+      .update({ decision, decided_at: new Date().toISOString() })
+      .eq('id', note.id)
+    if (error) return toast.error('更新决策失败')
+    recordAudit(
+      decision === 'adopted' ? '采用 AI 建议' : '忽略 AI 建议',
+      'ai_notes',
+      note.id
+    )
+    await queryClient.invalidateQueries({ queryKey: aiNoteKeys })
+    toast.success(decision === 'adopted' ? '已标记为采用' : '已标记为忽略')
   }
 
   return (
@@ -137,9 +169,42 @@ export function AiNotesView() {
                 <div className='mb-1 flex items-center gap-2'>
                   <Badge variant='secondary'>{note.scope}</Badge>
                   <Badge>{note.taskType}</Badge>
+                  <Badge
+                    variant={
+                      note.decision === 'pending' ? 'outline' : 'secondary'
+                    }
+                  >
+                    {note.decision === 'adopted'
+                      ? '已采用'
+                      : note.decision === 'dismissed'
+                        ? '已忽略'
+                        : '待决策'}
+                  </Badge>
                   <span className='text-xs text-muted-foreground'>
                     {new Date(note.created).toLocaleString('zh-CN')}
                   </span>
+                  {getDataProvider() === 'supabase' &&
+                    note.decision === 'pending' &&
+                    note.ownerId === user?.id && (
+                      <>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() => void decide(note, 'adopted')}
+                        >
+                          <Check className='size-3' />
+                          采用
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() => void decide(note, 'dismissed')}
+                        >
+                          <X className='size-3' />
+                          忽略
+                        </Button>
+                      </>
+                    )}
                   <Button
                     size='sm'
                     variant='ghost'
