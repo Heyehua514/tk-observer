@@ -1,4 +1,4 @@
-/** CSV 导入 mutation：同标题同发布日期跳过，并写入 import_history 快照。 */
+/** CSV 导入 mutation：同标题同发布日期更新指标，新视频新增，并写入 import_history 快照。 */
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
@@ -30,6 +30,7 @@ export function useImportVideoIdeas() {
       if (getDataProvider() === 'supabase') {
         const supabase = getSupabaseClient()
         let newCount = 0
+        let updatedCount = 0
         for (const row of rows) {
           const { data: existing, error: existingError } = await supabase
             .from('video_ideas')
@@ -39,12 +40,13 @@ export function useImportVideoIdeas() {
             .lte('publish_date', `${row.publishDate} 23:59:59.999Z`)
             .maybeSingle()
           if (existingError) throw existingError
-          if (existing) continue
-          const { error } = await supabase
-            .from('video_ideas')
-            .insert(serializeSupabaseVideoIdea(row))
+          const mutation = existing
+            ? supabase.from('video_ideas').update(serializeSupabaseVideoIdea(row)).eq('id', existing.id)
+            : supabase.from('video_ideas').insert(serializeSupabaseVideoIdea(row))
+          const { error } = await mutation
           if (error) throw error
-          newCount += 1
+          if (existing) updatedCount += 1
+          else newCount += 1
         }
         const summaryResult = await supabase
           .from('video_idea_summary')
@@ -58,7 +60,7 @@ export function useImportVideoIdeas() {
             file_name: fileName,
             total_rows: rows.length,
             new_count: newCount,
-            updated_count: 0,
+            updated_count: updatedCount,
             snapshot: summaryResult.data
               ? mapSupabaseVideoIdeaSummary(summaryResult.data)
               : mapSupabaseVideoIdeaSummary({
@@ -75,9 +77,10 @@ export function useImportVideoIdeas() {
           .single()
         if (historyResult.error) throw historyResult.error
         const history = mapSupabaseImportHistory(historyResult.data)
-        return { history, newCount, skippedCount: rows.length - newCount }
+        return { history, newCount, updatedCount, skippedCount: 0 }
       }
       let newCount = 0
+      let updatedCount = 0
       for (const row of rows) {
         const existing = await pb
           .collection('video_ideas')
@@ -92,9 +95,13 @@ export function useImportVideoIdeas() {
             )
           )
           .catch(() => null)
-        if (existing) continue
-        await pb.collection('video_ideas').create(serializeVideoIdea(row))
-        newCount += 1
+        if (existing) {
+          await pb.collection('video_ideas').update(existing.id, serializeVideoIdea(row))
+          updatedCount += 1
+        } else {
+          await pb.collection('video_ideas').create(serializeVideoIdea(row))
+          newCount += 1
+        }
       }
       const summary = await pb
         .collection('video_idea_summary')
@@ -106,17 +113,17 @@ export function useImportVideoIdeas() {
           file_name: fileName,
           total_rows: rows.length,
           new_count: newCount,
-          updated_count: 0,
+          updated_count: updatedCount,
           snapshot,
         })
       )
-      return { history, newCount, skippedCount: rows.length - newCount }
+      return { history, newCount, updatedCount, skippedCount: 0 }
     },
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: videoIdeaKeys.all })
       void queryClient.invalidateQueries({ queryKey: ['import-history'] })
       toast.success(
-        `导入完成：新增 ${result.newCount} 条，跳过 ${result.skippedCount} 条重复数据`
+        `导入完成：新增 ${result.newCount} 条，更新 ${result.updatedCount} 条`
       )
     },
   })
