@@ -207,7 +207,6 @@
 - 设置页：服务器设置卡、飞书面板、连接状态指示灯玻璃化，硬编码色收敛为 token。
 - 无头浏览器截图自查 5 个核心页面：暗色占主导、主色为蓝/青、无紫粉渐变残留。
 
-
 ## 验证（前端大洗盘）
 
 - `git diff --check`：通过。
@@ -217,7 +216,6 @@
 - `pnpm build`：通过，无报错。
 - 像素抽样：login/overview/business/market/editing 五张截图暗色主导、紫色像素占比 0、主色调蓝/青。
 - 源码扫描：无 emoji 图标、无 #2563eb / text-blue-* / 紫粉渐变硬编码残留；`prefers-reduced-motion: reduce` 动画关闭规则在 `index.css` 生效。
-
 
 ## 提交（前端大洗盘）
 
@@ -850,6 +848,7 @@
 ### 提交
 
 - `feat(data): 回退演练 dry-run 自动判定与验收勾选`
+
 ## 2026-08-20 飞书运行时静态检查
 
 - 本地安装 Deno 2.9.5（Apple Silicon），用于 Edge Function runtime 检查。
@@ -917,6 +916,7 @@
 - `node scripts/supabase/pocketbase-rollback.mjs --drill` 复核结果：`DRILL_READY_FAIL`。
 - 原因：`/tmp/tk-observer-supabase` Supabase 导出目录不存在；PocketBase 数据文件和 21 个 migration 仍存在。
 - 未创建伪造导出目录、未删除数据、未启动服务。回退前必须先重新执行 Supabase 导出流程并核对行数。
+
 ## 2026-08-21 个人 AI 第二阶段（已完成）
 
 - 个人记忆管理面板已接入总览，可查看并软删除本人记忆；专项测试修复后通过。
@@ -938,3 +938,12 @@
 - 并行完成 `299bffe feat(editing): show competitor traffic signals`：对标账号和视频增加紧凑指标、互动率和相对均播标签；不连接未授权平台接口，不将手工录入样本标为实时平台数据。
 - 验证：typecheck、lint、当前改动 Prettier、前端测试 142 文件 / 322 条、build、diff check 均通过。仓库全量 Prettier 仍由 15 个历史文件报错，本轮未扩大修改范围。
 - 反思：凭据检测与排序都是同输入同输出的确定性问题，已固化为纯函数和回归测试，避免把 token 花在可脚本化判断上；采用/拒绝结果的长期学习需要单独设计数据保留和权限边界，后续用追加 migration 处理。
+
+## 2026-08-24 AI 记忆数据库门禁与越权攻击回归
+
+- 本地 Supabase 已从 migration 重新构建，`20260821000300_ai_memory.sql` 实际应用；仅影响 Docker 本地测试库，未写远程项目。
+- 修复 AI 记忆 pgTAP：约束校验改为精确检查 `pg_constraint`，测试计划从 7 项校正为实际 6 项，索引断言补齐 schema、表名和索引名。
+- 新增跨账号攻击回归：非 owner 读取为 0、更新被 RLS 过滤、伪造 owner_id 插入被拒绝，owner 原始记忆值保持不变。
+- 修复 Realtime 发布白名单漂移：`ai_memory` 明确列入 `market_business_realtime.test.sql`，新增实时表需要同步审计。
+- 验证：AI 记忆专项 13 项、Realtime + AI 专项 16 项、全库 pgTAP 37 文件 / 554 条均通过；schema inventory 2/2、typecheck、lint、前端 142 文件 / 322 条、build、diff check 通过。
+- 反思：数据库问题先用最小 SQL 测试复现，再重建本地库和跑全量门禁，能避免重复启动 Supabase CLI 导致的镜像下载争用；Realtime migration 和审计白名单视为同一个安全边界。

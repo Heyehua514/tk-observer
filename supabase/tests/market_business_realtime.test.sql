@@ -34,7 +34,7 @@ select is(
         'design_assets','design_tasks','design_requirements','design_references','design_deliverables',
         'video_tasks','videos','video_ideas','import_history',
         'competitor_accounts','competitor_videos','trending_topics','competitor_style_analysis'
-        ,'status_history','ai_notes'
+        ,'status_history','ai_notes','ai_memory'
       )
   ),
   0::bigint,
