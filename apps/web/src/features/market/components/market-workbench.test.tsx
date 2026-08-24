@@ -10,7 +10,9 @@ vi.mock('../hooks/use-market-workbench', () => ({
 
 vi.mock('../hooks/use-product-catalog', () => ({
   useProductCatalog: (query: string) =>
-    query.trim()
+    query.trim() === '空库'
+      ? { data: [] }
+      : query.trim()
       ? { data: [] }
       : {
           data: [
@@ -100,4 +102,17 @@ it('shows guided empty state when product search has no match', async () => {
   await expect
     .element(screen.getByText('换个关键词试试，确认商品名称、类目或站点拼写。'))
     .toBeInTheDocument()
+})
+
+it('offers product creation from an empty catalog state', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <MarketWorkbench query='空库' onQueryChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await expect.element(screen.getByText('新建商品')).toBeInTheDocument()
 })
