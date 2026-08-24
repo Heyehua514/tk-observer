@@ -26,6 +26,7 @@ it('shows source provenance, status actions, and safe original link', async () =
   await expect.element(screen.getByText('每日情报中心')).toBeInTheDocument()
   await expect.element(screen.getByText('官方公告')).toBeInTheDocument()
   await expect.element(screen.getByText('标记已读')).toBeInTheDocument()
+  await expect.element(screen.getByRole('button', { name: '导入 CSV' })).toBeInTheDocument()
   const link = screen.getByRole('link', { name: '打开原文' })
   await expect.element(link).toHaveAttribute('rel', 'noopener noreferrer')
 })

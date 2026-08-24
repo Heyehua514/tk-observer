@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   filterIntelligenceItems,
   isSafeExternalUrl,
+  parseIntelligenceCsv,
   validateIntelligenceDraft,
   type IntelligenceItem,
 } from './intelligence-model'
@@ -60,5 +61,14 @@ describe('intelligence model', () => {
         { query: '市场', workspace: 'editing', status: 'saved' }
       ).map((item) => item.id)
     ).toEqual(['item-2'])
+  })
+
+  it('parses valid CSV rows and reports invalid rows without partial output', () => {
+    expect(parseIntelligenceCsv('标题,来源,链接,采集时间,去重键\n公告,官方,https://example.com/a,2026-08-24T01:00:00Z,key-a')).toEqual({
+      rows: [{ title: '公告', sourceName: '官方', sourceUrl: 'https://example.com/a', capturedAt: '2026-08-24T01:00:00Z', dedupeKey: 'key-a' }], errors: [],
+    })
+    expect(parseIntelligenceCsv('标题,来源,链接,采集时间,去重键\n坏数据,来源,javascript:bad,,key-b')).toEqual({
+      rows: [], errors: ['第 2 行：原文链接必须是 http 或 https 地址', '第 2 行：采集时间不能为空'],
+    })
   })
 })

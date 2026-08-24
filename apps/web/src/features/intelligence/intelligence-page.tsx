@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ExternalLink, Plus, Save, Star, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import {
   filterIntelligenceItems,
   intelligenceSourceTypes,
   intelligenceStatuses,
+  parseIntelligenceCsv,
   validateIntelligenceDraft,
   type IntelligenceDraft,
   type IntelligenceItem,
@@ -44,6 +45,7 @@ export function IntelligencePage() {
   const [open, setOpen] = useState(false)
   const [taskItem, setTaskItem] = useState<IntelligenceItem | null>(null)
   const [draft, setDraft] = useState<IntelligenceDraft>(emptyDraft)
+  const csvInput = useRef<HTMLInputElement>(null)
   const items = useIntelligenceItems({ query, workspace, status })
   const createItem = useCreateIntelligenceItem()
   const updateItem = useUpdateIntelligenceItem()
@@ -74,12 +76,25 @@ export function IntelligencePage() {
     }
   }
 
+  const importCsv = async (file: File) => {
+    const result = parseIntelligenceCsv(await file.text())
+    if (result.errors.length) return toast.error(result.errors.slice(0, 2).join('；'))
+    try {
+      for (const row of result.rows) {
+        await createItem.mutateAsync({ ...emptyDraft, ...row })
+      }
+      toast.success(`已导入 ${result.rows.length} 条情报`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'CSV 导入失败')
+    }
+  }
+
   return (
     <div className='space-y-6'>
       <PageHeader
         title='每日情报中心'
         description='汇总公开、授权或人工确认的信息。平台实时抓取和自动执行暂未启用。'
-        action={<Button onClick={() => setOpen(true)}><Plus className='size-4' />新增情报</Button>}
+        action={<div className='flex gap-2'><input ref={csvInput} className='hidden' type='file' accept='.csv,text/csv' aria-label='选择情报 CSV' onChange={(event) => { const file = event.target.files?.[0]; if (file) void importCsv(file); event.target.value = '' }} /><Button variant='outline' onClick={() => csvInput.current?.click()}>导入 CSV</Button><Button onClick={() => setOpen(true)}><Plus className='size-4' />新增情报</Button></div>}
       />
       <div className='grid gap-3 md:grid-cols-[1fr_auto_auto]'>
         <Input aria-label='搜索情报' placeholder='搜索标题、来源或主题' value={query} onChange={(event) => setQuery(event.target.value)} />
