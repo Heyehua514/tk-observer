@@ -1,6 +1,6 @@
 /**
  * 爆款选题库 - 表格主组件。
- * 路由：/editing；权限：editing, boss。
+ * 路由：/editing；权限：editing, boss，或具备视频数据导入能力的 business。
  * 后续选题类模块照此模式复制：筛选、分页、批量删除、导入导出和详情抽屉。
  */
 import { useMemo, useRef, useState } from 'react'

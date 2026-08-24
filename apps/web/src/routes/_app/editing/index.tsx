@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- TanStack 文件路由需导出 Route */
 // 路由：/editing
-// 权限：editing, boss
+// 权限：editing, boss；具备视频数据导入能力的 business 账号也可进入
 // 用途：剪辑人员维护视频任务、成片归档与发布排期
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { requireRoles } from '@/lib/auth'
@@ -57,7 +57,7 @@ function parseSearch(search: Record<string, unknown>): EditingSearchParams {
 }
 
 export const Route = createFileRoute('/_app/editing/')({
-  beforeLoad: () => requireRoles(['editing']),
+  beforeLoad: () => requireRoles(['editing', 'business']),
   validateSearch: parseSearch,
   component: EditingRoute,
   errorComponent: RouteError,
