@@ -205,14 +205,17 @@ export function AiNotesView() {
                         </Button>
                       </>
                     )}
-                  <Button
-                    size='sm'
-                    variant='ghost'
-                    className='ml-auto text-destructive'
-                    onClick={() => void remove(note.id)}
-                  >
-                    <Trash2 className='size-3' />
-                  </Button>
+                  {note.ownerId === user?.id && (
+                    <Button
+                      size='sm'
+                      variant='ghost'
+                      className='ml-auto text-destructive'
+                      aria-label='删除 AI 记录'
+                      onClick={() => void remove(note.id)}
+                    >
+                      <Trash2 className='size-3' />
+                    </Button>
+                  )}
                 </div>
                 <p className='text-sm font-medium'>{note.prompt}</p>
                 <pre className='mt-2 max-h-40 overflow-auto rounded border bg-background/60 p-2 text-xs whitespace-pre-wrap'>

@@ -22,10 +22,14 @@ const { notes, recordAudit } = vi.hoisted(() => ({
 
 vi.mock('@/lib/data-provider', () => ({ getDataProvider: () => 'supabase' }))
 
+const { currentUser } = vi.hoisted(() => ({
+  currentUser: { id: 'design-user', role: 'design' },
+}))
+
 vi.mock('@/stores/auth-store', () => ({
   useAuthStore: (
     selector: (state: { user: { id: string; role: string } }) => unknown
-  ) => selector({ user: { id: 'design-user', role: 'design' } }),
+  ) => selector({ user: currentUser }),
 }))
 
 vi.mock('@/lib/audit', () => ({ recordAudit }))
@@ -66,5 +70,30 @@ it('adopting a pending note marks it adopted without creating a business action'
   await expect
     .element(screen.getByRole('button', { name: '采用' }))
     .not.toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '删除 AI 记录' }))
+    .toBeInTheDocument()
   expect(recordAudit).toHaveBeenCalledWith('采用 AI 建议', 'ai_notes', 'note-1')
+})
+
+it('shows another member AI note as read-only to the boss', async () => {
+  currentUser.id = 'boss-user'
+  currentUser.role = 'boss'
+
+  const screen = await render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AiNotesView />
+    </QueryClientProvider>
+  )
+
+  await expect.element(screen.getByText('全部成员记录可见')).toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '采用' }))
+    .not.toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '忽略' }))
+    .not.toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '删除 AI 记录' }))
+    .not.toBeInTheDocument()
 })

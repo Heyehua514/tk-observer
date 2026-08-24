@@ -963,3 +963,10 @@
 - 本机 migration 已应用并已重新生成 Supabase TypeScript 类型；未推送远程 Supabase，生产变更仍需单独确认。
 - 验证：新增 UI gate 1 条、pgTAP gate 10 条和 eval 3 条；schema inventory 2/2、全库 pgTAP 39 文件 / 567 断言、typecheck、lint、前端 143 文件 / 325 测试、build、diff check 全部通过。
 - 反思：采用与忽略属于显式人工状态，不能让 AI 或审计文本隐式推断。将状态、时间、RLS 和审计集中在 AI 记录边界，后续可安全读取人类选择用于记忆推荐，但仍必须保持建议与业务执行分离。
+
+## 2026-08-24 AI 记录跨成员只读与远程差异核对
+
+- 修复 `AiNotesView`：成员仅能看到并删除自己的 AI 记录；负责人查看其他成员记录时没有采用、忽略或删除入口。删除图标现在提供「删除 AI 记录」无障碍名称。
+- 新增浏览器回归：所有者可见语义明确的删除入口，负责人跨成员查看时保持只读。数据库的 owner-only update RLS 保留为最终越权防线。
+- 只读核对远程 migration 后发现 `20260824000100_ai_notes_decisions.sql` 尚未应用。未推送 migration、未写入远程 Supabase，也未触碰 Cloudflare 部署。
+- 验证：schema inventory 2/2、pgTAP 39 文件 / 567 条、前端 143 文件 / 326 条、UI eval 11 文件 / 14 条、typecheck、lint、build、diff check 通过。
