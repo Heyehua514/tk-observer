@@ -1016,3 +1016,14 @@
 ### 反思
 
 生产发布拆成「单条追加 migration → 回读版本 → 静态部署 → 公网 HTTP 检查」四步，任何一步失败都不会继续扩大范围。未登录路由不能只用 curl 判断，因为 Cloudflare Pages 会返回 SPA 入口，最终权限行为仍以浏览器会话为准。
+
+## 2026-08-24 每日情报导航权限收口
+
+- 修复侧边栏权限口径：`/intelligence` 页面与统一情报池对所有已登录角色开放，boss、business、market、design、editing 均能从「工作台」分组进入。
+- 角色专属工作台权限保持不变；权限判断抽到 `app-sidebar-model.ts`，新增 2 条导航权限回归测试。
+- 验证：前端 147 个测试文件 / 336 条测试、typecheck、lint、build、diff check 全部通过。
+- 已部署最新版本：`https://42e16125.tk-observer.pages.dev`。
+
+### 反思
+
+页面权限和导航权限必须共用同一条产品约定。本轮只修正入口可见性，不扩大数据库 RLS；把纯权限函数从组件文件拆出后，Fast Refresh lint warning 也被消除。

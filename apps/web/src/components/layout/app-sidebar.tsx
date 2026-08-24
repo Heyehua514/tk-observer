@@ -3,7 +3,6 @@
  * boss 展示全部工作台；商务额外进入设计工作台提交需求。
  */
 import { Link, useLocation } from '@tanstack/react-router'
-import type { UserRole } from '@/types/auth'
 import {
   BriefcaseBusiness,
   CalendarDays,
@@ -17,6 +16,7 @@ import {
 import { useAuthStore } from '@/stores/auth-store'
 import { useLayout } from '@/context/layout-provider'
 import { useRecentPages } from '@/hooks/use-recent-pages'
+import { canSeeNavigationItem } from './app-sidebar-model'
 import {
   Sidebar,
   SidebarContent,
@@ -84,10 +84,6 @@ const navigation = [
   },
 ]
 
-function canSee(role: UserRole, itemRole: UserRole) {
-  return role === 'boss' || role === itemRole
-}
-
 export function AppSidebar() {
   const { collapsible, variant } = useLayout()
   const role = useAuthStore((state) => state.user?.role)
@@ -115,7 +111,7 @@ export function AppSidebar() {
               {navigation
                 .filter(
                   (item) =>
-                    canSee(role, item.role) ||
+                    canSeeNavigationItem(role, item) ||
                     (role === 'business' && item.to === '/design')
                 )
                 .map((item) => (
