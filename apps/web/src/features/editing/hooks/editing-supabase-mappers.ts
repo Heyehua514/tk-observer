@@ -134,6 +134,10 @@ export function mapSupabaseVideoIdeaRecord(
 ): VideoIdea {
   return {
     id: String(record.id || ''),
+    videoAccountId: String(record.video_account_id || '') || undefined,
+    externalVideoId: String(record.external_video_id || '') || undefined,
+    syncSource: String(record.sync_source || '') || undefined,
+    lastSyncedAt: String(record.last_synced_at || '') || undefined,
     account: record.account as VideoIdea['account'],
     videoType: record.video_type as VideoIdea['videoType'],
     title: String(record.title || ''),

@@ -30,6 +30,13 @@ create table if not exists public.video_sync_runs (
   updated_rows integer not null default 0 check (updated_rows >= 0),
   error_message text, metadata jsonb not null default '{}'::jsonb
 );
+alter table public.video_ideas add column if not exists video_account_id uuid references public.video_accounts(id) on delete set null;
+alter table public.video_ideas add column if not exists external_video_id text;
+alter table public.video_ideas add column if not exists sync_source text;
+alter table public.video_ideas add column if not exists last_synced_at timestamptz;
+create unique index if not exists video_ideas_external_account_key
+  on public.video_ideas (video_account_id, external_video_id)
+  where deleted_at is null and external_video_id is not null;
 create index if not exists video_account_snapshots_account_date_idx on public.video_account_snapshots (video_account_id, snapshot_date desc);
 create index if not exists video_sync_runs_started_idx on public.video_sync_runs (started_at desc);
 drop trigger if exists video_accounts_set_updated_at on public.video_accounts;

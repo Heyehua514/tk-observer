@@ -1,0 +1,11 @@
+{
+  "name": "@tk-observer/wechat-video-sync",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "sync": "node src/cli.mjs sync",
+    "run-collector": "node src/cli.mjs run-collector",
+    "schedule": "node src/scheduler.mjs"
+  }
+}

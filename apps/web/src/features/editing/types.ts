@@ -20,6 +20,10 @@ export type VideoIdeaSort = '-views' | '-completion_rate' | '-follower_gain'
 
 export type VideoIdea = {
   id: string
+  videoAccountId?: string
+  externalVideoId?: string
+  syncSource?: string
+  lastSyncedAt?: string
   account: VideoAccount
   videoType: VideoType
   title: string
