@@ -279,7 +279,7 @@ export async function logout() {
 
 export function getDefaultRoute(role: UserRole): WorkbenchPath {
   const routes: Record<UserRole, WorkbenchPath> = {
-    owner: '/overview',
+    owner: '/editing',
     boss: '/overview',
     business: '/business',
     market: '/market',
