@@ -15,8 +15,26 @@ permissions:
   contents: write
 
 jobs:
+  prepare-release:
+    name: Prepare ${{ github.event.inputs.tag || github.ref_name }}
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      TAURI_UPDATER_ENDPOINT: https://github.com/Heyehua514/tk-observer/releases/latest/download/latest.json
+      TAURI_UPDATER_PUBLIC_KEY: dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVFMzE3QTA2NzAzNjY5REIKUldUYmFUWndCbm94N3U3TDJINGovM0NzZ0Q1R2tqNjJWV1daTUZDbkZxanNuV0lnRmRTTnFuaWsK
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate release configuration
+        run: node scripts/desktop/release-check.mjs
+      - name: Prepare release tag
+        run: node scripts/desktop/prepare-release-tag.mjs
+
   release:
     name: Build ${{ matrix.name }}
+    needs: prepare-release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
