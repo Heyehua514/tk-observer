@@ -34,8 +34,7 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm --dir apps/web exec playwright install --with-deps chromium
       - name: Test
-        # Chromium may occasionally lose a suite during runner startup. Retry only failed tests.
-        run: pnpm --dir apps/web exec vitest run --browser.headless --retry=2
+        run: pnpm --dir apps/web exec vitest run --browser.headless
 
   scripts:
     name: Script unit tests

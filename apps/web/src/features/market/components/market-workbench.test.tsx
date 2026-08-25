@@ -8,27 +8,32 @@ vi.mock('../hooks/use-market-workbench', () => ({
   useMarketWorkbench: (query: string) => query.trim(),
 }))
 
-vi.mock('../hooks/use-product-catalog', () => ({
-  useProductCatalog: (query: string) =>
-    query.trim()
-      ? { data: [] }
-      : {
-          data: [
-            {
-              id: 'p1',
-              name: '海景蓝牙音箱',
-              category: 'electronics',
-              priceMinor: 19900,
-              costMinor: 9200,
-              marginMinor: 10700,
-              marginRate: 53.8,
-              currency: 'CNY',
-              status: 'active',
-              region: 'US',
-            },
-          ],
-        },
-}))
+vi.mock('../hooks/use-product-catalog', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../hooks/use-product-catalog')>()
+  return {
+    ...actual,
+    useProductCatalog: (query: string) =>
+      query.trim()
+        ? { data: [] }
+        : {
+            data: [
+              {
+                id: 'p1',
+                name: '海景蓝牙音箱',
+                category: 'electronics',
+                priceMinor: 19900,
+                costMinor: 9200,
+                marginMinor: 10700,
+                marginRate: 53.8,
+                currency: 'CNY',
+                status: 'active',
+                region: 'US',
+              },
+            ],
+          },
+  }
+})
 
 vi.mock('../competitors', () => ({
   CompetitorsWorkbench: () => (
