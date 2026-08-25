@@ -82,5 +82,6 @@ jobs:
           prerelease: false
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
+          assetNamePattern: TK_[version]_[platform]_[arch][_setup][ext]
           projectPath: apps/desktop
           args: ${{ matrix.args }}

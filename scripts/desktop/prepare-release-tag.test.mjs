@@ -73,5 +73,9 @@ test("serializes release uploads and includes the macOS updater bundle", () => {
   assert.match(workflow, /includeUpdaterJson: true/);
   assert.doesNotMatch(workflow, /uploadUpdaterJson:/);
   assert.match(workflow, /updaterJsonPreferNsis: true/);
+  assert.match(
+    workflow,
+    /assetNamePattern: TK_\[version\]_\[platform\]_\[arch\]\[_setup\]\[ext\]/,
+  );
   assert.deepEqual(tauriConfig.bundle.targets, ["dmg", "app", "nsis"]);
 });
