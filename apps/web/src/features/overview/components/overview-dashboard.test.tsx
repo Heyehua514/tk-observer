@@ -11,7 +11,9 @@ vi.mock('@/lib/data-provider', () => ({
 
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: () => ({
-    channel: () => ({ on: () => ({ subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) }) }),
+    channel: () => ({
+      on: () => ({ subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) }),
+    }),
     removeChannel: vi.fn(),
     from: (table: string) => ({
       select: (
@@ -54,6 +56,15 @@ vi.mock('@/lib/pocketbase', () => ({
   },
 }))
 
+vi.mock('@/features/shared-ai', () => ({
+  AiAssistantPanel: ({ scope }: { scope: string }) => (
+    <div>{`AI 助手入口:${scope}`}</div>
+  ),
+  AiMemoryView: () => null,
+  AiNotesView: () => null,
+  TaskAiEntry: () => null,
+}))
+
 it('renders guided empty states for overview dashboard data gaps', async () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -78,6 +89,9 @@ it('renders guided empty states for overview dashboard data gaps', async () => {
     .toBeInTheDocument()
   await expect
     .element(screen.getByText('还没有即将开始的活动'))
+    .toBeInTheDocument()
+  await expect
+    .element(screen.getByText('AI 助手入口:总览工作台'))
     .toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: '近 7 天' }))

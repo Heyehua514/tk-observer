@@ -31,10 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAiWorkspaceContext } from '@/features/shared-ai/hooks/use-ai-workspace-context'
+import { callWorkBuddyGateway } from '@/features/shared-ai/workbuddy-gateway'
 import { rankAiMemories } from './ai-memory-ranking'
 import { getAiProfile } from './ai-profile'
+import { buildWorkspaceAiPrompt } from './ai-workspace-context'
 import { useAiMemory } from './hooks/use-ai-memory'
-import { callWorkBuddyGateway } from './workbuddy-gateway'
 
 export type AiTaskType = '调研' | '文案' | '总结复盘' | '分析' | '自定义'
 const TASK_TYPES: AiTaskType[] = ['调研', '文案', '总结复盘', '分析', '自定义']
@@ -54,10 +56,12 @@ export function AiAssistantPanel({
   const [prompt, setPrompt] = useState(initialPrompt || '')
   const [taskType, setTaskType] = useState<AiTaskType>('分析')
   const rankedMemories = rankAiMemories(memories.data, scope, taskType)
+  const workspaceContext = useAiWorkspaceContext(scope)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [missingSources, setMissingSources] = useState<string[]>([])
   const inFlight = useRef(false)
 
   const run = async () => {
@@ -65,23 +69,29 @@ export function AiAssistantPanel({
     inFlight.current = true
     setBusy(true)
     setResult(null)
+    setMissingSources([])
     try {
-      const fullPrompt = [
-        `工作台：${scope}；任务类型：${taskType}。`,
-        context ? `以下是当前页面/工作台相关数据，供你参考：\n${context}` : '',
-        rankedMemories.length
-          ? `以下是用户确认保存的个人偏好记忆：\n${rankedMemories
-              .map(
-                (item: { memoryKey: string; memoryValue: string }) =>
-                  `${item.memoryKey}：${item.memoryValue}`
-              )
-              .join('\n')}`
-          : '',
-        prompt,
-        '请给出清晰、可直接使用的中文结果。只输出结果本身，不要提问或寒暄。',
-      ]
-        .filter(Boolean)
-        .join('\n')
+      const workspace = await workspaceContext.load()
+      setMissingSources(workspace.missingSources)
+      const fullPrompt = buildWorkspaceAiPrompt({
+        scope,
+        role: role || 'unknown',
+        request: `${taskType}：${prompt}`,
+        memories: rankedMemories,
+        items: [
+          ...workspace.items,
+          ...(context
+            ? [
+                {
+                  kind: '当前页面摘要',
+                  title: context,
+                  status: '当前页面',
+                },
+              ]
+            : []),
+        ],
+        missingSources: workspace.missingSources,
+      })
       const text = await callWorkBuddyGateway(fullPrompt)
       setResult(text)
       toast.success('AI 已完成，请确认是否采用')
@@ -199,6 +209,12 @@ export function AiAssistantPanel({
         <p className='text-xs text-muted-foreground'>
           当前重点：{profile.focus.join('、')}
         </p>
+        {missingSources.length ? (
+          <p className='text-xs text-amber-700 dark:text-amber-300'>
+            {missingSources.join('、')}
+            数据暂不可用，本次建议不会把缺失数据视为零。
+          </p>
+        ) : null}
         <Button
           onClick={() => void run()}
           disabled={busy || !prompt.trim()}

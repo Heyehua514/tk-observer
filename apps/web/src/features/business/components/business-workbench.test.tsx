@@ -25,6 +25,12 @@ vi.mock('../../social', () => ({
 vi.mock('../../sponsorships', () => ({
   SponsorshipsWorkbench: () => <div>活动招商占位</div>,
 }))
+vi.mock('@/features/shared-ai', () => ({
+  AiAssistantPanel: ({ scope }: { scope: string }) => (
+    <div>{`AI 助手入口:${scope}`}</div>
+  ),
+  TaskAiEntry: () => null,
+}))
 
 const noopParams = {
   page: 1,
@@ -66,6 +72,9 @@ it('keeps the core tabs visible and folds others into a more-menu', async () => 
   ]) {
     await expect.element(screen.getByText(label)).toBeInTheDocument()
   }
+  await expect
+    .element(screen.getByText('AI 助手入口:商务工作台'))
+    .toBeInTheDocument()
 
   // 折叠项不在主 Tab 栏可见，需点“更多”按钮
   await userEvent.click(screen.getByRole('button', { name: '更多功能' }))

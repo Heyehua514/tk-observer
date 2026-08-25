@@ -9,6 +9,12 @@ vi.mock('@/stores/auth-store', () => ({
   useAuthStore: (selector: (state: { user: { role: string } }) => unknown) =>
     selector({ user: { role: 'design' } }),
 }))
+vi.mock('@/features/shared-ai', () => ({
+  AiAssistantPanel: ({ scope }: { scope: string }) => (
+    <div>{`AI 助手入口:${scope}`}</div>
+  ),
+  TaskAiEntry: () => null,
+}))
 
 it('品牌规范展示设计资产、待审素材和已交付需求统计', async () => {
   const params = {
@@ -73,6 +79,9 @@ it('品牌规范展示设计资产、待审素材和已交付需求统计', asyn
   await userEvent.click(screen.getByRole('tab', { name: '品牌规范' }))
 
   await expect.element(screen.getByText('设计资产')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('AI 助手入口:设计工作台'))
+    .toBeInTheDocument()
   await expect
     .element(screen.getByTestId('metric-motion-0').getByText('3'))
     .toBeInTheDocument()
