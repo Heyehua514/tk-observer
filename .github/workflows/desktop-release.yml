@@ -80,5 +80,7 @@ jobs:
           releaseBody: Desktop release with signed updater artifacts.
           releaseDraft: true
           prerelease: false
+          uploadUpdaterJson: true
+          updaterJsonPreferNsis: true
           projectPath: apps/desktop
           args: ${{ matrix.args }}

@@ -76,10 +76,10 @@ test("rejects a release tag or desktop version source that differs from package 
   );
 });
 
-test("publishes the serial upload fix as version 0.1.2", () => {
+test("publishes the updater manifest fix as version 0.1.3", () => {
   assert.deepEqual(readDesktopVersions(repositoryRoot), {
-    desktopPackageVersion: "0.1.2",
-    cargoVersion: "0.1.2",
-    tauriVersion: "0.1.2",
+    desktopPackageVersion: "0.1.3",
+    cargoVersion: "0.1.3",
+    tauriVersion: "0.1.3",
   });
 });

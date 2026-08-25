@@ -70,5 +70,7 @@ test("serializes release uploads and includes the macOS updater bundle", () => {
   const tauriConfig = JSON.parse(readFileSync(tauriConfigPath, "utf8"));
 
   assert.match(workflow, /strategy:\n\s+max-parallel: 1/);
+  assert.match(workflow, /uploadUpdaterJson: true/);
+  assert.match(workflow, /updaterJsonPreferNsis: true/);
   assert.deepEqual(tauriConfig.bundle.targets, ["dmg", "app", "nsis"]);
 });
