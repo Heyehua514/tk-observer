@@ -1,5 +1,6 @@
 /** 通用 AI 助手面板测试。 */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { AiAssistantPanel } from './ai-assistant-panel'
@@ -76,5 +77,32 @@ it('loads workspace data only after the user requests analysis', async () => {
   await vi.waitFor(() => expect(mocks.load).toHaveBeenCalledOnce())
   expect(mocks.callWorkBuddyGateway).toHaveBeenCalledWith(
     expect.stringContaining('不得声称已经创建任务、修改记录、发送消息')
+  )
+})
+
+it('directs unavailable users to the desktop client', async () => {
+  mocks.load.mockResolvedValue({
+    available: true,
+    items: [],
+    missingSources: [],
+  })
+  mocks.callWorkBuddyGateway.mockRejectedValue(new Error('GATEWAY_UNAVAILABLE'))
+  const screen = await render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AiAssistantPanel scope='商务工作台' />
+    </QueryClientProvider>
+  )
+
+  await screen
+    .getByPlaceholder(
+      '例如：调研 TikTok 美区美妆类目 7 月畅销品，给出 Top 5 与共性。'
+    )
+    .fill('分析我的商机')
+  await screen.getByRole('button', { name: /让 WorkBuddy 执行/ }).click()
+
+  await vi.waitFor(() =>
+    expect(toast.error).toHaveBeenCalledWith(
+      '请打开 TK观察桌面客户端，并确认 WorkBuddy 已登录'
+    )
   )
 })

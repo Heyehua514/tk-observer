@@ -18,6 +18,9 @@ serde_json = "1"
 tauri = { version = "2", features = [] }
 tauri-plugin-updater = { version = "2", optional = true }
 tauri-plugin-process = { version = "2", optional = true }
+tiny_http = "0.12"
+url = "2"
+wait-timeout = "0.2"
 
 [features]
 default = ["updater", "process"]

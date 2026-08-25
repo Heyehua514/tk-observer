@@ -98,7 +98,7 @@ export function AiAssistantPanel({
     } catch (e) {
       toast.error(
         e instanceof Error && e.message === 'GATEWAY_UNAVAILABLE'
-          ? '未检测到本机 WorkBuddy 网关，请先双击「启动WorkBuddy网关.command」'
+          ? '请打开 TK观察桌面客户端，并确认 WorkBuddy 已登录'
           : 'AI 调用失败，请检查 WorkBuddy 状态'
       )
     } finally {

@@ -29,7 +29,7 @@
 - Produces: `pub fn spawn()` for desktop startup.
 - Produces: internal `handle_request`, `extract_assistant_text`, `is_allowed_origin`, and `run_cli` functions covered by unit tests.
 
-- [ ] **Step 1: Write failing Rust tests**
+- [x] **Step 1: Write failing Rust tests**
 
 ```rust
 #[test]
@@ -48,17 +48,17 @@ fn extracts_last_assistant_output_text() {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run: `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml workbuddy_gateway`
 
 Expected: compilation fails because `workbuddy_gateway` and its contract do not exist.
 
-- [ ] **Step 3: Add minimal gateway implementation**
+- [x] **Step 3: Add minimal gateway implementation**
 
-Implement a `tiny_http` loopback server with `GET /health`, `OPTIONS`, and `POST /analyze`; cap request bodies at 1 MiB; execute CodeBuddy with a 120-second `wait-timeout`; return stable JSON error codes.
+Implement a `tiny_http` loopback server with `GET /health`, `OPTIONS`, and `POST /analyze`; cap request bodies at 1 MiB; execute only one CodeBuddy process at a time with a 120-second `wait-timeout`; return `429 GATEWAY_BUSY` for concurrent requests and stable JSON error codes for failures.
 
-- [ ] **Step 4: Run Rust tests and verify GREEN**
+- [x] **Step 4: Run Rust tests and verify GREEN**
 
 Run: `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml workbuddy_gateway`
 
@@ -76,7 +76,7 @@ Expected: all gateway contract tests pass.
 - Consumes: `workbuddy_gateway::spawn()`.
 - Produces: Tauri startup behavior and user-facing recovery guidance.
 
-- [ ] **Step 1: Write failing lifecycle and UI tests**
+- [x] **Step 1: Write failing lifecycle and UI tests**
 
 ```rust
 #[test]
@@ -93,17 +93,17 @@ it('directs unavailable users to the desktop client', async () => {
 })
 ```
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 Run: `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml workbuddy_gateway && pnpm --dir apps/web test -- src/features/shared-ai/ai-assistant-panel.test.tsx src/features/shared-ai/ai-assistant-panel.eval.test.tsx`
 
 Expected: lifecycle assertion and desktop-client copy assertion fail.
 
-- [ ] **Step 3: Wire startup and replace command-file guidance**
+- [x] **Step 3: Wire startup and replace command-file guidance**
 
 Call `workbuddy_gateway::spawn()` from Tauri `setup`. Replace the unavailable toast with `请打开 TK观察桌面客户端，并确认 WorkBuddy 已登录` while preserving error normalization.
 
-- [ ] **Step 4: Run focused tests and verify GREEN**
+- [x] **Step 4: Run focused tests and verify GREEN**
 
 Run the focused Rust and Vitest commands from Step 2.
 
@@ -120,11 +120,11 @@ Expected: all focused tests pass.
 - Consumes: the final gateway lifecycle and error contract.
 - Produces: operator instructions and acceptance evidence.
 
-- [ ] **Step 1: Update documentation**
+- [x] **Step 1: Update documentation**
 
 Document desktop-first startup, legacy LaunchAgent fallback, `/health`, allowed origins, no stored credentials, and the authenticated WorkBuddy prerequisite.
 
-- [ ] **Step 2: Run complete verification**
+- [x] **Step 2: Run complete verification**
 
 ```bash
 cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
@@ -140,10 +140,10 @@ git diff --check
 
 Expected: all gateway tests, 353+ frontend tests, 16+ evals, typecheck, lint, build, and diff check pass. Any pre-existing full-repository format failures are reported separately and no unrelated files are reformatted.
 
-- [ ] **Step 3: Runtime smoke test**
+- [x] **Step 3: Runtime smoke test**
 
 Build or run the desktop app, verify `curl http://127.0.0.1:8877/health` returns `200`, then verify an unauthorized browser Origin receives `403` without invoking WorkBuddy.
 
-- [ ] **Step 4: Commit and push**
+- [x] **Step 4: Commit and push**
 
 Stage only the files listed in this plan, commit with `feat(desktop): auto-start WorkBuddy gateway`, rebase on current `origin/main` if necessary, and push `codex/workbuddy-autostart` without force.
