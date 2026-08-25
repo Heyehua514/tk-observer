@@ -29,7 +29,7 @@ jobs:
       - name: Lint
         run: pnpm lint
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: pnpm --dir apps/web exec playwright install --with-deps chromium
       - name: Test
         run: pnpm test
 
@@ -48,7 +48,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Script tests
-        run: node --test scripts/*.test.mjs scripts/supabase/*.test.mjs scripts/security/*.test.mjs scripts/desktop/*.test.mjs
+        run: |
+          for test_file in scripts/*.test.mjs scripts/supabase/*.test.mjs scripts/security/*.test.mjs scripts/desktop/*.test.mjs; do
+            node --test "$test_file"
+          done
 
   # 本地 pgTAP：在装有 Docker 的机器上运行 supabase start 后执行
   #   pnpm supabase:reset && pnpm supabase:test

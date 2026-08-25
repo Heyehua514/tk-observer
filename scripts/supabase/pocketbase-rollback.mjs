@@ -64,7 +64,7 @@ export async function checkPocketBase() {
 export async function checkSupabaseExports(exportDir = EXPORT_DIR) {
   const dir = await statOrNull(exportDir)
   if (!dir) return { present: false, files: [] }
-  const names = (await readdir(EXPORT_DIR)).filter((f) => /\.(json|csv)$/i.test(f)).sort()
+  const names = (await readdir(exportDir)).filter((f) => /\.(json|csv)$/i.test(f)).sort()
   return { present: true, files: names }
 }
 

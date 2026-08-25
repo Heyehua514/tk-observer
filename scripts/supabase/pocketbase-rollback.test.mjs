@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import {
   buildChecklist,
   checkEnv,
@@ -38,10 +41,17 @@ test('checkSupabaseExports handles missing export directory', async () => {
 })
 
 test('checkSupabaseExports lists json and csv files when present', async () => {
-  const report = await checkSupabaseExports('/tmp/tk-observer-supabase')
-  assert.equal(report.present, true)
-  assert.ok(report.files.some((f) => f.endsWith('.json')))
-  assert.ok(report.files.some((f) => f.endsWith('.csv')))
+  const exportDir = await mkdtemp(join(tmpdir(), 'tk-observer-supabase-'))
+  try {
+    await writeFile(join(exportDir, 'profiles.json'), '{}')
+    await writeFile(join(exportDir, 'videos.csv'), 'id\n')
+    const report = await checkSupabaseExports(exportDir)
+    assert.equal(report.present, true)
+    assert.ok(report.files.some((f) => f.endsWith('.json')))
+    assert.ok(report.files.some((f) => f.endsWith('.csv')))
+  } finally {
+    await rm(exportDir, { recursive: true, force: true })
+  }
 })
 
 test('buildChecklist emits ordered rollback steps and blocks on missing db', () => {
