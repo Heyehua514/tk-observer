@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { getReleaseTagDecision } from "./prepare-release-tag.mjs";
+
+const workflowPath = new URL(
+  "../../.github/workflows/desktop-release.yml",
+  import.meta.url,
+);
 
 test("creates a missing release tag for the checked-out commit", () => {
   assert.deepEqual(
@@ -35,5 +41,19 @@ test("rejects a release tag that points to a different commit", () => {
       action: "reject",
       reason: "标签 v0.1.1 指向 eacc908，当前发布提交为 102d57f。",
     },
+  );
+});
+
+test("configures a local Git committer before creating an annotated release tag", () => {
+  const workflow = readFileSync(workflowPath, "utf8");
+  const configStep = workflow.indexOf("Configure release tag committer");
+  const prepareStep = workflow.indexOf("Prepare release tag");
+
+  assert.ok(configStep >= 0, "release workflow must configure a Git committer");
+  assert.ok(configStep < prepareStep, "Git committer must be configured before tagging");
+  assert.match(workflow, /git config user\.name "github-actions\[bot\]"/);
+  assert.match(
+    workflow,
+    /git config user\.email "41898282\+github-actions\[bot\]@users\.noreply\.github\.com"/,
   );
 });
