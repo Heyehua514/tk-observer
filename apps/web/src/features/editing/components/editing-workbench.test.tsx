@@ -50,6 +50,12 @@ vi.mock('@/features/editing/components/competitor-workbench', () => ({
 vi.mock('@/features/editing/components/trending-workbench', () => ({
   TrendingWorkbench: () => <div>热点追踪占位</div>,
 }))
+vi.mock('@/features/shared-ai', () => ({
+  AiAssistantPanel: ({ scope }: { scope: string }) => (
+    <div>{`AI 助手入口:${scope}`}</div>
+  ),
+  TaskAiEntry: () => null,
+}))
 
 const params: EditingSearchParams = {
   page: 1,
@@ -86,6 +92,24 @@ it('成片归档空态提供可用的上传入口', async () => {
   await expect
     .element(screen.getByRole('button', { name: '上传成片' }))
     .toBeEnabled()
+})
+
+it('选题数据分析页保留剪辑工作台 AI 助手入口', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <EditingWorkbench
+        params={{ ...params, section: 'ideas', tab: 'analytics' }}
+        onParamsChange={vi.fn()}
+      />
+    </QueryClientProvider>
+  )
+
+  await expect
+    .element(screen.getByText('AI 助手入口:剪辑工作台'))
+    .toBeInTheDocument()
 })
 
 it('成片归档有数据时以内联 video 预览展示', async () => {

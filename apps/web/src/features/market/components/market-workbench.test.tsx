@@ -71,6 +71,12 @@ vi.mock('../venues', () => ({
 vi.mock('./market-records', () => ({
   EventsPanel: () => <div>活动排期占位</div>,
 }))
+vi.mock('@/features/shared-ai', () => ({
+  AiAssistantPanel: ({ scope }: { scope: string }) => (
+    <div>{`AI 助手入口:${scope}`}</div>
+  ),
+  TaskAiEntry: () => null,
+}))
 
 it('shows competitor monitoring and ad overview instead of empty placeholders', async () => {
   const queryClient = new QueryClient({
@@ -84,6 +90,9 @@ it('shows competitor monitoring and ad overview instead of empty placeholders', 
 
   await expect.element(screen.getByText('0 个公众号')).toBeInTheDocument()
   await expect.element(screen.getByText('暂无监测账号')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('AI 助手入口:市场工作台'))
+    .toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('tab', { name: '投放数据' }))
   await expect.element(screen.getByText('按站点投放数据')).toBeInTheDocument()
