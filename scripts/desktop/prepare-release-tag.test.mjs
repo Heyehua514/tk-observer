@@ -7,6 +7,10 @@ const workflowPath = new URL(
   "../../.github/workflows/desktop-release.yml",
   import.meta.url,
 );
+const tauriConfigPath = new URL(
+  "../../apps/desktop/src-tauri/tauri.conf.json",
+  import.meta.url,
+);
 
 test("creates a missing release tag for the checked-out commit", () => {
   assert.deepEqual(
@@ -50,10 +54,21 @@ test("configures a local Git committer before creating an annotated release tag"
   const prepareStep = workflow.indexOf("Prepare release tag");
 
   assert.ok(configStep >= 0, "release workflow must configure a Git committer");
-  assert.ok(configStep < prepareStep, "Git committer must be configured before tagging");
+  assert.ok(
+    configStep < prepareStep,
+    "Git committer must be configured before tagging",
+  );
   assert.match(workflow, /git config user\.name "github-actions\[bot\]"/);
   assert.match(
     workflow,
     /git config user\.email "41898282\+github-actions\[bot\]@users\.noreply\.github\.com"/,
   );
+});
+
+test("serializes release uploads and includes the macOS updater bundle", () => {
+  const workflow = readFileSync(workflowPath, "utf8");
+  const tauriConfig = JSON.parse(readFileSync(tauriConfigPath, "utf8"));
+
+  assert.match(workflow, /strategy:\n\s+max-parallel: 1/);
+  assert.deepEqual(tauriConfig.bundle.targets, ["dmg", "app", "nsis"]);
 });

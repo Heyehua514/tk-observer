@@ -41,6 +41,7 @@ jobs:
     needs: prepare-release
     runs-on: ${{ matrix.os }}
     strategy:
+      max-parallel: 1
       fail-fast: false
       matrix:
         include:
