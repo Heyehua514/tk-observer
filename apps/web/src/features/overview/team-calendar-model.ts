@@ -80,10 +80,30 @@ export function formatCalendarDualTime(
   return `北京时间 ${beijing} · ${city} ${local}`
 }
 
-const dayKey = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-    date.getDate()
+const beijingFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  weekday: 'short',
+})
+
+const getBeijingParts = (date: Date) => {
+  const parts = beijingFormatter.formatToParts(date)
+  return {
+    year: Number(parts.find((part) => part.type === 'year')?.value),
+    month: Number(parts.find((part) => part.type === 'month')?.value),
+    day: Number(parts.find((part) => part.type === 'day')?.value),
+    weekday: parts.find((part) => part.type === 'weekday')?.value,
+  }
+}
+
+const dayKey = (date: Date) => {
+  const parts = getBeijingParts(date)
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(
+    parts.day
   ).padStart(2, '0')}`
+}
 
 const toDate = (value: string) => {
   const normalized = value.includes('T') ? value : value.replace(' ', 'T')
@@ -95,11 +115,15 @@ export function buildCalendarMonth(
   date = new Date(),
   items: TeamCalendarItem[] = []
 ): TeamCalendarMonth {
-  const year = date.getFullYear()
-  const month = date.getMonth()
-  const firstDay = new Date(year, month, 1)
-  const offset = (firstDay.getDay() + 6) % 7
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const dateParts = getBeijingParts(date)
+  const year = dateParts.year
+  const month = dateParts.month - 1
+  const firstDay = new Date(Date.UTC(year, month, 1))
+  const weekdayIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
+    getBeijingParts(firstDay).weekday || ''
+  )
+  const offset = (weekdayIndex + 6) % 7
+  const daysInMonth = getBeijingParts(new Date(Date.UTC(year, month + 1, 0))).day
   const todayKey = dayKey(date)
   const grouped = new Map<string, TeamCalendarItem[]>()
 
@@ -107,8 +131,8 @@ export function buildCalendarMonth(
     const itemDate = toDate(item.date)
     if (
       !itemDate ||
-      itemDate.getFullYear() !== year ||
-      itemDate.getMonth() !== month
+      getBeijingParts(itemDate).year !== year ||
+      getBeijingParts(itemDate).month - 1 !== month
     ) {
       continue
     }
