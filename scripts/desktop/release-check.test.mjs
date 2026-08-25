@@ -1,9 +1,13 @@
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import {
+  readDesktopVersions,
   validateReleaseEnvironment,
   validateReleaseVersions,
 } from "./release-check.mjs";
+
+const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 test("requires updater endpoint, public key, and signing private key", () => {
   assert.deepEqual(
@@ -70,4 +74,12 @@ test("rejects a release tag or desktop version source that differs from package 
       ],
     },
   );
+});
+
+test("publishes the serial upload fix as version 0.1.2", () => {
+  assert.deepEqual(readDesktopVersions(repositoryRoot), {
+    desktopPackageVersion: "0.1.2",
+    cargoVersion: "0.1.2",
+    tauriVersion: "0.1.2",
+  });
 });
