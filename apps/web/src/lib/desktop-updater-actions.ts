@@ -23,7 +23,11 @@ export async function checkForDesktopUpdate(
     await update.downloadAndInstall()
     await dependencies.relaunch?.()
     const version = update.version?.trim() || '新版本'
-    return { state: 'updated', version, message: `已安装 ${version}，正在重启客户端` }
+    return {
+      state: 'updated',
+      version,
+      message: `已安装 ${version}，正在重启客户端`,
+    }
   } catch {
     return { state: 'error', message: '检查更新失败，请稍后重试' }
   }

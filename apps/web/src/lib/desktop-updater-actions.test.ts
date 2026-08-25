@@ -14,7 +14,9 @@ describe('desktop updater actions', () => {
   it('downloads and installs a discovered update before relaunching', async () => {
     const relaunch = vi.fn().mockResolvedValue(undefined)
     const downloadAndInstall = vi.fn().mockResolvedValue(undefined)
-    const check = vi.fn().mockResolvedValue({ version: '0.1.1', downloadAndInstall })
+    const check = vi
+      .fn()
+      .mockResolvedValue({ version: '0.1.1', downloadAndInstall })
 
     await expect(checkForDesktopUpdate({ check, relaunch })).resolves.toEqual({
       state: 'updated',

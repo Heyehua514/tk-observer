@@ -15,6 +15,8 @@ import {
 import PocketBase from 'pocketbase'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { getRuntimeDesktopUpdaterEnvironment } from '@/lib/desktop-updater'
+import { checkAndInstallDesktopUpdate } from '@/lib/desktop-updater-actions'
 import { getStoredServerUrl, setPocketBaseUrl } from '@/lib/pocketbase'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,8 +37,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/shared/page-header'
 import { getClientUpdateSurface } from './client-update-model'
-import { checkAndInstallDesktopUpdate } from '@/lib/desktop-updater-actions'
-import { getRuntimeDesktopUpdaterEnvironment } from '@/lib/desktop-updater'
 
 const schema = z.object({
   url: z.string().trim().url('请输入完整的 http 或 https 地址'),
@@ -59,7 +59,10 @@ export function ServerSettings() {
   const updaterEnvironment = getRuntimeDesktopUpdaterEnvironment()
   const updateSurface = getClientUpdateSurface(
     isDesktop,
-    Boolean(updaterEnvironment.endpoint?.trim() && updaterEnvironment.publicKey?.trim())
+    Boolean(
+      updaterEnvironment.endpoint?.trim() &&
+      updaterEnvironment.publicKey?.trim()
+    )
   )
 
   const checkUpdate = async () => {
@@ -183,7 +186,9 @@ export function ServerSettings() {
             disabled={!updateSurface.enabled || checkingUpdate}
             onClick={checkUpdate}
           >
-            {checkingUpdate ? <LoaderCircle className='size-4 animate-spin' /> : null}
+            {checkingUpdate ? (
+              <LoaderCircle className='size-4 animate-spin' />
+            ) : null}
             {updateSurface.actionLabel}
           </Button>
         </CardContent>

@@ -44,8 +44,11 @@ export function getDesktopUpdaterStatus(
 
 export function getRuntimeDesktopUpdaterEnvironment(): DesktopUpdaterEnvironment {
   return {
-    endpoint: import.meta.env.VITE_DESKTOP_UPDATER_ENDPOINT || DESKTOP_UPDATER_ENDPOINT,
-    publicKey: import.meta.env.VITE_DESKTOP_UPDATER_PUBLIC_KEY || DESKTOP_UPDATER_PUBLIC_KEY,
+    endpoint:
+      import.meta.env.VITE_DESKTOP_UPDATER_ENDPOINT || DESKTOP_UPDATER_ENDPOINT,
+    publicKey:
+      import.meta.env.VITE_DESKTOP_UPDATER_PUBLIC_KEY ||
+      DESKTOP_UPDATER_PUBLIC_KEY,
     currentVersion: import.meta.env.VITE_DESKTOP_APP_VERSION,
   }
 }
