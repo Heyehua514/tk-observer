@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const frontendPath = /^(apps\/web\/src|apps\/web\/public)\//u
 
@@ -30,7 +31,7 @@ function collectFiles(root) {
   return files
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = process.cwd()
   const result = scanProductionText(collectFiles(root))
   if (result.findings.length) {

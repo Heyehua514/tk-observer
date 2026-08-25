@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Script tests
-        run: node --test scripts/*.test.mjs scripts/supabase/*.test.mjs
+        run: node --test scripts/*.test.mjs scripts/supabase/*.test.mjs scripts/security/*.test.mjs scripts/desktop/*.test.mjs
 
   # 本地 pgTAP：在装有 Docker 的机器上运行 supabase start 后执行
   #   pnpm supabase:reset && pnpm supabase:test
