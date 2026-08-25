@@ -1,6 +1,6 @@
 [package]
 name = "tk_observer_desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "TK观察内部多角色工作台"
 authors = ["TK观察"]
 edition = "2021"
