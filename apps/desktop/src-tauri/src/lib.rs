@@ -5,6 +5,8 @@ pub fn run() {
     let builder = tauri::Builder::default();
     #[cfg(feature = "updater")]
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    #[cfg(feature = "process")]
+    let builder = builder.plugin(tauri_plugin_process::init());
     builder
         .run(tauri::generate_context!())
         .expect("TK观察工作台启动失败");

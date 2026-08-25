@@ -29,8 +29,8 @@ jobs:
             os: windows-latest
             args: '--target x86_64-pc-windows-msvc'
     env:
-      TAURI_UPDATER_ENDPOINT: ${{ vars.TAURI_UPDATER_ENDPOINT }}
-      TAURI_UPDATER_PUBLIC_KEY: ${{ vars.TAURI_UPDATER_PUBLIC_KEY }}
+      TAURI_UPDATER_ENDPOINT: https://github.com/Heyehua514/tk-observer/releases/latest/download/latest.json
+      TAURI_UPDATER_PUBLIC_KEY: dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVFMzE3QTA2NzAzNjY5REIKUldUYmFUWndCbm94N3U3TDJINGovM0NzZ0Q1R2tqNjJWV1daTUZDbkZxanNuV0lnRmRTTnFuaWsK
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:

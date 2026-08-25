@@ -35,6 +35,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/shared/page-header'
 import { getClientUpdateSurface } from './client-update-model'
+import { checkAndInstallDesktopUpdate } from '@/lib/desktop-updater-actions'
+import { getRuntimeDesktopUpdaterEnvironment } from '@/lib/desktop-updater'
 
 const schema = z.object({
   url: z.string().trim().url('请输入完整的 http 或 https 地址'),
@@ -43,6 +45,7 @@ type Values = z.infer<typeof schema>
 
 export function ServerSettings() {
   const [testing, setTesting] = useState(false)
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
   const [testedUrl, setTestedUrl] = useState('')
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -50,15 +53,31 @@ export function ServerSettings() {
     resolver: zodResolver(schema),
     defaultValues: { url: getStoredServerUrl() },
   })
-  const updateSurface = getClientUpdateSurface(
-    Boolean(
-      (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__
-    ),
-    Boolean(
-      import.meta.env.VITE_TAURI_UPDATER_ENDPOINT?.trim() &&
-      import.meta.env.VITE_TAURI_UPDATER_PUBLIC_KEY?.trim()
-    )
+  const isDesktop = Boolean(
+    (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__
   )
+  const updaterEnvironment = getRuntimeDesktopUpdaterEnvironment()
+  const updateSurface = getClientUpdateSurface(
+    isDesktop,
+    Boolean(updaterEnvironment.endpoint?.trim() && updaterEnvironment.publicKey?.trim())
+  )
+
+  const checkUpdate = async () => {
+    if (!updateSurface.enabled || checkingUpdate) return
+    setCheckingUpdate(true)
+    try {
+      const result = await checkAndInstallDesktopUpdate()
+      if (result.state === 'current' || result.state === 'updated') {
+        toast.success(result.message)
+      } else {
+        toast.error(result.message)
+      }
+    } catch {
+      toast.error('检查更新失败，请稍后重试')
+    } finally {
+      setCheckingUpdate(false)
+    }
+  }
 
   const test = async () => {
     const valid = await form.trigger()
@@ -159,7 +178,12 @@ export function ServerSettings() {
           <CardDescription>{updateSurface.description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant='outline' disabled={!updateSurface.enabled}>
+          <Button
+            variant='outline'
+            disabled={!updateSurface.enabled || checkingUpdate}
+            onClick={checkUpdate}
+          >
+            {checkingUpdate ? <LoaderCircle className='size-4 animate-spin' /> : null}
             {updateSurface.actionLabel}
           </Button>
         </CardContent>

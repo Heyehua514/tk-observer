@@ -16,6 +16,11 @@ export type DesktopUpdaterStatus = {
   message: string
 }
 
+export const DESKTOP_UPDATER_ENDPOINT =
+  'https://github.com/Heyehua514/tk-observer/releases/latest/download/latest.json'
+export const DESKTOP_UPDATER_PUBLIC_KEY =
+  'dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVFMzE3QTA2NzAzNjY5REIKUldUYmFUWndCbm94N3U3TDJINGovM0NzZ0Q1R2tqNjJWV1daTUZDbkZxanNuV0lnRmRTTnFuaWsK'
+
 export function getDesktopUpdaterConfig(
   environment: DesktopUpdaterEnvironment
 ): DesktopUpdaterConfig {
@@ -39,8 +44,8 @@ export function getDesktopUpdaterStatus(
 
 export function getRuntimeDesktopUpdaterEnvironment(): DesktopUpdaterEnvironment {
   return {
-    endpoint: import.meta.env.VITE_DESKTOP_UPDATER_ENDPOINT,
-    publicKey: import.meta.env.VITE_DESKTOP_UPDATER_PUBLIC_KEY,
+    endpoint: import.meta.env.VITE_DESKTOP_UPDATER_ENDPOINT || DESKTOP_UPDATER_ENDPOINT,
+    publicKey: import.meta.env.VITE_DESKTOP_UPDATER_PUBLIC_KEY || DESKTOP_UPDATER_PUBLIC_KEY,
     currentVersion: import.meta.env.VITE_DESKTOP_APP_VERSION,
   }
 }

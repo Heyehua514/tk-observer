@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "TK观察主窗口的最小默认权限",
   "windows": ["main"],
-  "permissions": ["core:default", "updater:default"]
+  "permissions": ["core:default", "updater:default", "process:default"]
 }
