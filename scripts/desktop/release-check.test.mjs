@@ -76,10 +76,10 @@ test("rejects a release tag or desktop version source that differs from package 
   );
 });
 
-test("publishes the updater manifest fix as version 0.1.5", () => {
+test("keeps every desktop release source at version 0.1.6", () => {
   assert.deepEqual(readDesktopVersions(repositoryRoot), {
-    desktopPackageVersion: "0.1.5",
-    cargoVersion: "0.1.5",
-    tauriVersion: "0.1.5",
+    desktopPackageVersion: "0.1.6",
+    cargoVersion: "0.1.6",
+    tauriVersion: "0.1.6",
   });
 });
