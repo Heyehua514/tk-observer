@@ -76,10 +76,10 @@ test("rejects a release tag or desktop version source that differs from package 
   );
 });
 
-test("keeps every desktop release source at version 0.1.6", () => {
+test("keeps every desktop release source at version 0.1.7", () => {
   assert.deepEqual(readDesktopVersions(repositoryRoot), {
-    desktopPackageVersion: "0.1.6",
-    cargoVersion: "0.1.6",
-    tauriVersion: "0.1.6",
+    desktopPackageVersion: "0.1.7",
+    cargoVersion: "0.1.7",
+    tauriVersion: "0.1.7",
   });
 });

@@ -79,3 +79,13 @@ test("serializes release uploads and includes the macOS updater bundle", () => {
   );
   assert.deepEqual(tauriConfig.bundle.targets, ["dmg", "app", "nsis"]);
 });
+
+test("passes public Supabase runtime configuration into desktop builds", () => {
+  const workflow = readFileSync(workflowPath, "utf8");
+
+  assert.match(workflow, /VITE_SUPABASE_URL:\s*\$\{\{ vars\.VITE_SUPABASE_URL \}\}/);
+  assert.match(
+    workflow,
+    /VITE_SUPABASE_ANON_KEY:\s*\$\{\{ vars\.VITE_SUPABASE_ANON_KEY \}\}/,
+  );
+});
