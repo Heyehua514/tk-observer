@@ -1,5 +1,14 @@
 # 2026-08-12 工作台推进记录
 
+## 2026-08-28：v0.1.8 桌面发布与换设备交接
+
+- `main` 已同步到 `8c3e0c5` 合并提交，并追加桌面版本提交 `6180817`；`v0.1.8` 标签指向 `6180817`。
+- GitHub Actions Desktop Release #11（运行 `33136682831`）已成功，耗时 18 分 29 秒；macOS 与 Windows 构建均通过。
+- GitHub Release `TK观察工作台 v0.1.8` 已发布并标记为 Latest，包含 `latest.json`、macOS ARM64 DMG/更新包及签名文件、Windows x64 安装包及签名文件，共 8 个资产。
+- 本地发布门禁：`pnpm typecheck`、`pnpm lint`、前端 164 个测试文件 / 379 条测试、14 个 eval 文件 / 18 条 eval、`pnpm build`、Rust 11 条测试、`cargo check`、`git diff --check` 全部通过。`format:check` 仍有 25 个主线既有格式告警，本轮未重写。
+- 重要分发边界：GitHub 仓库当前为 Private。登录 GitHub 的浏览器可以看到 Release 资产，但未登录请求 `releases/latest/download/latest.json` 和安装包返回 404；因此普通未认证客户端不能直接使用当前 GitHub 地址做自动更新。
+- 反思：先验证构建、资产和下载路径，再宣布客户端可更新；下一步必须在“公开 Release”“带身份的下载代理/存储”或“仅限仓库成员分发”中选定一种方案，不能把 PAT 嵌入客户端。
+
 ## 2026-08-28：最终交接收口
 
 - 以 `v0.1.7`（`00192cf`）为基线，整合每日情报中心设计、工作台交互规范、通知中心、商机详情、日期选择器、AI 记忆筛选/错误态、CSV 导入反馈等本地已验证成果。
