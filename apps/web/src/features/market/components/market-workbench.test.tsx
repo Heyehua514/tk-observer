@@ -4,34 +4,47 @@ import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import { MarketWorkbench } from './market-workbench'
 
+const deleteProduct = vi.hoisted(() => vi.fn())
+const productCatalog = vi.hoisted(() =>
+  vi.fn((query: string) =>
+    query.trim()
+      ? { data: [] }
+      : {
+          data: [
+            {
+              id: 'p1',
+              name: '海景蓝牙音箱',
+              category: 'electronics',
+              priceMinor: 19900,
+              costMinor: 9200,
+              marginMinor: 10700,
+              marginRate: 53.8,
+              currency: 'CNY',
+              status: 'active',
+              region: 'US',
+            },
+          ],
+        }
+  )
+)
+
 vi.mock('../hooks/use-market-workbench', () => ({
   useMarketWorkbench: (query: string) => query.trim(),
 }))
 
-vi.mock('../hooks/use-product-catalog', async (importOriginal) => {
+vi.mock('@/features/market/hooks/use-product-catalog', () => ({
+  productCatalogKeys: { all: ['market', 'products'] },
+  useProductCatalog: productCatalog,
+}))
+
+vi.mock('@/features/market/hooks/use-product-crud', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('../hooks/use-product-catalog')>()
+    await importOriginal<
+      typeof import('@/features/market/hooks/use-product-crud')
+    >()
   return {
     ...actual,
-    useProductCatalog: (query: string) =>
-      query.trim()
-        ? { data: [] }
-        : {
-            data: [
-              {
-                id: 'p1',
-                name: '海景蓝牙音箱',
-                category: 'electronics',
-                priceMinor: 19900,
-                costMinor: 9200,
-                marginMinor: 10700,
-                marginRate: 53.8,
-                currency: 'CNY',
-                status: 'active',
-                region: 'US',
-              },
-            ],
-          },
+    useDeleteProduct: () => ({ mutate: deleteProduct, isPending: false }),
   }
 })
 
@@ -114,4 +127,49 @@ it('shows guided empty state when product search has no match', async () => {
   await expect
     .element(screen.getByText('换个关键词试试，确认商品名称、类目或站点拼写。'))
     .toBeInTheDocument()
+})
+
+it('formats product amounts from minor units using the record currency', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <MarketWorkbench query='' onQueryChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  expect(productCatalog).toHaveBeenCalledWith('')
+  await expect.element(screen.getByText('¥199.00')).toBeInTheDocument()
+  await expect.element(screen.getByText('¥92.00')).toBeInTheDocument()
+  await expect.element(screen.getByText('¥107.00')).toBeInTheDocument()
+})
+
+it('requires confirmation before deleting a product', async () => {
+  deleteProduct.mockClear()
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <MarketWorkbench query='' onQueryChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await userEvent.click(screen.getByRole('button', { name: '删除' }))
+  await expect.element(screen.getByText('确认删除商品？')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('删除后商品会从选品库隐藏，确认继续吗？'))
+    .toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(deleteProduct).not.toHaveBeenCalled()
+  await expect
+    .element(screen.getByText('确认删除商品？'))
+    .not.toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: '删除' }))
+  await expect.element(screen.getByText('确认删除商品？')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '确认删除' }))
+  await vi.waitFor(() => expect(deleteProduct).toHaveBeenCalledWith('p1'))
 })

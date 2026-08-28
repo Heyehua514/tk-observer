@@ -18,6 +18,17 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { formatMoney } from '@/lib/format'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -55,6 +66,7 @@ export function MarketWorkbench({
   const [editingProduct, setEditingProduct] = useState<ProductFormData | null>(
     null
   )
+  const [deleteTarget, setDeleteTarget] = useState<ProductFormData | null>(null)
   const removeProduct = useDeleteProduct()
   const activeQuery = useMarketWorkbench(query)
   const products = useProductCatalog(activeQuery)
@@ -64,7 +76,7 @@ export function MarketWorkbench({
         .slice(0, 5)
         .map(
           (p) =>
-            `- ${p.name}（${p.category}/${p.region}，售价 ¥${(p.priceMinor / 100).toFixed(0)}）`
+            `- ${p.name}（${p.category}/${p.region}，售价 ${formatMoney(p.priceMinor, p.currency)}）`
         )
         .join('\n')}`
     : '当前选品库暂无数据。'
@@ -177,11 +189,17 @@ export function MarketWorkbench({
                         </div>
                       </TableCell>
                       <TableCell>{product.category}</TableCell>
-                      <TableCell>{product.priceMinor}</TableCell>
-                      <TableCell>{product.costMinor}</TableCell>
+                      <TableCell>
+                        {formatMoney(product.priceMinor, product.currency)}
+                      </TableCell>
+                      <TableCell>
+                        {formatMoney(product.costMinor, product.currency)}
+                      </TableCell>
                       <TableCell>
                         <div className='flex flex-col gap-1'>
-                          <span>{product.marginMinor}</span>
+                          <span>
+                            {formatMoney(product.marginMinor, product.currency)}
+                          </span>
                           <span className='text-xs text-muted-foreground'>
                             {product.marginRate}%
                           </span>
@@ -207,7 +225,7 @@ export function MarketWorkbench({
                             size='sm'
                             variant='ghost'
                             className='text-destructive'
-                            onClick={() => removeProduct.mutate(product.id)}
+                            onClick={() => setDeleteTarget(product)}
                           >
                             删除
                           </Button>
@@ -240,6 +258,35 @@ export function MarketWorkbench({
             onOpenChange={setProductFormOpen}
             product={editingProduct}
           />
+          <AlertDialog
+            open={Boolean(deleteTarget)}
+            onOpenChange={(open) => {
+              if (!open) setDeleteTarget(null)
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>确认删除商品？</AlertDialogTitle>
+                <AlertDialogDescription>
+                  删除后商品会从选品库隐藏，确认继续吗？
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>取消</AlertDialogCancel>
+                <AlertDialogAction
+                  className='bg-destructive text-white hover:bg-destructive/90'
+                  disabled={removeProduct.isPending}
+                  onClick={() => {
+                    if (!deleteTarget) return
+                    removeProduct.mutate(deleteTarget.id)
+                    setDeleteTarget(null)
+                  }}
+                >
+                  确认删除
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
         <TabsContent value='competitors' className='mt-5'>
           <CompetitorsWorkbench query={activeQuery} />
