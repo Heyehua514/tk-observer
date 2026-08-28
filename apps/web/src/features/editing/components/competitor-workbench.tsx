@@ -155,7 +155,7 @@ export function CompetitorWorkbench({
               {videos.data.map((video) => (
                 <article
                   key={video.id}
-                  className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30'
+                  className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30 motion-reduce:transform-none motion-reduce:transition-none'
                 >
                   <div className='flex flex-wrap items-start justify-between gap-3'>
                     <div>

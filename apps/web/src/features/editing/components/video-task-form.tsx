@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
+import { format, parseISO } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { LoaderCircle } from 'lucide-react'
@@ -32,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DatePicker } from '@/components/date-picker'
 import {
   useCreateVideoTask,
   useUpdateVideoTask,
@@ -235,7 +237,16 @@ export function VideoTaskFormDialog({
                   <FormItem>
                     <FormLabel>截止日期</FormLabel>
                     <FormControl>
-                      <Input type='date' {...field} />
+                      <DatePicker
+                        selected={
+                          field.value ? parseISO(field.value) : undefined
+                        }
+                        onSelect={(date) =>
+                          field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                        }
+                        allowFuture
+                        placeholder='选择截止日期'
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

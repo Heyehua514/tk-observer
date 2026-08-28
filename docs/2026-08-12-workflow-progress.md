@@ -1,5 +1,14 @@
 # 2026-08-12 工作台推进记录
 
+## 2026-08-28：最终交接收口
+
+- 以 `v0.1.7`（`00192cf`）为基线，整合每日情报中心设计、工作台交互规范、通知中心、商机详情、日期选择器、AI 记忆筛选/错误态、CSV 导入反馈等本地已验证成果。
+- 保留 Supabase-first、WorkBuddy 工作区上下文、AI 决策 owner 权限、审计记录和商机详情编辑能力；未修改密码、Token、`hosts` 或其他敏感未跟踪文件。
+- 验证：`pnpm typecheck`、`pnpm lint`、`pnpm test`（164 文件 / 379 测试）、`pnpm build`、`cargo check`、`git diff --check` 全部通过。
+- 全量 `format:check` 仍有 25 个 `origin/main` 已存在的历史格式告警，本轮未扩大修改范围。
+- 外部阻塞仍为飞书真实 OAuth/sync、微信视频号设备采集、Apple notarization、生产 migration link/权限和真实成员数据验收，详见 `docs/2026-08-28-最终交接与维护清单.md`。
+- 反思：把日期、筛选、导入反馈和删除确认落为共享模型/组件并配套 gate tests，减少后续设备维护的重复判断；真实平台数据和生产变更继续保持显式授权边界，不用演示数据冒充已采集数据。
+
 ## 2026-08-20：飞书 Supabase-first 基础收口
 
 - 新增 `feishu_connections`、`feishu_documents`、`feishu_sync_state` 三张 Supabase 表：token 仅保存加密字段，连接表不向浏览器授予 SELECT；成员通过 `get_my_feishu_connection()` RPC 仅读取连接状态、连接时间和同步状态。

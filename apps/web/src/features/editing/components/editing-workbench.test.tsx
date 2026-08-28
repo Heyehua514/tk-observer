@@ -138,6 +138,26 @@ it('成片归档有数据时以内联 video 预览展示', async () => {
   expect(video?.getAttribute('src')).toBe('https://example.com/video.mp4')
 })
 
+it('视频任务空态提供新增任务入口', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  const screen = await render(
+    <QueryClientProvider client={queryClient}>
+      <EditingWorkbench params={params} onParamsChange={vi.fn()} />
+    </QueryClientProvider>
+  )
+
+  await userEvent.click(screen.getByRole('tab', { name: '视频任务与归档' }))
+  await userEvent.click(
+    screen.getByRole('tab', { name: '视频任务', exact: true })
+  )
+  await expect.element(screen.getByText('等待视频任务创建')).toBeInTheDocument()
+  await expect
+    .element(screen.getByRole('button', { name: '新增任务' }))
+    .toBeEnabled()
+})
+
 it('发布排期 Tab 展示引导式空态', async () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },

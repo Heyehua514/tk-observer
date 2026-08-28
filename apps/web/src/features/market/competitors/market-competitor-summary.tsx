@@ -25,7 +25,15 @@ export function MarketCompetitorSummary() {
           ))}
         </div>
       ) : (
-        <div className='mt-2 text-sm text-muted-foreground'>暂无监测账号</div>
+        <div className='mt-2 space-y-2'>
+          <p className='text-sm text-muted-foreground'>暂无监测账号</p>
+          <a
+            href='/editing?section=competitors'
+            className='inline-flex text-xs font-medium text-primary hover:underline'
+          >
+            去维护对标账号
+          </a>
+        </div>
       )}
     </>
   )

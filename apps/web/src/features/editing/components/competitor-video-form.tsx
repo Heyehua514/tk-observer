@@ -1,6 +1,7 @@
 /** 对标爆款视频新增/编辑表单，包含谢洁的分析笔记与可借鉴点。 */
 import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
+import { format, parseISO } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import {
   useCreateCompetitorVideo,
   useUpdateCompetitorVideo,
@@ -144,7 +146,13 @@ export function CompetitorVideoForm({
                 <FormItem>
                   <FormLabel>发布日期</FormLabel>
                   <FormControl>
-                    <Input type='date' {...field} />
+                    <DatePicker
+                      selected={field.value ? parseISO(field.value) : undefined}
+                      onSelect={(date) =>
+                        field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                      }
+                      placeholder='选择发布日期'
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

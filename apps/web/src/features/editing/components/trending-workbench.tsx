@@ -22,61 +22,17 @@ import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
 import { SearchBar } from '@/components/shared/search-bar'
-import { heatLevels } from '../constants'
 import {
   useCreateTrendingTopic,
   useMarkTrendingTopicConverted,
 } from '../hooks/use-create-trending-topic'
 import { useTrendingTopics } from '../hooks/use-trending-topics'
-import type {
-  TrendingTopic,
-  TrendingTopicInput,
-  VideoIdeaInput,
-} from '../types'
+import type { TrendingTopic, VideoIdeaInput } from '../types'
 import {
   editingEmptyTitles,
   editingPermissionErrorDescription,
 } from './editing-empty-copy'
-
-function parseTopicBlocks(text: string): TrendingTopicInput[] {
-  const blocks = text
-    .split(/\n\s*(?:---+|\n)\s*\n?/u)
-    .map((block) => block.trim())
-    .filter(Boolean)
-  return blocks.map((block) => {
-    const fields = new Map<string, string>()
-    let fallbackTitle = ''
-    const insightLines: string[] = []
-    for (const raw of block.split(/\r?\n/u)) {
-      const line = raw.replace(/^[-*#\d.、\s]+/u, '').trim()
-      if (!line) continue
-      const matched = line.match(
-        /^(话题|来源|关键词|热度|启发|选题启发|链接|参考链接)[：:]\s*(.*)$/u
-      )
-      if (matched) fields.set(matched[1], matched[2].trim())
-      else if (!fallbackTitle) fallbackTitle = line
-      else insightLines.push(line)
-    }
-    const topic = fields.get('话题') || fallbackTitle
-    if (!topic) throw new Error('每条调研结果都需要话题名称')
-    const rawHeat = fields.get('热度') || '中'
-    const heatLevel = heatLevels.includes(
-      rawHeat as (typeof heatLevels)[number]
-    )
-      ? (rawHeat as TrendingTopicInput['heatLevel'])
-      : '中'
-    return {
-      topic,
-      source: fields.get('来源') || 'AI 辅助行业调研',
-      keywords: fields.get('关键词') || '',
-      heatLevel,
-      insight:
-        fields.get('启发') || fields.get('选题启发') || insightLines.join('\n'),
-      referenceUrl: fields.get('链接') || fields.get('参考链接') || '',
-      discoveredAt: new Date().toISOString().slice(0, 10),
-    }
-  })
-}
+import { parseTopicBlocks } from './trending-utils'
 
 function TrendResearchDialog({
   open,
@@ -209,7 +165,11 @@ export function TrendingWorkbench({
           调研趋势
         </Button>
       </div>
-      {topics.isError ? (
+      {topics.isLoading ? (
+        <div className='rounded-lg border p-6 text-sm text-muted-foreground'>
+          正在加载热点话题...
+        </div>
+      ) : topics.isError ? (
         <LoadStateError
           title='热点话题加载失败'
           description={editingPermissionErrorDescription}
@@ -254,6 +214,8 @@ export function TrendingWorkbench({
                   {topic.source}
                   <br />
                   {topic.discoveredAt}
+                  <br />
+                  <Badge variant='outline'>人工录入</Badge>
                 </div>
                 <Button
                   size='sm'

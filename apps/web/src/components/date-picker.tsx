@@ -7,17 +7,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { isDatePickerDateDisabled } from './date-picker-model'
 
 type DatePickerProps = {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
   placeholder?: string
+  ariaLabel?: string
+  allowFuture?: boolean
+  className?: string
 }
 
 export function DatePicker({
   selected,
   onSelect,
-  placeholder = 'Pick a date',
+  placeholder = '选择日期',
+  ariaLabel,
+  allowFuture = false,
+  className,
 }: DatePickerProps) {
   return (
     <Popover>
@@ -25,10 +32,11 @@ export function DatePicker({
         <Button
           variant='outline'
           data-empty={!selected}
-          className='w-60 justify-start text-start font-normal data-[empty=true]:text-muted-foreground'
+          aria-label={ariaLabel ?? placeholder}
+          className={`w-full justify-start text-start font-normal data-[empty=true]:text-muted-foreground sm:w-60 ${className ?? ''}`}
         >
           {selected ? (
-            format(selected, 'MMM d, yyyy')
+            format(selected, 'yyyy年M月d日')
           ) : (
             <span>{placeholder}</span>
           )}
@@ -41,9 +49,7 @@ export function DatePicker({
           captionLayout='dropdown'
           selected={selected}
           onSelect={onSelect}
-          disabled={(date: Date) =>
-            date > new Date() || date < new Date('1900-01-01')
-          }
+          disabled={(date: Date) => isDatePickerDateDisabled(date, allowFuture)}
         />
       </PopoverContent>
     </Popover>
