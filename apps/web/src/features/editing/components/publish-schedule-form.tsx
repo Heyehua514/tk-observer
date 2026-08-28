@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
+import { format, parseISO } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { LoaderCircle } from 'lucide-react'
@@ -34,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import { videoAccounts } from '../constants'
 import { useCreatePublishSchedule } from '../hooks/use-create-publish-schedule'
 import { useUpdatePublishSchedule } from '../hooks/use-update-publish-schedule'
@@ -44,6 +46,7 @@ import type {
   VideoAccount,
 } from '../types'
 import { publishScheduleStatusLabels as statusLabels } from './production-model'
+import { combineLocalDateTime } from './publish-schedule-model'
 
 const platforms = ['微信视频号', 'TikTok', '抖音', 'YouTube'] as const
 const statuses = [
@@ -242,9 +245,38 @@ export function PublishScheduleFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>发布时间</FormLabel>
-                    <FormControl>
-                      <Input type='datetime-local' {...field} />
-                    </FormControl>
+                    <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem]'>
+                      <FormControl>
+                        <DatePicker
+                          selected={
+                            field.value ? parseISO(field.value) : undefined
+                          }
+                          onSelect={(date) =>
+                            field.onChange(
+                              combineLocalDateTime(
+                                date ? format(date, 'yyyy-MM-dd') : '',
+                                field.value.slice(11, 16)
+                              )
+                            )
+                          }
+                          allowFuture
+                          placeholder='选择发布日期'
+                        />
+                      </FormControl>
+                      <Input
+                        type='time'
+                        value={field.value.slice(11, 16)}
+                        onChange={(event) =>
+                          field.onChange(
+                            combineLocalDateTime(
+                              field.value.slice(0, 10),
+                              event.target.value
+                            )
+                          )
+                        }
+                        aria-label='发布时间'
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

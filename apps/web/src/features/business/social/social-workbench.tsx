@@ -1,5 +1,6 @@
 // 商务工作台朋友圈计划 CRUD；权限：business 与 boss 可操作。
 import { useMemo, useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardCheck, Plus, Trash2 } from 'lucide-react'
 import { getDataProvider } from '@/lib/data-provider'
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import { EmptyState } from '@/components/shared/empty-state'
 import { buildSocialWeek } from './social-calendar'
 import {
@@ -254,10 +256,16 @@ export function SocialWorkbench() {
             <DialogTitle>新增朋友圈计划</DialogTitle>
           </DialogHeader>
           <Field label='发布日期'>
-            <Input
-              type='date'
-              value={draft.date}
-              onChange={(e) => setDraft({ ...draft, date: e.target.value })}
+            <DatePicker
+              selected={draft.date ? parseISO(draft.date) : undefined}
+              onSelect={(date) =>
+                setDraft({
+                  ...draft,
+                  date: date ? format(date, 'yyyy-MM-dd') : '',
+                })
+              }
+              allowFuture
+              placeholder='选择发布日期'
             />
           </Field>
           <Field label='发布内容'>

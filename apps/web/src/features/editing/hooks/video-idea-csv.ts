@@ -14,6 +14,17 @@ export type VideoIdeaCsvPreflight = {
   duplicateKeys: string[]
 }
 
+export function formatImportFeedback(result: {
+  newCount: number
+  updatedCount?: number
+  skippedCount: number
+}) {
+  const parts = [`新增 ${result.newCount} 条`]
+  if (result.updatedCount) parts.push(`更新 ${result.updatedCount} 条`)
+  if (result.skippedCount) parts.push(`跳过 ${result.skippedCount} 条重复数据`)
+  return `导入完成：${parts.join('，')}。请人工确认记录后再继续后续操作。`
+}
+
 const csvRowSchema = z.object({
   标题: z.string().trim().min(1, '标题不能为空'),
   账号: z.string().trim(),

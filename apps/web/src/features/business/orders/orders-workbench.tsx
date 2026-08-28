@@ -1,5 +1,6 @@
 // 商务工作台渠道商单 CRUD；权限：business 与 boss 可操作。
 import { useMemo, useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -31,6 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { useClients } from '../clients'
@@ -414,12 +416,18 @@ export function OrdersWorkbench({ focusId }: { focusId?: string }) {
             </Select>
           </Field>
           <Field label='预计发布日期'>
-            <Input
-              type='date'
-              value={draft.publishDate}
-              onChange={(e) =>
-                setDraft({ ...draft, publishDate: e.target.value })
+            <DatePicker
+              selected={
+                draft.publishDate ? parseISO(draft.publishDate) : undefined
               }
+              onSelect={(date) =>
+                setDraft({
+                  ...draft,
+                  publishDate: date ? format(date, 'yyyy-MM-dd') : '',
+                })
+              }
+              allowFuture
+              placeholder='选择预计发布日期'
             />
           </Field>
           <Button

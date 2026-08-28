@@ -4,6 +4,7 @@
  * 后续选题类模块照此模式复制：筛选、分页、批量删除、导入导出和详情抽屉。
  */
 import { useMemo, useRef, useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import {
   type ColumnDef,
   flexRender,
@@ -57,6 +58,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { DatePicker } from '@/components/date-picker'
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
 import { LoadStateError } from '@/components/shared/load-state-error'
@@ -389,23 +391,27 @@ export function VideoIdeaTable({
           }
           placeholder='筛选标签'
         />
-        <Input
-          className='w-36'
-          type='date'
-          value={params.dateFrom}
-          onChange={(event) =>
-            onParamsChange({ dateFrom: event.target.value, page: 1 })
+        <DatePicker
+          selected={params.dateFrom ? parseISO(params.dateFrom) : undefined}
+          onSelect={(date) =>
+            onParamsChange({
+              dateFrom: date ? format(date, 'yyyy-MM-dd') : '',
+              page: 1,
+            })
           }
-          aria-label='开始日期'
+          placeholder='开始日期'
+          ariaLabel='筛选开始日期'
         />
-        <Input
-          className='w-36'
-          type='date'
-          value={params.dateTo}
-          onChange={(event) =>
-            onParamsChange({ dateTo: event.target.value, page: 1 })
+        <DatePicker
+          selected={params.dateTo ? parseISO(params.dateTo) : undefined}
+          onSelect={(date) =>
+            onParamsChange({
+              dateTo: date ? format(date, 'yyyy-MM-dd') : '',
+              page: 1,
+            })
           }
-          aria-label='结束日期'
+          placeholder='结束日期'
+          ariaLabel='筛选结束日期'
         />
         <Select
           value={params.viral}

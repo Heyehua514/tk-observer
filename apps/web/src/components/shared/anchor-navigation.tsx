@@ -21,6 +21,10 @@ export function AnchorNavigation({
 
   if (!items.length) return null
 
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
   return (
     <nav
       aria-label={label}
@@ -37,7 +41,7 @@ export function AnchorNavigation({
             event.preventDefault()
             setActiveId(item.id)
             document.getElementById(item.id)?.scrollIntoView({
-              behavior: 'smooth',
+              behavior: prefersReducedMotion ? 'auto' : 'smooth',
               block: 'start',
             })
           }}

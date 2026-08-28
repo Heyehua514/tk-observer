@@ -31,3 +31,27 @@ it('renders semantic section links and scrolls the selected section into view', 
   })
   section.remove()
 })
+
+it('uses an instant scroll when reduced motion is preferred', async () => {
+  const scrollIntoView = vi.fn()
+  const section = document.createElement('section')
+  section.id = 'reduced-motion'
+  section.scrollIntoView = scrollIntoView
+  document.body.append(section)
+  vi.stubGlobal('matchMedia', () => ({ matches: true }))
+
+  const screen = await render(
+    <AnchorNavigation
+      label='无障碍目录'
+      items={[{ id: 'reduced-motion', label: '目标区块' }]}
+    />
+  )
+  await userEvent.click(screen.getByRole('link', { name: '目标区块' }))
+
+  expect(scrollIntoView).toHaveBeenCalledWith({
+    behavior: 'auto',
+    block: 'start',
+  })
+  vi.unstubAllGlobals()
+  section.remove()
+})

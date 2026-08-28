@@ -62,8 +62,8 @@ export function PublishScheduleTable({
   }
 
   return (
-    <div className='overflow-hidden rounded-lg border'>
-      <table className='w-full text-sm'>
+    <div className='overflow-x-auto rounded-lg border'>
+      <table className='w-full min-w-[760px] text-sm'>
         <thead className='bg-muted/50 text-xs tracking-wider text-muted-foreground uppercase'>
           <tr>
             <th className='px-4 py-3 text-left font-medium'>标题</th>

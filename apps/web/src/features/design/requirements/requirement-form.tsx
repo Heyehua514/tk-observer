@@ -1,5 +1,6 @@
 /** 设计需求提交表单；仅 boss/business 可创建。 */
 import { useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import type { DesignPriority } from './types'
 import { useCreateDesignRequirement } from './use-design-requirements'
 
@@ -31,6 +33,7 @@ export function RequirementForm({
 }) {
   const create = useCreateDesignRequirement()
   const [priority, setPriority] = useState<DesignPriority>('中')
+  const [dueDate, setDueDate] = useState('')
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-h-[90vh] max-w-2xl overflow-y-auto'>
@@ -63,7 +66,21 @@ export function RequirementForm({
             <Input name='title' maxLength={200} required />
           </Field>
           <Field label='截止日期'>
-            <Input name='dueDate' type='date' required />
+            <DatePicker
+              selected={dueDate ? parseISO(dueDate) : undefined}
+              onSelect={(date) =>
+                setDueDate(date ? format(date, 'yyyy-MM-dd') : '')
+              }
+              allowFuture
+              placeholder='选择截止日期'
+            />
+            <input
+              name='dueDate'
+              type='hidden'
+              value={dueDate}
+              required
+              readOnly
+            />
           </Field>
           <Field label='画面尺寸'>
             <Input name='targetSize' placeholder='1080×1920' required />

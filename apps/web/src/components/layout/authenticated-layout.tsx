@@ -5,6 +5,7 @@ import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
+import { WorkspaceCommandPalette } from '@/components/shared/workspace-command-palette'
 import { SkipToMain } from '@/components/skip-to-main'
 
 type AuthenticatedLayoutProps = {
@@ -19,6 +20,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
         <SidebarProvider defaultOpen={defaultOpen}>
           <SkipToMain />
           <AppSidebar />
+          <WorkspaceCommandPalette />
           <SidebarInset
             className={cn(
               // Set content container, so we can use container queries

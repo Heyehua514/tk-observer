@@ -16,6 +16,7 @@ import {
   serializeSupabaseVideoIdea,
 } from './editing-supabase-mappers'
 import { videoIdeaKeys } from './use-video-ideas'
+import { formatImportFeedback } from './video-idea-csv'
 
 export function useImportVideoIdeas() {
   const queryClient = useQueryClient()
@@ -41,8 +42,13 @@ export function useImportVideoIdeas() {
             .maybeSingle()
           if (existingError) throw existingError
           const mutation = existing
-            ? supabase.from('video_ideas').update(serializeSupabaseVideoIdea(row)).eq('id', existing.id)
-            : supabase.from('video_ideas').insert(serializeSupabaseVideoIdea(row))
+            ? supabase
+                .from('video_ideas')
+                .update(serializeSupabaseVideoIdea(row))
+                .eq('id', existing.id)
+            : supabase
+                .from('video_ideas')
+                .insert(serializeSupabaseVideoIdea(row))
           const { error } = await mutation
           if (error) throw error
           if (existing) updatedCount += 1
@@ -96,7 +102,9 @@ export function useImportVideoIdeas() {
           )
           .catch(() => null)
         if (existing) {
-          await pb.collection('video_ideas').update(existing.id, serializeVideoIdea(row))
+          await pb
+            .collection('video_ideas')
+            .update(existing.id, serializeVideoIdea(row))
           updatedCount += 1
         } else {
           await pb.collection('video_ideas').create(serializeVideoIdea(row))
@@ -122,9 +130,7 @@ export function useImportVideoIdeas() {
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: videoIdeaKeys.all })
       void queryClient.invalidateQueries({ queryKey: ['import-history'] })
-      toast.success(
-        `导入完成：新增 ${result.newCount} 条，更新 ${result.updatedCount} 条`
-      )
+      toast.success(formatImportFeedback(result))
     },
   })
 }

@@ -5,6 +5,7 @@
  */
 import { useEffect } from 'react'
 import { z } from 'zod'
+import { format, parseISO } from 'date-fns'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { LoaderCircle } from 'lucide-react'
@@ -34,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/date-picker'
 import { accountVideoTypes, videoAccounts, videoTypes } from '../constants'
 import { useCreateVideoIdea } from '../hooks/use-create-video-idea'
 import { useUpdateVideoIdea } from '../hooks/use-update-video-idea'
@@ -236,7 +238,13 @@ export function VideoIdeaFormDialog({
                 <FormItem>
                   <FormLabel>发布日期</FormLabel>
                   <FormControl>
-                    <Input type='date' {...field} />
+                    <DatePicker
+                      selected={field.value ? parseISO(field.value) : undefined}
+                      onSelect={(date) =>
+                        field.onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                      }
+                      placeholder='选择发布日期'
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

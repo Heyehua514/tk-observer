@@ -16,8 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
 import { PageHeader } from '@/components/shared/page-header'
-import { AiAssistantPanel } from '@/features/shared-ai'
 import { TableSkeleton } from '@/components/shared/table-skeleton'
+import { AiAssistantPanel } from '@/features/shared-ai'
 import { useUpdateVideoTask } from '../hooks/use-create-video-task'
 import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
@@ -36,11 +36,11 @@ import type { VideoTaskItem } from './production-model'
 import { PublishScheduleFormDialog } from './publish-schedule-form'
 import { PublishScheduleTable } from './publish-schedule-table'
 import { TrendingWorkbench } from './trending-workbench'
+import { VideoAccountSyncPanel } from './video-account-sync-panel'
 import { VideoAiPanel } from './video-ai-panel'
 import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
-import { VideoAccountSyncPanel } from './video-account-sync-panel'
 import { VideoTaskFormDialog } from './video-task-form'
 
 function ProductionSkeleton() {
@@ -88,8 +88,8 @@ function ProductionSkeleton() {
             onRetry={() => void tasks.refetch()}
           />
         ) : tasks.data?.length ? (
-          <div className='overflow-hidden rounded-lg border'>
-            <table className='w-full text-sm'>
+          <div className='overflow-x-auto rounded-lg border'>
+            <table className='w-full min-w-[680px] text-sm'>
               <thead className='bg-muted/50 text-xs tracking-wider text-muted-foreground uppercase'>
                 <tr>
                   <th className='px-4 py-3 text-left font-medium'>任务</th>
@@ -173,7 +173,7 @@ function ProductionSkeleton() {
             {archive.data.map((item) => (
               <article
                 key={item.id}
-                className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30'
+                className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30 motion-reduce:transform-none motion-reduce:transition-none'
               >
                 <div className='font-medium'>{item.title}</div>
                 <div className='mt-1 text-sm text-muted-foreground'>
@@ -327,13 +327,13 @@ export function EditingWorkbench({
             <TabsContent value='list' className='mt-5'>
               <VideoAccountSyncPanel />
               <div className='mt-5'>
-              <VideoIdeaTable
-                params={params}
-                onParamsChange={onParamsChange}
-                metrics={metrics}
-                onCreate={openCreate}
-                onEdit={openEdit}
-              />
+                <VideoIdeaTable
+                  params={params}
+                  onParamsChange={onParamsChange}
+                  metrics={metrics}
+                  onCreate={openCreate}
+                  onEdit={openEdit}
+                />
               </div>
             </TabsContent>
             <TabsContent value='analytics' className='mt-5'>

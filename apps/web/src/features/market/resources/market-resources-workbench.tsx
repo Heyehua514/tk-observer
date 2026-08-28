@@ -1,5 +1,6 @@
 /** 市场资源库工作台：market 和 boss 可管理模板、物料与活动财务。 */
 import { useMemo, useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { Download, FileText, Plus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { DatePicker } from '@/components/date-picker'
 import { EmptyState } from '@/components/shared/empty-state'
 import { RequirementDetail } from '@/features/design/requirements/requirement-detail'
 import type { DesignRequirement } from '@/features/design/requirements/types'
@@ -469,10 +471,15 @@ function FinancesPanel({ eventId }: { eventId?: string }) {
           value={draft.description}
           onChange={(e) => setDraft({ ...draft, description: e.target.value })}
         />
-        <Input
-          type='date'
-          value={draft.paidAt}
-          onChange={(e) => setDraft({ ...draft, paidAt: e.target.value })}
+        <DatePicker
+          selected={draft.paidAt ? parseISO(draft.paidAt) : undefined}
+          onSelect={(date) =>
+            setDraft({
+              ...draft,
+              paidAt: date ? format(date, 'yyyy-MM-dd') : '',
+            })
+          }
+          placeholder='选择付款日期'
         />
         <Input
           type='file'

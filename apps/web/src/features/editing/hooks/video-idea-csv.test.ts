@@ -1,10 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { parseVideoIdeaCsvText, preflightVideoIdeaCsv } from './video-idea-csv'
+import {
+  formatImportFeedback,
+  parseVideoIdeaCsvText,
+  preflightVideoIdeaCsv,
+} from './video-idea-csv'
 
 const header =
   '标题,账号,视频类型,播放量,完播率,涨粉,点赞,评论,转发,发布日期,标签,内容简述'
 
 describe('video idea CSV preflight', () => {
+  it('reports inserted, updated, and skipped rows for manual confirmation', () => {
+    expect(
+      formatImportFeedback({ newCount: 2, updatedCount: 1, skippedCount: 3 })
+    ).toContain('新增 2 条，更新 1 条，跳过 3 条重复数据')
+  })
+
   it('rejects files missing required columns before any mutation', () => {
     expect(() => parseVideoIdeaCsvText('标题,账号\n测试,账号A')).toThrow(
       'CSV 缺少必需列：视频类型、发布日期'
