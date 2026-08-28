@@ -80,7 +80,7 @@ jobs:
           tagName: ${{ github.event.inputs.tag || github.ref_name }}
           releaseName: TK观察工作台 ${{ github.event.inputs.tag || github.ref_name }}
           releaseBody: Desktop release with signed updater artifacts.
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
