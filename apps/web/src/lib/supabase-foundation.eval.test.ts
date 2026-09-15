@@ -11,6 +11,8 @@ it('keeps Supabase invitation-only and RLS protected', () => {
 })
 
 it('keeps every workspace bucket private and owner gated', () => {
+  const normalizedStorageSql = storageSql.replace(/\r\n/g, '\n')
+
   for (const bucket of [
     'avatars',
     'design-assets',
@@ -18,9 +20,11 @@ it('keeps every workspace bucket private and owner gated', () => {
     'event-materials',
     'finance-receipts',
   ]) {
-    expect(storageSql).toContain(`'${bucket}'`)
+    expect(normalizedStorageSql).toContain(`'${bucket}'`)
   }
-  expect(storageSql).toContain('for insert to authenticated\nwith check')
-  expect(storageSql).not.toContain('public = true')
-  expect(storageSql).toContain("public.has_any_role(array['owner'])")
+  expect(normalizedStorageSql).toContain(
+    'for insert to authenticated\nwith check'
+  )
+  expect(normalizedStorageSql).not.toContain('public = true')
+  expect(normalizedStorageSql).toContain("public.has_any_role(array['owner'])")
 })
