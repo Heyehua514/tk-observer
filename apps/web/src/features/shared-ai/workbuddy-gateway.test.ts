@@ -56,3 +56,22 @@ it('aborts a stalled gateway request after the client deadline', async () => {
   })
   expect(signal?.aborted).toBe(true)
 })
+import { describe, expect, it } from 'vitest'
+import {
+  DEFAULT_GATEWAY,
+  getStoredGatewayUrl,
+  setStoredGatewayUrl,
+} from './workbuddy-gateway'
+
+describe('workbuddy-gateway storage utilities', () => {
+  it('returns DEFAULT_GATEWAY when nothing is stored', () => {
+    localStorage.removeItem('tk.workbuddy.gateway')
+    expect(getStoredGatewayUrl()).toBe(DEFAULT_GATEWAY)
+  })
+
+  it('stores and retrieves custom gateway url', () => {
+    setStoredGatewayUrl('http://192.168.1.100:8877/analyze')
+    expect(getStoredGatewayUrl()).toBe('http://192.168.1.100:8877/analyze')
+    localStorage.removeItem('tk.workbuddy.gateway')
+  })
+})

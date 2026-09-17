@@ -9,12 +9,59 @@
  */
 import { createServer } from 'node:http'
 import { execFile } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+
 
 const MAX_REQUEST_BYTES = 1024 * 1024
 
-const CODEBUDDY =
-  process.env.CODEBUDDY_CLI ||
-  '/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/bin/codebuddy'
+export function resolveDefaultCliPath() {
+  if (process.env.CODEBUDDY_CLI && fs.existsSync(process.env.CODEBUDDY_CLI)) {
+    return process.env.CODEBUDDY_CLI
+  }
+  const candidates = [
+    process.env.CODEBUDDY_CLI,
+    process.platform === 'win32'
+      ? 'C:\\Program Files\\WorkBuddy\\resources\\app.asar.unpacked\\cli\\bin\\codebuddy'
+      : null,
+    process.platform === 'win32' && process.env.LOCALAPPDATA
+      ? path.join(
+          process.env.LOCALAPPDATA,
+          'Programs',
+          'WorkBuddy',
+          'resources',
+          'app.asar.unpacked',
+          'cli',
+          'bin',
+          'codebuddy'
+        )
+      : null,
+    process.platform === 'win32'
+      ? 'C:\\Program Files (x86)\\WorkBuddy\\resources\\app.asar.unpacked\\cli\\bin\\codebuddy'
+      : null,
+    '/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/bin/codebuddy',
+  ].filter(Boolean)
+
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c
+  }
+  return candidates[0] || ''
+}
+
+export const CODEBUDDY = resolveDefaultCliPath()
+
+export function resolveCliExecution(cliPath = CODEBUDDY) {
+  if (process.platform === 'win32' && !cliPath.toLowerCase().endsWith('.exe')) {
+    return {
+      command: process.execPath,
+      argsPrefix: [cliPath],
+    }
+  }
+  return {
+    command: cliPath,
+    argsPrefix: [],
+  }
+}
 
 export function resolvePort(envPort, argv) {
   return Number(envPort || (argv[2] === '--port' ? argv[3] : 8877))
@@ -70,9 +117,10 @@ export function extractAssistantText(result) {
 
 function runCli(prompt) {
   return new Promise((resolve, reject) => {
+    const { command, argsPrefix } = resolveCliExecution(CODEBUDDY)
     execFile(
-      CODEBUDDY,
-      ['-p', prompt, '--output-format', 'json'],
+      command,
+      [...argsPrefix, '-p', prompt, '--output-format', 'json'],
       { timeout: 120000, maxBuffer: 8 * 1024 * 1024 },
       (err, stdout) => {
         if (err) return reject(err)

@@ -7,6 +7,7 @@ import {
   extractAssistantText,
   isAllowedOrigin,
   resolvePort,
+  resolveCliExecution,
 } from './server.mjs'
 
 const ORIGIN = 'https://tk-observer.pages.dev'
@@ -148,4 +149,17 @@ test('旧网关不把无效 CLI 输出暴露给浏览器', async () => {
       assert.doesNotMatch(body, /local-data/)
     }
   )
+})
+
+test('Windows 环境下正确包装 Node CLI 执行方式', () => {
+  const isWin = process.platform === 'win32'
+  const target = 'C:\\Program Files\\WorkBuddy\\resources\\app.asar.unpacked\\cli\\bin\\codebuddy'
+  const result = resolveCliExecution(target)
+  if (isWin) {
+    assert.equal(result.command, process.execPath)
+    assert.deepEqual(result.argsPrefix, [target])
+  } else {
+    assert.equal(result.command, target)
+    assert.deepEqual(result.argsPrefix, [])
+  }
 })
