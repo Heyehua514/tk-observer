@@ -58,6 +58,7 @@ import {
 } from './overview-metrics'
 import { UpcomingActivities } from './upcoming-activities'
 import { OverviewIntelligenceDigest } from './overview-intelligence-digest'
+import { CrossWorkspaceTasks } from './cross-workspace-tasks'
 
 const rangeLabels: Record<OverviewMetricRange, string> = {
   '7d': '近 7 天',
