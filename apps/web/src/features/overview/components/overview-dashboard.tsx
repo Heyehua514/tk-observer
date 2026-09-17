@@ -57,6 +57,7 @@ import {
   type OverviewMetricRange,
 } from './overview-metrics'
 import { UpcomingActivities } from './upcoming-activities'
+import { OverviewIntelligenceDigest } from './overview-intelligence-digest'
 
 const rangeLabels: Record<OverviewMetricRange, string> = {
   '7d': '近 7 天',
