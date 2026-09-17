@@ -239,9 +239,39 @@ fn error_response(error: GatewayError) -> String {
     json!({ "ok": false, "error": error.code() }).to_string()
 }
 
+fn default_cli_path() -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        let mut candidates = Vec::new();
+        if let Ok(local) = env::var("LOCALAPPDATA") {
+            candidates.push(PathBuf::from(local).join("Programs\\WorkBuddy\\resources\\app.asar.unpacked\\cli\\bin\\codebuddy"));
+        }
+        candidates.push(PathBuf::from(r"C:\Program Files\WorkBuddy\resources\app.asar.unpacked\cli\bin\codebuddy"));
+        candidates.push(PathBuf::from(r"C:\Program Files (x86)\WorkBuddy\resources\app.asar.unpacked\cli\bin\codebuddy"));
+        for c in candidates {
+            if c.exists() {
+                return c;
+            }
+        }
+    }
+    PathBuf::from(DEFAULT_CODEBUDDY_CLI)
+}
+
 fn run_cli(prompt: String) -> Result<String, GatewayError> {
-    let cli_path = env::var("WORKBUDDY_CLI").unwrap_or_else(|_| DEFAULT_CODEBUDDY_CLI.to_owned());
-    let mut child = Command::new(cli_path)
+    let cli_path = env::var("WORKBUDDY_CLI")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| default_cli_path());
+
+    let mut command = if cfg!(target_os = "windows")
+        && !cli_path.extension().map_or(false, |ext| ext.eq_ignore_ascii_case("exe"))
+    {
+        let mut cmd = Command::new("node");
+        cmd.arg(&cli_path);
+        cmd
+    } else {
+        Command::new(&cli_path)
+    };
+    let mut child = command
         .args(["-p", &prompt, "--output-format", "json"])
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
