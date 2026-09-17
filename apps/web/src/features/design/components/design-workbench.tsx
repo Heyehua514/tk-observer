@@ -20,6 +20,7 @@ import { useDesignRequirements } from '../requirements/use-design-requirements'
 import { DesignTasksBoard } from '../tasks'
 import type { DesignAssetListParams } from '../types'
 import { DesignAssetGrid } from './design-asset-grid'
+import { BrandGuidelinesBoard } from '../brand/brand-guidelines-board'
 
 const brandAssetParams: DesignAssetListParams = {
   query: '',
@@ -120,38 +121,7 @@ export function DesignWorkbench({
                 从上传第一份设计素材或创建设计需求开始沉淀品牌资产。
               </div>
             )}
-            <section>
-              <h2 className='text-base font-medium'>品牌色</h2>
-              <div className='mt-3 flex flex-wrap gap-4'>
-                {[
-                  { name: '深蓝黑', color: '#0F172A' },
-                  { name: '强调蓝', color: '#2563EB' },
-                  { name: '纯白', color: '#FFFFFF' },
-                ].map((swatch) => (
-                  <div
-                    key={swatch.color}
-                    className='flex items-center gap-3 rounded-xl border bg-card/60 p-3'
-                  >
-                    <span
-                      className='size-9 rounded-md border'
-                      style={{ background: swatch.color }}
-                    />
-                    <div>
-                      <div className='text-sm font-medium'>{swatch.name}</div>
-                      <div className='text-xs text-muted-foreground'>
-                        {swatch.color}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-            <section>
-              <h2 className='text-base font-medium'>字体</h2>
-              <p className='mt-2 text-sm text-muted-foreground'>
-                中文：PingFang SC / Microsoft YaHei；英文与数字：Inter
-              </p>
-            </section>
+            <BrandGuidelinesBoard />
             <Button variant='outline' disabled>
               <Download className='size-4' />
               Logo 文件待上传
