@@ -1,3 +1,39 @@
+# Daily Autonomous Execution Protocol (自驱巡航与上下线交互规范)
+
+## 一、 用户上线交互协议（杜绝无头苍蝇与被动等待）
+当用户进入对话或询问时，仅输出以下四项，禁止废话：
+1. **当前已完成**：近期闭环的具体功能模块与测试凭据（依据最新 `logs/YYYY-MM-DD.md`）。
+2. **待您决策清单（重点）**：若有此前挂起的需要用户定夺的问题，直接列出（问题背景 + 建议选项 A/B），请用户拍板。
+3. **专业推进建议**：列出接下来最值得做的 1~2 个任务与推荐理由（依据 `ROADMAP.md`）。
+4. **决策请示**：“您想先拍板上述问题、重点攻克哪一项，还是直接按建议继续？”
+
+## 二、 纠错与指正学习机制（受训进化）
+- 当用户对工作提出纠错或指正时，立即执行修正。
+- 修正完成后，强制提炼 1 条不可违背的教训规则，永久追加至 `memory/LESSONS.md`。
+
+## 三、 无人值守自主巡航机制（非阻塞异步推进）
+- **自动排期承接**：不需用户每日提醒。自动读取上一日 `logs/` 进度，承接未完任务继续推进。
+- **遇到疑难/需用户决策时（绝对不卡壳、不等待）**：
+  - 将该问题汇总记录到 `logs/PENDING_DECISIONS.md`，列出影响面与备选建议。
+  - **立即旁路跳过**，直接启动下一个无依赖的业务任务，绝不暂停原地等待用户回复。
+- **工作负荷标准**：每日扎实完成一个完整垂直切片（等效 6 小时工作量深度）。
+- **铁律依赖链**：后端(Supabase/SQL/RLS) ➔ 数据服务/Hooks ➔ UI交互 ➔ 自动化测试，杜绝假数据。
+- **三击熔断防死磕**：单一排查/修复最多尝试 3 次，3 次未通立即记录现场并打标 `[BLOCKED]` 跳过，严禁原地绕圈。
+- **每日日志与反思进化**：
+  - 收工前必须在 `logs/YYYY-MM-DD.md` 归档，并首要核算标注【当前项目总体推进度：约 XX%】（按里程碑实际闭环比例推算）。
+  - 强制复盘“今天学到了什么”，提取 1 条防踩坑规则写入 `memory/LESSONS.md`。
+
+## 四、 每周大考机制（自动化全盘巡检、安全防护审计与稳定性测试）
+每周固定执行一次全盘质量与防御审计，结果归档至 `logs/weekly-audit-YYYY-WW.md`：
+1. **核心业务回归测试**：全量执行集成与 E2E 校验套件，验证核心业务全链路完整性。
+2. **安全防御与权限审计**：
+   - 依赖项安全漏洞扫描（执行 `pnpm audit`）。
+   - 数据隔离与访问控制审计（严格核对 Supabase RLS 策略，确保无多租户越权/无公开读取风险）。
+   - 输入输出校验与鉴权防线审计（对照 OWASP 防御标准，排查 API 参数注入与敏感信息泄漏风险）。
+3. **稳定性与容错测试**：模拟网络超时、极端边界数据、接口降级与并发压力，验证系统容错和兜底恢复能力。
+4. **审计报告输出**：汇总漏洞隐患、性能瓶颈与稳定性表现，制定下周专项加固计划。
+
+---
 # CLAUDE.md
 
 > 公共协议挂载：`/Users/liyuzhen/skill/docs/通用开发协议.md`（所有工作台公共底线：交付/测试/记忆/自主执行/章节制/每日接力/效率开关/隔离与学习；冲突时以本文件为准，公共协议只作公共层）。
@@ -222,3 +258,9 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - Allow at most one automatic effort increase per task. Do not alternate between effort levels repeatedly.
 - After execution, verify the stated acceptance criteria and record the selected model, effort, priority, whether escalation occurred, and whether rework was needed.
 - Model or effort selection cannot guarantee lower token use. Optimize for the lowest configuration that passes verification, not the lowest label.
+
+
+
+
+
+
