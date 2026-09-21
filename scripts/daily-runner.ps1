@@ -1,4 +1,4 @@
-# 日常自动化推进执行器
+﻿# 日常自动化推进执行器
 param(
     [string]$ProjectPath = "C:\Users\1\Documents\Codex\2026-09-14\wo\work\tk-observer-git"
 )
@@ -22,3 +22,4 @@ Set-Location -Path $ProjectPath
 codex exec --cd $ProjectPath --dangerously-bypass-approvals-and-sandbox $prompt
 
 Write-Host "[Auto-Runner] 今日自动化推进已完成。" -ForegroundColor Green
+
