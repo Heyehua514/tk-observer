@@ -2015,10 +2015,12 @@ export type Database = {
       products: {
         Row: {
           category: string
+          cost_currency: string
           cost_minor: number
           created_at: string
           currency: string
           deleted_at: string | null
+          exchange_rate: number
           id: string
           legacy_id: string | null
           name: string
@@ -2029,10 +2031,12 @@ export type Database = {
         }
         Insert: {
           category: string
+          cost_currency?: string
           cost_minor: number
           created_at?: string
           currency?: string
           deleted_at?: string | null
+          exchange_rate?: number
           id?: string
           legacy_id?: string | null
           name: string
@@ -2043,10 +2047,12 @@ export type Database = {
         }
         Update: {
           category?: string
+          cost_currency?: string
           cost_minor?: number
           created_at?: string
           currency?: string
           deleted_at?: string | null
+          exchange_rate?: number
           id?: string
           legacy_id?: string | null
           name?: string

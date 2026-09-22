@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 市场选品库 CRUD mutation（Supabase-first，PocketBase 回退）。
  * 金额以分存储；录入用元，入库换算成最小单位。
  * 所属工作台：市场（韩素云）。
@@ -15,7 +15,9 @@ export type ProductInput = {
   category: string
   priceYuan: string
   costYuan: string
-  currency: 'CNY' | 'USD'
+  currency: string
+  costCurrency?: string
+  exchangeRate?: number | string
   region: string
   status: string
 }
@@ -28,12 +30,15 @@ export function useCreateProduct() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: ProductInput) => {
+      const exchangeRateNum = Number(input.exchangeRate || 0)
       const payload = {
         name: input.name,
         category: input.category,
         price_minor: Math.round(Number(input.priceYuan || 0) * 100),
         cost_minor: Math.round(Number(input.costYuan || 0) * 100),
         currency: input.currency,
+        cost_currency: input.costCurrency || 'CNY',
+        exchange_rate: exchangeRateNum > 0 ? exchangeRateNum : 1.0,
         region: input.region,
         status: input.status,
       }
@@ -60,12 +65,15 @@ export function useUpdateProduct() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, input }: { id: string; input: ProductInput }) => {
+      const exchangeRateNum = Number(input.exchangeRate || 0)
       const payload = {
         name: input.name,
         category: input.category,
         price_minor: Math.round(Number(input.priceYuan || 0) * 100),
         cost_minor: Math.round(Number(input.costYuan || 0) * 100),
         currency: input.currency,
+        cost_currency: input.costCurrency || 'CNY',
+        exchange_rate: exchangeRateNum > 0 ? exchangeRateNum : 1.0,
         region: input.region,
         status: input.status,
       }

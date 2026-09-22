@@ -398,6 +398,8 @@ export function OverviewDashboard() {
         id='overview-operations'
         className='grid scroll-mt-24 gap-6 xl:grid-cols-2'
       >
+        <OverviewIntelligenceDigest />
+        <CrossWorkspaceTasks />
         <UpcomingActivities events={events.data || []} />
         <ActivityStatusChart events={events.data || []} />
       </div>

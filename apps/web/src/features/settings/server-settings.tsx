@@ -18,7 +18,6 @@ import { useAuthStore } from '@/stores/auth-store'
 import { getRuntimeDesktopUpdaterEnvironment } from '@/lib/desktop-updater'
 import { checkAndInstallDesktopUpdate } from '@/lib/desktop-updater-actions'
 import { getStoredServerUrl, setPocketBaseUrl } from '@/lib/pocketbase'
-import { DEFAULT_GATEWAY, getStoredGatewayUrl, setStoredGatewayUrl } from '@/features/shared-ai/workbuddy-gateway'
 import { Button } from '@/components/ui/button'
 import {
   Card,

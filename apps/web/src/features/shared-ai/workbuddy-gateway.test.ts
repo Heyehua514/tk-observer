@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { callWorkBuddyGateway } from './workbuddy-gateway'
 
 afterEach(() => {
@@ -56,7 +56,6 @@ it('aborts a stalled gateway request after the client deadline', async () => {
   })
   expect(signal?.aborted).toBe(true)
 })
-import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_GATEWAY,
   getStoredGatewayUrl,

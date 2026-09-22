@@ -1,12 +1,16 @@
-/** 市场工作台主体：选品库、竞品、投放数据和活动排期骨架。 */
+﻿/** 市场工作台主体：选品库、竞品、投放数据和活动排期骨架。 */
 import { useState } from 'react'
 import {
+  AlertTriangle,
   BarChart3,
   CalendarDays,
   CircleDollarSign,
+  Coins,
   FileStack,
+  Layers,
   MapPinned,
   PackageSearch,
+  Percent,
   Radar,
   TrendingUp,
 } from 'lucide-react'
@@ -54,6 +58,14 @@ import { VenuesWorkbench } from '../venues'
 import { marketEmptyTitles } from './market-empty-copy'
 import { EventsPanel } from './market-records'
 import { ProductFormDialog, type ProductFormData } from './product-form'
+import { formatCurrency } from './product-model'
+
+const statusLabels: Record<string, string> = {
+  draft: '草稿',
+  testing: '测试中',
+  active: '在售',
+  paused: '已暂停',
+}
 
 export function MarketWorkbench({
   query,
@@ -71,15 +83,35 @@ export function MarketWorkbench({
   const activeQuery = useMarketWorkbench(query)
   const products = useProductCatalog(activeQuery)
   const adOverview = buildAdOverview()
-  const productsContext = products.data?.length
-    ? `当前选品库前几项：\n${products.data
+
+  // 选品大盘关键指标统计
+  const productList = products.data || []
+  const totalProductsCount = productList.length
+  const avgMarginRate =
+    totalProductsCount > 0
+      ? (
+          productList.reduce((acc, p) => acc + p.marginRate, 0) /
+          totalProductsCount
+        ).toFixed(1)
+      : '0.0'
+  const totalPotentialProfitCny = productList.reduce(
+    (acc, p) => acc + p.profitInCnyMinor,
+    0
+  )
+  const activeTestingCount = productList.filter(
+    (p) => p.status === 'active' || p.status === 'testing'
+  ).length
+
+  const productsContext = productList.length
+    ? `当前选品库前几项：\n${productList
         .slice(0, 5)
         .map(
           (p) =>
-            `- ${p.name}（${p.category}/${p.region}，售价 ${formatMoney(p.priceMinor, p.currency)}）`
+            `- ${p.name}（${p.category}/${p.region}，售价 ${formatCurrency(p.priceMinor, p.currency)}，毛利率 ${p.marginRate}%）`
         )
         .join('\n')}`
     : '当前选品库暂无数据。'
+
   return (
     <div className='space-y-6'>
       <PageHeader
@@ -141,8 +173,46 @@ export function MarketWorkbench({
             模板 / 物料 / 财务
           </TabsTrigger>
         </TabsList>
-        <TabsContent value='products' className='mt-5'>
-          <div className='mb-4 flex items-center justify-between gap-3'>
+        <TabsContent value='products' className='mt-5 space-y-4'>
+          {/* 选品库经营与毛利指标卡 */}
+          <div className='grid gap-3 sm:grid-cols-4'>
+            <div className='rounded-lg border bg-card/60 p-3.5'>
+              <div className='flex items-center justify-between'>
+                <span className='text-xs text-muted-foreground'>选品池总数</span>
+                <Layers className='size-3.5 text-muted-foreground' />
+              </div>
+              <div className='mt-1.5 text-2xl font-bold'>{totalProductsCount}</div>
+              <div className='text-xs text-muted-foreground'>SKU 储备规模</div>
+            </div>
+            <div className='rounded-lg border bg-card/60 p-3.5'>
+              <div className='flex items-center justify-between'>
+                <span className='text-xs text-muted-foreground'>在售 / 测款品</span>
+                <TrendingUp className='size-3.5 text-emerald-500' />
+              </div>
+              <div className='mt-1.5 text-2xl font-bold text-emerald-600'>{activeTestingCount}</div>
+              <div className='text-xs text-muted-foreground'>当前处于测试及销售周期</div>
+            </div>
+            <div className='rounded-lg border bg-card/60 p-3.5'>
+              <div className='flex items-center justify-between'>
+                <span className='text-xs text-muted-foreground'>平均预期毛利率</span>
+                <Percent className='size-3.5 text-blue-500' />
+              </div>
+              <div className='mt-1.5 text-2xl font-bold text-blue-600'>{avgMarginRate}%</div>
+              <div className='text-xs text-muted-foreground'>跨币种汇率换算后综合口径</div>
+            </div>
+            <div className='rounded-lg border bg-card/60 p-3.5'>
+              <div className='flex items-center justify-between'>
+                <span className='text-xs text-muted-foreground'>潜在毛利折合</span>
+                <Coins className='size-3.5 text-amber-500' />
+              </div>
+              <div className='mt-1.5 text-2xl font-bold text-amber-600'>
+                {formatMoney(totalPotentialProfitCny, 'CNY')}
+              </div>
+              <div className='text-xs text-muted-foreground'>按单件全量销售折合</div>
+            </div>
+          </div>
+
+          <div className='flex items-center justify-between gap-3'>
             <SearchBar
               value={query}
               onChange={onQueryChange}
@@ -164,50 +234,116 @@ export function MarketWorkbench({
               </Button>
             </div>
           </div>
-          {products.data?.length ? (
+          {productList.length ? (
             <div className='overflow-hidden rounded-lg border'>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>商品</TableHead>
+                    <TableHead>商品名称</TableHead>
                     <TableHead>类目</TableHead>
-                    <TableHead>售价</TableHead>
-                    <TableHead>成本</TableHead>
-                    <TableHead>毛利</TableHead>
-                    <TableHead>站点</TableHead>
+                    <TableHead>销售定价</TableHead>
+                    <TableHead>采购成本</TableHead>
+                    <TableHead>换算汇率</TableHead>
+                    <TableHead>预估单件毛利</TableHead>
+                    <TableHead>目标站点</TableHead>
                     <TableHead>状态</TableHead>
-                    <TableHead></TableHead>
+                    <TableHead className='text-right'>操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.data.map((product) => (
+                  {productList.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-2'>
-                          <CircleDollarSign className='size-4 text-primary' />
-                          {product.name}
+                          <CircleDollarSign className='size-4 text-primary shrink-0' />
+                          <span className='truncate max-w-[160px]'>{product.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{product.category}</TableCell>
                       <TableCell>
-                        {formatMoney(product.priceMinor, product.currency)}
+                        <Badge variant='outline'>{product.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        {formatMoney(product.costMinor, product.currency)}
+                        <div className='flex flex-col'>
+                          <span className='font-medium'>
+                            {formatCurrency(product.priceMinor, product.currency)}
+                          </span>
+                          {product.currency !== 'CNY' && (
+                            <span className='text-[11px] text-muted-foreground'>
+                              ≈ ¥{(product.priceInCnyMinor / 100).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className='flex flex-col'>
+                          <span className='font-medium'>
+                            {formatCurrency(product.costMinor, product.costCurrency || 'CNY')}
+                          </span>
+                          {(product.costCurrency || 'CNY') !== 'CNY' && (
+                            <span className='text-[11px] text-muted-foreground'>
+                              ≈ ¥{(product.costInCnyMinor / 100).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className='text-xs text-muted-foreground font-mono'>
+                          {product.currency !== 'CNY'
+                            ? `1 ${product.currency} = ${product.exchangeRate}`
+                            : '基准 1.0'}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className='flex flex-col gap-1'>
-                          <span>
-                            {formatMoney(product.marginMinor, product.currency)}
+                          <span
+                            className={`font-semibold text-sm ${
+                              product.profitInCnyMinor < 0
+                                ? 'text-rose-600'
+                                : 'text-emerald-600'
+                            }`}
+                          >
+                            {product.profitInCnyMinor >= 0 ? '+' : ''}
+                            ¥{(product.profitInCnyMinor / 100).toFixed(2)}
                           </span>
-                          <span className='text-xs text-muted-foreground'>
-                            {product.marginRate}%
-                          </span>
+                          <div>
+                            <Badge
+                              variant={
+                                product.marginLevel === 'loss'
+                                  ? 'destructive'
+                                  : product.marginLevel === 'low'
+                                  ? 'secondary'
+                                  : 'default'
+                              }
+                              className='text-[10px] px-1.5 py-0'
+                            >
+                              {product.marginLevel === 'high' && (
+                                <TrendingUp className='mr-0.5 size-2.5 inline' />
+                              )}
+                              {product.marginLevel === 'loss' && (
+                                <AlertTriangle className='mr-0.5 size-2.5 inline' />
+                              )}
+                              {product.marginRate}%
+                            </Badge>
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>{product.region}</TableCell>
                       <TableCell>
-                        <Badge variant='secondary'>{product.status}</Badge>
+                        <Badge variant='outline' className='font-mono'>
+                          {product.region}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            product.status === 'active'
+                              ? 'default'
+                              : product.status === 'testing'
+                              ? 'secondary'
+                              : 'outline'
+                          }
+                        >
+                          {statusLabels[product.status] || product.status}
+                        </Badge>
                       </TableCell>
                       <TableCell className='text-right'>
                         <div className='flex justify-end gap-2'>
@@ -224,7 +360,7 @@ export function MarketWorkbench({
                           <Button
                             size='sm'
                             variant='ghost'
-                            className='text-destructive'
+                            className='text-destructive hover:text-destructive'
                             onClick={() => setDeleteTarget(product)}
                           >
                             删除
@@ -244,7 +380,7 @@ export function MarketWorkbench({
               description={
                 activeQuery
                   ? '换个关键词试试，确认商品名称、类目或站点拼写。'
-                  : '商品将包含名称、类目、售价、成本、毛利率、目标站点和状态。'
+                  : '商品将包含名称、类目、售价、采购成本、汇率与毛利率闭环。'
               }
               action={
                 <Button size='sm' onClick={() => setProductFormOpen(true)}>
@@ -321,13 +457,11 @@ export function MarketWorkbench({
           <MarketResourcesWorkbench />
         </TabsContent>
       </Tabs>
-      <div className='mt-5'>
-        <AiAssistantPanel scope='市场工作台' context={productsContext} />
-      </div>
+      <AiAssistantPanel
+        scope='market'
+        context={productsContext}
+        initialPrompt='分析当前选品库的平均毛利率与跨币种成本结构，并给出最优爆款测试策略。'
+      />
     </div>
   )
 }
-
-/**
- * 竞品监测摘要卡：从共享 competitor_accounts 表读取真实账号并展示前 4 条。
- */
