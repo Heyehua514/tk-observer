@@ -19,7 +19,13 @@ $prompt = @"
 
 # 调用本地 Codex 非交互式引擎执行
 Set-Location -Path $ProjectPath
-codex exec --cd $ProjectPath --dangerously-bypass-approvals-and-sandbox $prompt
-
-Write-Host "[Auto-Runner] 今日自动化推进已完成。" -ForegroundColor Green
-
+try {
+    codex exec --cd $ProjectPath --dangerously-bypass-approvals-and-sandbox $prompt
+    Write-Host "[Auto-Runner] 今日自动化推进已完成。" -ForegroundColor Green
+    
+    # 桌面弹窗提醒
+    [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
+    [System.Windows.Forms.MessageBox]::Show("TK观察工作台 $today 自动化开发推进已完成！已自动运行测试与日志归档。", "TK观察自动化任务完成通知", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+} catch {
+    Write-Error "[Auto-Runner] 自动化推进执行出错: $_"
+}
