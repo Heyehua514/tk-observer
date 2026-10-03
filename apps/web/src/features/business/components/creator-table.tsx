@@ -147,6 +147,28 @@ export function CreatorTable({
       },
       { accessorKey: 'region', header: '地区' },
       {
+        accessorKey: 'category',
+        header: '垂类',
+        cell: ({ row }) => (
+          <Badge variant='outline'>{row.original.category || '通用'}</Badge>
+        ),
+      },
+      {
+        id: 'contact',
+        header: '联系方式',
+        cell: ({ row }) => {
+          const email = row.original.contactEmail;
+          const phone = row.original.contactPhone;
+          if (!email && !phone) return <span className='text-xs text-muted-foreground'>未登记</span>;
+          return (
+            <div className='flex flex-col text-xs'>
+              {email && <span className='truncate max-w-[120px]' title={email}>{email}</span>}
+              {phone && <span className='text-muted-foreground'>{phone}</span>}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: 'cooperationStatus',
         header: '合作状态',
         cell: ({ row }) => (

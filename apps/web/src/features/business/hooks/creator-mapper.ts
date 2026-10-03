@@ -1,4 +1,4 @@
-/** 达人记录与前端领域类型之间的唯一映射入口，兼容 Supabase/PocketBase。 */
+﻿/** 达人记录与前端领域类型之间的唯一映射入口，兼容 Supabase/PocketBase。 */
 import type { Creator, CreatorInput } from '../types'
 
 type CreatorRecord = {
@@ -14,6 +14,10 @@ type CreatorRecord = {
   is_biz_available?: unknown
   cooperation_price?: unknown
   cooperation_notes?: unknown
+  contact_email?: unknown
+  contact_phone?: unknown
+  category?: unknown
+  last_contacted_at?: unknown
   created?: unknown
   created_at?: unknown
   updated?: unknown
@@ -34,6 +38,10 @@ export function mapCreator(record: CreatorRecord): Creator {
     isBizAvailable: Boolean(record.is_biz_available),
     cooperationPrice: Number(record.cooperation_price || 0),
     cooperationNotes: String(record.cooperation_notes || ''),
+    contactEmail: record.contact_email ? String(record.contact_email) : '',
+    contactPhone: record.contact_phone ? String(record.contact_phone) : '',
+    category: record.category ? String(record.category) : '通用',
+    lastContactedAt: record.last_contacted_at ? String(record.last_contacted_at) : undefined,
     created: String(record.created_at || record.created || ''),
     updated: String(record.updated_at || record.updated || ''),
   }
@@ -52,6 +60,10 @@ export function serializeCreator(input: CreatorInput) {
     is_biz_available: input.isBizAvailable,
     cooperation_price: input.cooperationPrice,
     cooperation_notes: input.cooperationNotes,
+    contact_email: input.contactEmail || null,
+    contact_phone: input.contactPhone || null,
+    category: input.category || '通用',
+    last_contacted_at: input.lastContactedAt || null,
   }
 }
 

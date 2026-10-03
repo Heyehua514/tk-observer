@@ -653,7 +653,10 @@ export type Database = {
       }
       creators: {
         Row: {
+          category: string | null
           commission_rate: number | null
+          contact_email: string | null
+          contact_phone: string | null
           cooperation_notes: string | null
           cooperation_price: number | null
           cooperation_status: string
@@ -662,6 +665,7 @@ export type Database = {
           followers: number
           id: string
           is_biz_available: boolean
+          last_contacted_at: string | null
           legacy_id: string | null
           nickname: string
           owner_name: string
@@ -670,7 +674,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           commission_rate?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
           cooperation_notes?: string | null
           cooperation_price?: number | null
           cooperation_status?: string
@@ -679,6 +686,7 @@ export type Database = {
           followers?: number
           id?: string
           is_biz_available?: boolean
+          last_contacted_at?: string | null
           legacy_id?: string | null
           nickname: string
           owner_name: string
@@ -687,7 +695,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           commission_rate?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          last_contacted_at?: string | null
           cooperation_notes?: string | null
           cooperation_price?: number | null
           cooperation_status?: string

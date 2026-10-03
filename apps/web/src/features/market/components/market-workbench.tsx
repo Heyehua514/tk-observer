@@ -7,6 +7,7 @@ import {
   CircleDollarSign,
   Coins,
   FileStack,
+  Flame,
   Layers,
   MapPinned,
   PackageSearch,
@@ -50,6 +51,7 @@ import { SearchBar } from '@/components/shared/search-bar'
 import { AiAssistantPanel } from '@/features/shared-ai'
 import { buildAdOverview } from '../ads/ad-overview'
 import { CompetitorsWorkbench, MarketCompetitorSummary } from '../competitors'
+import { ProductRadarWorkbench } from '../radar'
 import { useMarketWorkbench } from '../hooks/use-market-workbench'
 import { useProductCatalog } from '../hooks/use-product-catalog'
 import { useDeleteProduct } from '../hooks/use-product-crud'
@@ -151,6 +153,10 @@ export function MarketWorkbench({
           <TabsTrigger value='products'>
             <PackageSearch className='size-4' />
             选品库
+          </TabsTrigger>
+          <TabsTrigger value='radar'>
+            <Flame className='size-4 text-rose-500' />
+            爆品雷达
           </TabsTrigger>
           <TabsTrigger value='competitors'>
             <Radar className='size-4' />
@@ -423,6 +429,9 @@ export function MarketWorkbench({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+        </TabsContent>
+        <TabsContent value='radar' className='mt-5'>
+          <ProductRadarWorkbench />
         </TabsContent>
         <TabsContent value='competitors' className='mt-5'>
           <CompetitorsWorkbench query={activeQuery} />

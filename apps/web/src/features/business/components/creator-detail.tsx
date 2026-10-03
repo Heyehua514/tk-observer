@@ -1,5 +1,5 @@
-/** 达人管理 - 详情抽屉；展示只读资料并提供编辑入口。 */
-import { ExternalLink, FileVideo, Pencil } from 'lucide-react'
+﻿/** 达人管理 - 详情抽屉；展示只读资料并提供编辑入口。 */
+import { ExternalLink, FileVideo, Mail, Phone, Pencil } from 'lucide-react'
 import { formatBeijingTime } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -49,6 +49,10 @@ export function CreatorDetail({
                     {cooperationStatusLabels[creator.cooperationStatus]}
                   </Badge>
                 </dd>
+                <dt className='text-muted-foreground'>内容垂类</dt>
+                <dd>
+                  <Badge variant='outline'>{creator.category || '通用'}</Badge>
+                </dd>
                 <dt className='text-muted-foreground'>所属地区</dt>
                 <dd>{creator.region}</dd>
                 <dt className='text-muted-foreground'>粉丝量</dt>
@@ -57,6 +61,31 @@ export function CreatorDetail({
                 <dd>{creator.commissionRate}%</dd>
                 <dt className='text-muted-foreground'>对接人</dt>
                 <dd>{creator.owner}</dd>
+                <dt className='text-muted-foreground'>联系邮箱</dt>
+                <dd>
+                  {creator.contactEmail ? (
+                    <a
+                      className='inline-flex items-center gap-1 text-primary hover:underline'
+                      href={`mailto:${creator.contactEmail}`}
+                    >
+                      <Mail className='size-3.5' />
+                      {creator.contactEmail}
+                    </a>
+                  ) : (
+                    <span className='text-muted-foreground'>未登记</span>
+                  )}
+                </dd>
+                <dt className='text-muted-foreground'>电话/WhatsApp</dt>
+                <dd>
+                  {creator.contactPhone ? (
+                    <span className='inline-flex items-center gap-1'>
+                      <Phone className='size-3.5 text-muted-foreground' />
+                      {creator.contactPhone}
+                    </span>
+                  ) : (
+                    <span className='text-muted-foreground'>未登记</span>
+                  )}
+                </dd>
                 <dt className='text-muted-foreground'>TikTok 主页</dt>
                 <dd>
                   <a

@@ -1,4 +1,4 @@
-/** 商务工作台领域类型；新增商务模块时在此补充类型。 */
+﻿/** 商务工作台领域类型；新增商务模块时在此补充类型。 */
 import type { Region } from '@/types/commerce'
 import type { ListResult } from 'pocketbase'
 
@@ -18,6 +18,10 @@ export type Creator = {
   isBizAvailable: boolean
   cooperationPrice: number
   cooperationNotes: string
+  contactEmail?: string
+  contactPhone?: string
+  category?: string
+  lastContactedAt?: string
   created: string
   updated: string
 }

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * 达人管理 - 新增/编辑表单
- * 依赖：react-hook-form、zod、PocketBase mutations
- * 后续模块照此模板复制，只替换 schema、字段与 mutation。
+ * 依赖：react-hook-form、zod、Supabase/PocketBase mutations
+ * 支持基础信息、合作状态、佣金报价以及联系方式与垂类标签结构化录入。
  */
 import { useEffect } from 'react'
 import { z } from 'zod'
@@ -44,11 +44,25 @@ import { useCreateCreator } from '../hooks/use-create-creator'
 import { useUpdateCreator } from '../hooks/use-update-creator'
 import type { Creator, CreatorInput } from '../types'
 
+const CREATOR_CATEGORIES = [
+  '美妆个护',
+  '3C数码',
+  '女装时尚',
+  '家居生活',
+  '运动户外',
+  '食品饮料',
+  '母婴玩具',
+  '通用',
+] as const
+
 const creatorSchema = z.object({
   nickname: z.string().trim().min(1, '请输入达人昵称').max(120),
   tiktokUrl: z.string().trim().url('请输入有效的 TikTok 主页地址'),
   followers: z.number().int('粉丝量必须为整数').min(0, '粉丝量不能为负数'),
   region: z.enum(regions),
+  category: z.string().optional(),
+  contactEmail: z.string().trim().email('请输入有效的联系邮箱').or(z.literal('')).optional(),
+  contactPhone: z.string().trim().max(40, '联系电话不能超过 40 字').optional(),
   cooperationStatus: z.enum(cooperationStatuses),
   commissionRate: z
     .number()
@@ -69,6 +83,9 @@ const emptyValues: CreatorInput = {
   tiktokUrl: '',
   followers: 0,
   region: 'US',
+  category: '通用',
+  contactEmail: '',
+  contactPhone: '',
   cooperationStatus: 'pending',
   commissionRate: 0,
   owner: '董雨辰',
@@ -101,6 +118,9 @@ export function CreatorFormDialog({
             tiktokUrl: creator.tiktokUrl,
             followers: creator.followers,
             region: creator.region,
+            category: creator.category || '通用',
+            contactEmail: creator.contactEmail || '',
+            contactPhone: creator.contactPhone || '',
             cooperationStatus: creator.cooperationStatus,
             commissionRate: creator.commissionRate,
             owner: creator.owner,
@@ -127,8 +147,8 @@ export function CreatorFormDialog({
           <DialogTitle>{creator ? '编辑达人' : '新增达人'}</DialogTitle>
           <DialogDescription>
             {creator
-              ? '已预填当前资料，只修改需要更新的字段。'
-              : '录入达人基础信息和当前合作状态。'}
+              ? '已预填当前资料，可修改联系方式、合作状态与商务报价。'
+              : '录入达人基础信息、社交主页、垂类与联系渠道。'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -151,29 +171,12 @@ export function CreatorFormDialog({
             />
             <FormField
               control={form.control}
-              name='owner'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>对接人</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name='tiktokUrl'
               render={({ field }) => (
-                <FormItem className='sm:col-span-2'>
-                  <FormLabel>TikTok 主页</FormLabel>
+                <FormItem>
+                  <FormLabel>TikTok 主页链接</FormLabel>
                   <FormControl>
-                    <Input
-                      type='url'
-                      placeholder='https://www.tiktok.com/@creator'
-                      {...field}
-                    />
+                    <Input placeholder='https://www.tiktok.com/@...' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -189,32 +192,8 @@ export function CreatorFormDialog({
                     <Input
                       type='number'
                       min={0}
-                      value={field.value}
-                      onChange={(event) =>
-                        field.onChange(event.target.valueAsNumber)
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='commissionRate'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>佣金比例（%）</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      min={0}
-                      max={100}
-                      step='0.1'
-                      value={field.value}
-                      onChange={(event) =>
-                        field.onChange(event.target.valueAsNumber)
-                      }
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -247,6 +226,30 @@ export function CreatorFormDialog({
             />
             <FormField
               control={form.control}
+              name='category'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>内容垂类</FormLabel>
+                  <Select value={field.value || '通用'} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {CREATOR_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name='cooperationStatus'
               render={({ field }) => (
                 <FormItem>
@@ -265,6 +268,65 @@ export function CreatorFormDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='contactEmail'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>联系邮箱</FormLabel>
+                  <FormControl>
+                    <Input placeholder='creator@business.com' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='contactPhone'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>电话 / WhatsApp</FormLabel>
+                  <FormControl>
+                    <Input placeholder='+1 ... / +44 ...' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='commissionRate'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>带货佣金率 (%)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      max={100}
+                      step='0.1'
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='owner'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>内部对接人</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -323,7 +385,7 @@ export function CreatorFormDialog({
                   <FormControl>
                     <Textarea
                       rows={2}
-                      placeholder='如：含植入脚本、素材授权范围等'
+                      placeholder='如：含植入脚本、素材授权范围、跟进历史要点等'
                       {...field}
                     />
                   </FormControl>
