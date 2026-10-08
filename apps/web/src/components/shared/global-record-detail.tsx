@@ -25,6 +25,9 @@ const collectionByKind = {
   company: 'companies',
   product: 'products',
   video: 'videos',
+  knowledge: 'failed_cases',
+  ai_memory: 'ai_memory',
+  account: 'video_accounts',
 } as const
 
 const labelsByKind = {
@@ -47,6 +50,21 @@ const labelsByKind = {
     ['视频标题', 'title'],
     ['关联达人', 'creator_name'],
     ['关联商品', 'product_name'],
+  ],
+  knowledge: [
+    ['案例标题', 'case_title'],
+    ['所属部门', 'department'],
+    ['避坑原因', 'reason'],
+  ],
+  ai_memory: [
+    ['记忆项', 'memory_key'],
+    ['置信度', 'confidence'],
+    ['沉淀内容', 'memory_value'],
+  ],
+  account: [
+    ['账号名称', 'name'],
+    ['所属平台', 'platform'],
+    ['账号状态', 'status'],
   ],
 } satisfies Record<GlobalSearchKind, readonly (readonly [string, string])[]>
 

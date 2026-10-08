@@ -9,9 +9,12 @@ import {
   mapSupabaseCreatorSearch,
   mapSupabaseProductSearch,
   mapSupabaseVideoSearch,
+  mapSupabaseKnowledgeSearch,
+  mapSupabaseAiMemorySearch,
+  mapSupabaseAccountSearch,
 } from './global-search-supabase-mapper'
 
-export type GlobalSearchKind = 'creator' | 'product' | 'video' | 'company'
+export type GlobalSearchKind = 'creator' | 'product' | 'video' | 'company' | 'knowledge' | 'ai_memory' | 'account'
 export type SearchResult = {
   id: string
   kind: GlobalSearchKind
@@ -207,6 +210,54 @@ async function runSupabaseGlobalSearch(
       })
     }
   }
+
+  if (allowed.includes('knowledge')) {
+    const { data } = await getSupabaseClient()
+      .from('failed_cases')
+      .select('*')
+      .or(`case_title.ilike.%${query}%,reason.ilike.%${query}%,department.ilike.%${query}%`)
+      .limit(5)
+    if (data?.length) {
+      groups.push({
+        kind: 'knowledge',
+        title: '避坑案例与知识',
+        total: data.length,
+        items: data.map(mapSupabaseKnowledgeSearch),
+      })
+    }
+  }
+  if (allowed.includes('ai_memory')) {
+    const { data } = await getSupabaseClient()
+      .from('ai_memory')
+      .select('*')
+      .or(`memory_key.ilike.%${query}%,memory_value.ilike.%${query}%`)
+      .is('deleted_at', null)
+      .limit(5)
+    if (data?.length) {
+      groups.push({
+        kind: 'ai_memory',
+        title: 'AI爆款记忆库',
+        total: data.length,
+        items: data.map(mapSupabaseAiMemorySearch),
+      })
+    }
+  }
+  if (allowed.includes('account')) {
+    const { data } = await getSupabaseClient()
+      .from('video_accounts')
+      .select('*')
+      .or(`name.ilike.%${query}%,platform.ilike.%${query}%`)
+      .is('deleted_at', null)
+      .limit(5)
+    if (data?.length) {
+      groups.push({
+        kind: 'account',
+        title: '对标监控账号',
+        total: data.length,
+        items: data.map(mapSupabaseAccountSearch),
+      })
+    }
+  }
   if (allowed.includes('video')) {
     const { data } = await getSupabaseClient()
       .from('videos')
@@ -229,8 +280,10 @@ async function runSupabaseGlobalSearch(
 }
 
 const supabaseAccessByRole: Record<string, GlobalSearchKind[]> = {
-  boss: ['creator', 'company', 'product', 'video'],
-  business: ['creator', 'company'],
-  market: ['product'],
-  editing: ['video'],
+  owner: ['creator', 'company', 'product', 'video', 'knowledge', 'ai_memory', 'account'],
+  boss: ['creator', 'company', 'product', 'video', 'knowledge', 'ai_memory', 'account'],
+  business: ['creator', 'company', 'knowledge'],
+  market: ['product', 'account', 'knowledge'],
+  editing: ['video', 'ai_memory', 'account'],
+  design: ['knowledge', 'ai_memory'],
 }

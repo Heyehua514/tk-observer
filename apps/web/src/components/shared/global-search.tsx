@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { FileVideo, PackageSearch, Store, UserRoundSearch } from 'lucide-react'
+import { BookOpen, BrainCircuit, FileVideo, PackageSearch, Smartphone, Store, UserRoundSearch } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useSearch } from '@/context/search-provider'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
@@ -28,6 +28,9 @@ const resultIcons: Record<GlobalSearchKind, typeof FileVideo> = {
   product: PackageSearch,
   video: FileVideo,
   company: Store,
+  knowledge: BookOpen,
+  ai_memory: BrainCircuit,
+  account: Smartphone,
 }
 
 export function GlobalSearch() {
@@ -83,6 +86,31 @@ export function GlobalSearch() {
         to: '/market',
         search: { query: '', recordType: result.kind, recordId: result.id },
       })
+    } else if (result.kind === 'knowledge' || result.kind === 'ai_memory') {
+      await navigate({
+        to: '/overview',
+        search: { recordType: result.kind, recordId: result.id },
+      })
+    } else if (result.kind === 'account') {
+      await navigate({
+        to: '/editing',
+        search: {
+          section: 'competitors',
+          tab: 'list',
+          page: 1,
+          perPage: 20,
+          query: '',
+          account: 'all',
+          videoType: 'all',
+          tag: '',
+          dateFrom: '',
+          dateTo: '',
+          viral: 'all',
+          sort: '-views',
+          recordType: 'account',
+          recordId: result.id,
+        },
+      })
     } else {
       await navigate({
         to: '/editing',
@@ -111,7 +139,7 @@ export function GlobalSearch() {
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder='搜索达人、商品、视频、客户…'
+        placeholder='搜索知识、案例、对标账号、达人、商品、视频…'
       />
       <CommandList>
         {debouncedQuery.length < 2 ? (

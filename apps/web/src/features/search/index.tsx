@@ -13,6 +13,9 @@ const titleByKind: Record<GlobalSearchKind, string> = {
   product: '商品',
   video: '视频',
   company: '客户',
+  knowledge: '避坑案例与知识',
+  ai_memory: 'AI爆款记忆库',
+  account: '对标监控账号',
 }
 
 export function SearchResultsPage({

@@ -237,6 +237,6 @@ export type EditingSearchParams = VideoIdeaListParams & {
   tab: IdeaTab
   ideaId?: string
   competitorId?: string
-  recordType?: 'video'
+  recordType?: 'video' | 'account'
   recordId?: string
 }
