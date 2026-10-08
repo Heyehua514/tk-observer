@@ -1,4 +1,4 @@
-﻿/** 商务工作台领域类型；新增商务模块时在此补充类型。 */
+/** 商务工作台领域类型；新增商务模块时在此补充类型。 */
 import type { Region } from '@/types/commerce'
 import type { ListResult } from 'pocketbase'
 
@@ -79,3 +79,29 @@ export type CreatorVideo = {
   publishAt: string
   updated: string
 }
+
+
+export type FollowUpChannel =
+  | 'email'
+  | 'phone'
+  | 'whatsapp'
+  | 'tiktok_dm'
+  | 'other'
+
+export type CreatorFollowUp = {
+  id: string
+  creatorId: string
+  channel: FollowUpChannel
+  status: CooperationStatus
+  summary: string
+  contactedAt: string
+  nextFollowUpAt?: string
+  operatorName: string
+  created: string
+  updated: string
+}
+
+export type CreatorFollowUpInput = Omit<
+  CreatorFollowUp,
+  'id' | 'created' | 'updated'
+>

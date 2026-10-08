@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-table'
 import {
   ExternalLink,
+  History,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -178,6 +179,24 @@ export function CreatorTable({
         ),
       },
       {
+        accessorKey: 'lastContactedAt',
+        header: '最近跟进',
+        cell: ({ row }) => {
+          const val = row.original.lastContactedAt
+          if (!val) {
+            return <span className='text-xs text-muted-foreground'>未建联</span>
+          }
+          return (
+            <span
+              className='text-xs text-muted-foreground'
+              title={formatBeijingTime(val)}
+            >
+              {val.slice(0, 10)}
+            </span>
+          )
+        },
+      },
+      {
         id: 'bizAvailable',
         header: '商务标记',
         cell: ({ row }) =>
@@ -203,6 +222,12 @@ export function CreatorTable({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
+              <DropdownMenuItem
+                onSelect={() => setDetail(row.original)}
+              >
+                <History className='size-4' />
+                跟进记录
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => {
                   setEditing(row.original)

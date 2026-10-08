@@ -1,4 +1,4 @@
-﻿/** 达人管理 - 详情抽屉；展示只读资料并提供编辑入口。 */
+﻿/** 达人管理 - 详情抽屉；展示只读资料并提供编辑与跟进时间线入口。 */
 import { ExternalLink, FileVideo, Mail, Phone, Pencil } from 'lucide-react'
 import { formatBeijingTime } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +13,7 @@ import {
 import { cooperationStatusLabels } from '../constants'
 import { useCreatorVideos } from '../hooks/use-creator-videos'
 import type { Creator } from '../types'
+import { CreatorFollowUpTimeline } from './creator-follow-up-timeline'
 
 export function CreatorDetail({
   creator,
@@ -98,6 +99,14 @@ export function CreatorDetail({
                     <ExternalLink className='size-3 shrink-0' />
                   </a>
                 </dd>
+                <dt className='text-muted-foreground'>最近跟进</dt>
+                <dd>
+                  {creator.lastContactedAt ? (
+                    formatBeijingTime(creator.lastContactedAt)
+                  ) : (
+                    <span className='text-muted-foreground'>暂无跟进记录</span>
+                  )}
+                </dd>
                 <dt className='text-muted-foreground'>创建时间</dt>
                 <dd>{formatBeijingTime(creator.created)}</dd>
                 <dt className='text-muted-foreground'>更新时间</dt>
@@ -135,6 +144,9 @@ export function CreatorDetail({
                   )}
                 </div>
               </section>
+
+              <CreatorFollowUpTimeline creator={creator} />
+
               <section className='border-t pt-5'>
                 <h3 className='flex items-center gap-2 text-sm font-medium'>
                   <FileVideo className='size-4' />

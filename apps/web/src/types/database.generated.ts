@@ -651,6 +651,56 @@ export type Database = {
           },
         ]
       }
+      creator_follow_ups: {
+        Row: {
+          channel: string
+          contacted_at: string
+          created_at: string
+          creator_id: string
+          deleted_at: string | null
+          id: string
+          next_follow_up_at: string | null
+          operator_name: string
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          contacted_at?: string
+          created_at?: string
+          creator_id: string
+          deleted_at?: string | null
+          id?: string
+          next_follow_up_at?: string | null
+          operator_name?: string
+          status: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          contacted_at?: string
+          created_at?: string
+          creator_id?: string
+          deleted_at?: string | null
+          id?: string
+          next_follow_up_at?: string | null
+          operator_name?: string
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'creator_follow_ups_creator_id_fkey',
+            columns: ['creator_id'],
+            isOneToOne: false,
+            referencedRelation: 'creators',
+            referencedColumns: ['id'],
+          },
+        ],
+      },
       creators: {
         Row: {
           category: string | null
