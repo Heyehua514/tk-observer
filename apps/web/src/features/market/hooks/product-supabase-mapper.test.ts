@@ -22,8 +22,11 @@ describe('mapSupabaseProduct', () => {
       priceMinor: 19900,
       costMinor: 9200,
       currency: 'CNY',
+      costCurrency: 'CNY',
+      exchangeRate: 1,
       status: 'active',
       region: 'US',
+      createdAt: undefined,
     })
   })
 })
