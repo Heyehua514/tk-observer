@@ -15,6 +15,7 @@ import { AnimatedNumber } from '@/components/shared/animated-number'
 import { EmptyState } from '@/components/shared/empty-state'
 import type { TeamMemoryData } from './types'
 import { useTeamMemory } from './use-team-memory'
+import { AddKnowledgeDialog } from './add-knowledge-dialog'
 
 export function TeamMemory() {
   const memory = useTeamMemory()
@@ -54,15 +55,18 @@ export function TeamMemoryContent({ data }: { data: TeamMemoryData }) {
         <div>
           <h2 className='flex items-center gap-2 text-base font-semibold'>
             <BookOpenCheck className='size-5 text-primary' />
-            团队记忆
+            团队记忆与知识库
           </h2>
           <p className='mt-1 text-sm text-muted-foreground'>
-            把每日执行、失败原因和自动化运行沉淀为可复用经验。
+            沉淀每日执行、避坑教训与自动化运行经验，全局搜索引擎与 AI 即时联动。
           </p>
         </div>
-        <span className='rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'>
-          自动更新
-        </span>
+        <div className='flex items-center gap-2'>
+          <AddKnowledgeDialog />
+          <span className='rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'>
+            自动更新
+          </span>
+        </div>
       </div>
       <div className='grid gap-4 lg:grid-cols-3'>
         <div className='glass-card min-w-0 p-5'>
