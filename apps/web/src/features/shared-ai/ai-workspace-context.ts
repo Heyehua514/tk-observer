@@ -11,6 +11,7 @@ export type AiWorkspaceItem = {
 }
 
 export type WorkspaceAiPromptInput = {
+  knowledgeItems?: Array<{ title: string; content: string }>
   scope: string
   role: string
   request: string
@@ -44,6 +45,7 @@ export function buildWorkspaceAiPrompt({
   memories,
   items,
   missingSources,
+  knowledgeItems = [],
 }: WorkspaceAiPromptInput) {
   const normalizedItems = normalizeAiWorkspaceItems(items)
   return [
@@ -53,6 +55,12 @@ export function buildWorkspaceAiPrompt({
       ? `用户已确认的个人偏好：\n${memories
           .slice(0, 8)
           .map((memory) => `${redactAiText(memory.memoryKey)}：${redactAiText(memory.memoryValue)}`)
+          .join('\n')}`
+      : '',
+    knowledgeItems.length
+      ? `知识库参考材料（含 Dify/避坑经验）：\n${knowledgeItems
+          .slice(0, 3)
+          .map((k) => `【${redactAiText(k.title)}】: ${redactAiText(k.content)}`)
           .join('\n')}`
       : '',
     '<workspace-data>',

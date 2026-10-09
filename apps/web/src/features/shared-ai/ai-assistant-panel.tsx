@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/select'
 import { useAiWorkspaceContext } from '@/features/shared-ai/hooks/use-ai-workspace-context'
 import { callWorkBuddyGateway } from '@/features/shared-ai/workbuddy-gateway'
+import { searchDifyKnowledge } from '@/lib/dify-client'
 import { rankAiMemories } from './ai-memory-ranking'
 import { getAiProfile } from './ai-profile'
 import { buildWorkspaceAiPrompt } from './ai-workspace-context'
@@ -73,7 +74,15 @@ export function AiAssistantPanel({
     try {
       const workspace = await workspaceContext.load()
       setMissingSources(workspace.missingSources)
+      const difyKnowledge = await searchDifyKnowledge({
+        query: `${taskType} ${prompt}`,
+        topK: 3,
+      })
       const fullPrompt = buildWorkspaceAiPrompt({
+        knowledgeItems: difyKnowledge.map((k) => ({
+          title: k.title,
+          content: k.content,
+        })),
         scope,
         role: role || 'unknown',
         request: `${taskType}：${prompt}`,

@@ -4,6 +4,7 @@
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
+import { searchDifyKnowledge } from '@/lib/dify-client'
 import {
   mapSupabaseCompanySearch,
   mapSupabaseCreatorSearch,
@@ -217,12 +218,22 @@ async function runSupabaseGlobalSearch(
       .select('*')
       .or(`case_title.ilike.%${query}%,reason.ilike.%${query}%,department.ilike.%${query}%`)
       .limit(5)
-    if (data?.length) {
+    const difyRecords = await searchDifyKnowledge({ query, topK: 3 })
+    const combinedKnowledge = [
+      ...(data || []).map(mapSupabaseKnowledgeSearch),
+      ...difyRecords.map((r) => ({
+        id: r.id,
+        kind: 'knowledge' as const,
+        label: r.title,
+        description: `[Dify知识库 ${Math.round(r.score * 100)}%] ${r.content.slice(0, 100)}...`,
+      })),
+    ]
+    if (combinedKnowledge.length) {
       groups.push({
         kind: 'knowledge',
         title: '避坑案例与知识',
-        total: data.length,
-        items: data.map(mapSupabaseKnowledgeSearch),
+        total: combinedKnowledge.length,
+        items: combinedKnowledge.slice(0, 5),
       })
     }
   }
