@@ -9,8 +9,8 @@ export function getDataProvider(): DataProvider {
 }
 
 export function getSupabaseEnvironment() {
-  const url = import.meta.env.VITE_SUPABASE_URL?.trim()
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim()
+  const url = import.meta.env.VITE_SUPABASE_URL?.trim() || "https://mddldiwthvnaefwtlnme.supabase.co"
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || "sb_publishable_dvK9zPS9leT2v5n9omM4gA_F0lAOY2w"
   if (!url || !anonKey) throw new Error('Supabase环境变量未配置完整')
   return { url, anonKey }
 }
