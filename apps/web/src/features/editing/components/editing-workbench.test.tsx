@@ -120,6 +120,13 @@ it('成片归档有数据时以内联 video 预览展示', async () => {
       subtitle: 'TK 陪跑 · 磊哥',
       publishAt: '2026-08-12',
       fileUrl: 'https://example.com/video.mp4',
+      views: 1200,
+      likes: 60,
+      comments: 10,
+      shares: 5,
+      completionRate: 15.5,
+      conversionGmvCents: 50000,
+      orderCount: 8,
     },
   ]
   const queryClient = new QueryClient({

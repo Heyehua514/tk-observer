@@ -39,6 +39,10 @@ import { TrendingWorkbench } from './trending-workbench'
 import { VideoAccountSyncPanel } from './video-account-sync-panel'
 import { VideoAiPanel } from './video-ai-panel'
 import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
+import { VideoMetricsDialog } from './video-metrics-dialog'
+import { formatGmv, calculateEngagementRate } from '../video-metrics-model'
+import type { VideoArchiveItem } from './production-model'
+import { Eye, Heart, ShoppingBag, Sparkles } from 'lucide-react'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
 import { VideoTaskFormDialog } from './video-task-form'
@@ -49,6 +53,8 @@ function ProductionSkeleton() {
   const schedules = usePublishSchedules()
   const [scheduleFormOpen, setScheduleFormOpen] = useState(false)
   const [archiveUploadOpen, setArchiveUploadOpen] = useState(false)
+  const [selectedVideoForMetrics, setSelectedVideoForMetrics] = useState<VideoArchiveItem | null>(null)
+  const [metricsDialogOpen, setMetricsDialogOpen] = useState(false)
   const [taskFormOpen, setTaskFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<VideoTaskItem | null>(null)
   const updateTask = useUpdateVideoTask()
@@ -194,6 +200,44 @@ function ProductionSkeleton() {
                     未配置文件链接
                   </div>
                 )}
+                <div className='mt-3 grid grid-cols-3 gap-1 rounded-lg border bg-muted/40 p-2 text-xs'>
+                  <div className='flex flex-col items-center justify-center'>
+                    <span className='flex items-center gap-1 text-muted-foreground'>
+                      <Eye className='size-3' /> 播放
+                    </span>
+                    <span className='font-semibold text-foreground'>{item.views.toLocaleString()}</span>
+                  </div>
+                  <div className='flex flex-col items-center justify-center border-x'>
+                    <span className='flex items-center gap-1 text-muted-foreground'>
+                      <Heart className='size-3' /> 互动
+                    </span>
+                    <span className='font-semibold text-foreground'>
+                      {calculateEngagementRate(item)}%
+                    </span>
+                  </div>
+                  <div className='flex flex-col items-center justify-center'>
+                    <span className='flex items-center gap-1 text-muted-foreground'>
+                      <ShoppingBag className='size-3 text-amber-500' /> GMV
+                    </span>
+                    <span className='font-semibold text-foreground'>
+                      ¥{formatGmv(item.conversionGmvCents)}
+                    </span>
+                  </div>
+                </div>
+                <div className='mt-3 flex justify-end'>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    className='h-7 text-xs'
+                    onClick={() => {
+                      setSelectedVideoForMetrics(item)
+                      setMetricsDialogOpen(true)
+                    }}
+                  >
+                    <Sparkles className='mr-1 size-3 text-primary' />
+                    回流数据
+                  </Button>
+                </div>
               </article>
             ))}
           </div>
@@ -211,6 +255,11 @@ function ProductionSkeleton() {
         <VideoArchiveUploadDialog
           open={archiveUploadOpen}
           onOpenChange={setArchiveUploadOpen}
+        />
+        <VideoMetricsDialog
+          open={metricsDialogOpen}
+          onOpenChange={setMetricsDialogOpen}
+          video={selectedVideoForMetrics}
         />
       </TabsContent>
       <TabsContent value='schedule' className='mt-5'>

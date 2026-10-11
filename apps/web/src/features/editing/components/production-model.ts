@@ -1,4 +1,6 @@
-/** 剪辑工作台生产数据模型：视频任务与成片归档展示。 */
+﻿/** 剪辑工作台生产数据模型：视频任务、成片归档与回流指标展示。 */
+import type { VideoMetrics } from '../video-metrics-model'
+
 export type VideoTaskItem = {
   id: string
   title: string
@@ -8,12 +10,20 @@ export type VideoTaskItem = {
   owner: string
 }
 
-export type VideoArchiveItem = {
+export type VideoArchiveItem = Partial<VideoMetrics> & {
   id: string
   title: string
   subtitle: string
   publishAt: string
   fileUrl: string
+  views: number
+  likes: number
+  comments: number
+  shares: number
+  completionRate: number
+  conversionGmvCents: number
+  orderCount: number
+  externalUrl?: string
 }
 
 export type PublishScheduleItem = {
@@ -51,6 +61,14 @@ type VideoArchiveRecord = {
   creatorName: string
   publishAt: string
   fileUrl: string
+  views?: number
+  likes?: number
+  comments?: number
+  shares?: number
+  completionRate?: number
+  conversionGmvCents?: number
+  orderCount?: number
+  externalUrl?: string
 }
 
 type PublishScheduleRecord = {
@@ -94,6 +112,14 @@ export function buildVideoArchiveItems(
         .join(' · '),
       publishAt: dateOnly(record.publishAt),
       fileUrl: record.fileUrl,
+      views: Number(record.views || 0),
+      likes: Number(record.likes || 0),
+      comments: Number(record.comments || 0),
+      shares: Number(record.shares || 0),
+      completionRate: Number(record.completionRate || 0),
+      conversionGmvCents: Number(record.conversionGmvCents || 0),
+      orderCount: Number(record.orderCount || 0),
+      externalUrl: record.externalUrl ? String(record.externalUrl) : undefined,
     }))
 }
 

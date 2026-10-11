@@ -2616,48 +2616,134 @@ export type Database = {
         }
         Relationships: []
       }
+      video_metrics_logs: {
+        Row: {
+          comments: number
+          completion_rate: number
+          conversion_gmv_cents: number
+          created_at: string
+          deleted_at: string | null
+          id: string
+          likes: number
+          logged_at: string
+          notes: string | null
+          operator_name: string
+          order_count: number
+          shares: number
+          updated_at: string
+          video_id: string
+          views: number
+        }
+        Insert: {
+          comments?: number
+          completion_rate?: number
+          conversion_gmv_cents?: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          likes?: number
+          logged_at?: string
+          notes?: string | null
+          operator_name?: string
+          order_count?: number
+          shares?: number
+          updated_at?: string
+          video_id: string
+          views?: number
+        }
+        Update: {
+          comments?: number
+          completion_rate?: number
+          conversion_gmv_cents?: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          likes?: number
+          logged_at?: string
+          notes?: string | null
+          operator_name?: string
+          order_count?: number
+          shares?: number
+          updated_at?: string
+          video_id?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_metrics_logs_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
+          comments: number
+          completion_rate: number
+          conversion_gmv_cents: number
           created_at: string
           creator_id: string | null
           creator_name: string | null
           deleted_at: string | null
+          external_url: string | null
           file_path: string
           id: string
           legacy_id: string | null
+          likes: number
+          order_count: number
           product_name: string | null
           publish_at: string | null
           region: string
+          shares: number
           title: string
           updated_at: string
+          views: number
         }
         Insert: {
+          comments?: number
+          completion_rate?: number
+          conversion_gmv_cents?: number
           created_at?: string
           creator_id?: string | null
           creator_name?: string | null
           deleted_at?: string | null
+          external_url?: string | null
           file_path: string
           id?: string
           legacy_id?: string | null
+          likes?: number
+          order_count?: number
           product_name?: string | null
           publish_at?: string | null
           region: string
+          shares?: number
           title: string
           updated_at?: string
+          views?: number
         }
         Update: {
+          comments?: number
+          completion_rate?: number
+          conversion_gmv_cents?: number
           created_at?: string
           creator_id?: string | null
           creator_name?: string | null
           deleted_at?: string | null
+          external_url?: string | null
           file_path?: string
           id?: string
           legacy_id?: string | null
+          likes?: number
+          order_count?: number
           product_name?: string | null
           publish_at?: string | null
           region?: string
+          shares?: number
           title?: string
           updated_at?: string
+          views?: number
         }
         Relationships: [
           {
