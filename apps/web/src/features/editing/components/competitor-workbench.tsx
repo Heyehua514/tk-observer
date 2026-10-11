@@ -16,6 +16,7 @@ import { useStyleAnalyses } from '../hooks/use-style-analyses'
 import type { CompetitorAccount, CompetitorVideo } from '../types'
 import { CompetitorAccountForm } from './competitor-account-form'
 import { CreateCompetitorAccountDialog } from './create-competitor-account-dialog'
+import { AiViralAnalysisButton } from './ai-viral-analysis-button'
 import {
   formatMetric,
   getEngagementRate,
@@ -111,7 +112,7 @@ export function CompetitorWorkbench({
                   </div>
                 </div>
               </button>
-              <div className='mt-4 flex gap-2'>
+              <div className='mt-4 flex flex-wrap gap-2'>
                 <Button
                   size='sm'
                   variant='outline'
@@ -128,6 +129,7 @@ export function CompetitorWorkbench({
                   <ScanSearch className='size-4' />
                   分析风格
                 </Button>
+                <AiViralAnalysisButton account={account} />
               </div>
             </article>
           ))}
