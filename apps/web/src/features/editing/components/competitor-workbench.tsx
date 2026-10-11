@@ -15,6 +15,7 @@ import { useCompetitorVideos } from '../hooks/use-competitor-videos'
 import { useStyleAnalyses } from '../hooks/use-style-analyses'
 import type { CompetitorAccount, CompetitorVideo } from '../types'
 import { CompetitorAccountForm } from './competitor-account-form'
+import { CreateCompetitorAccountDialog } from './create-competitor-account-dialog'
 import {
   formatMetric,
   getEngagementRate,
@@ -56,13 +57,16 @@ export function CompetitorWorkbench({
         <SearchBar
           value={query}
           onChange={onQueryChange}
-          placeholder='搜索对标账号或备注'
+          placeholder='搜索 TikTok/抖音/视频号对标账号或备注'
         />
-        <span className='text-sm text-muted-foreground'>
-          {latestUpdate
-            ? `数据更新于 ${formatBeijingTime(latestUpdate)}`
-            : '爆款视频由谢洁手动录入'}
-        </span>
+        <div className='flex items-center gap-3'>
+          <CreateCompetitorAccountDialog />
+          <span className='text-sm text-muted-foreground hidden sm:inline'>
+            {latestUpdate
+              ? `更新于 ${formatBeijingTime(latestUpdate)}`
+              : '已打通全平台对标'}
+          </span>
+        </div>
       </div>
       {accounts.isError ? (
         <LoadStateError
