@@ -13,7 +13,7 @@ export type VideoType =
   | '饭局交流'
   | '饭局感受'
 
-export type EditingSection = 'ideas' | 'competitors' | 'trends' | 'production'
+export type EditingSection = 'ideas' | 'competitors' | 'trends' | 'production' | 'autocut'
 export type IdeaTab = 'list' | 'analytics'
 export type ViralFilter = 'all' | 'viral' | 'normal'
 export type VideoIdeaSort = '-views' | '-completion_rate' | '-follower_gain'

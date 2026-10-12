@@ -47,6 +47,8 @@ import { ArrowRight, CheckCircle2, Eye, Film, Heart, Plus, ShoppingBag, Sparkles
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
 import { VideoTaskFormDialog } from './video-task-form'
+import { AutoCutWorkshop } from '../auto-cut/auto-cut-workshop'
+import { Scissors } from 'lucide-react'
 
 function ProductionSkeleton() {
   const tasks = useVideoTasks()
@@ -418,6 +420,10 @@ export function EditingWorkbench({
             <Clapperboard className='size-4' />
             视频任务与归档
           </TabsTrigger>
+          <TabsTrigger value='autocut'>
+            <Scissors className='size-4' />
+            智能切片与AI剪辑
+          </TabsTrigger>
         </TabsList>
         <TabsContent value='ideas' className='mt-5'>
           <Tabs
@@ -468,6 +474,9 @@ export function EditingWorkbench({
         </TabsContent>
         <TabsContent value='production' className='mt-5'>
           <ProductionSkeleton />
+        </TabsContent>
+        <TabsContent value='autocut' className='mt-5'>
+          <AutoCutWorkshop />
         </TabsContent>
       </Tabs>
       <VideoIdeaFormDialog
