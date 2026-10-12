@@ -2700,6 +2700,7 @@ export type Database = {
           title: string
           updated_at: string
           views: number
+          video_task_id: string | null
         }
         Insert: {
           comments?: number
@@ -2722,6 +2723,7 @@ export type Database = {
           title: string
           updated_at?: string
           views?: number
+          video_task_id?: string | null
         }
         Update: {
           comments?: number
@@ -2744,6 +2746,7 @@ export type Database = {
           title?: string
           updated_at?: string
           views?: number
+          video_task_id?: string | null
         }
         Relationships: [
           {
@@ -2751,6 +2754,13 @@ export type Database = {
             columns: ['creator_id']
             isOneToOne: false
             referencedRelation: 'creators'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'videos_video_task_id_fkey'
+            columns: ['video_task_id']
+            isOneToOne: false
+            referencedRelation: 'video_tasks'
             referencedColumns: ['id']
           },
         ]

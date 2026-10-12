@@ -1,6 +1,7 @@
-/**
- * 剪辑工作台视频任务新增/更新 mutation（Supabase-first，PocketBase 回退）。
- * 字段对齐 remote video_tasks（owner, region）; 状态支持 todo/editing/review/done。
+﻿/**
+ * 剪辑工作台视频任务新增/更新与状态机流转 mutation（Supabase-first，PocketBase 回退）。
+ * 字段对齐 remote video_tasks（owner, region）；状态支持 todo/editing/review/done。
+ * 当任务状态流转为 done 时，自动触发联动发布排期。
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Database } from '@/types/database.generated'
@@ -8,6 +9,8 @@ import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
+import { getVideoTaskStatusLabel } from '../video-task-lifecycle'
+import { publishScheduleKeys } from './use-publish-schedules'
 import { videoTaskKeys } from './use-video-tasks'
 
 type VideoTaskRowInsert = Database['public']['Tables']['video_tasks']['Insert']
@@ -92,10 +95,49 @@ export function useUpdateVideoTask() {
       }
       return pb.collection('video_tasks').update(id, payload)
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: videoTaskKeys.all })
+      if (variables.input.status === 'done') {
+        void queryClient.invalidateQueries({ queryKey: publishScheduleKeys.all })
+      }
       toast.success('视频任务已更新')
     },
     onError: () => toast.error('更新失败，请重试'),
+  })
+}
+
+export function useTransitionVideoTaskStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string
+      status: string
+    }) => {
+      const payload: Partial<VideoTaskRowInsert> = { status }
+      if (getDataProvider() === 'supabase') {
+        const { data, error } = await getSupabaseClient()
+          .from('video_tasks')
+          .update(payload)
+          .eq('id', id)
+          .select('id, status, title')
+          .single()
+        if (error) throw error
+        return data
+      }
+      return pb.collection('video_tasks').update(id, payload)
+    },
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: videoTaskKeys.all })
+      if (variables.status === 'done') {
+        void queryClient.invalidateQueries({ queryKey: publishScheduleKeys.all })
+        toast.success('任务已完成，已自动转入待发布排期')
+      } else {
+        toast.success(`任务状态已推进至：${getVideoTaskStatusLabel(variables.status)}`)
+      }
+    },
+    onError: () => toast.error('状态流转失败，请重试'),
   })
 }

@@ -12,6 +12,8 @@ import {
 } from '../components/video-archive-upload'
 import type { VideoArchiveInput } from '../types'
 import { videoArchiveKeys } from './use-video-archive'
+import { videoTaskKeys } from './use-video-tasks'
+import { publishScheduleKeys } from './use-publish-schedules'
 
 export function useCreateVideoArchive() {
   const owner = useAuthStore((state) => state.user?.id || '')
@@ -41,11 +43,14 @@ export function useCreateVideoArchive() {
       if (input.publishAt) form.set('publish_at', input.publishAt)
       if (input.productName) form.set('product_name', input.productName)
       if (input.creatorName) form.set('creator_name', input.creatorName)
+      if (input.videoTaskId) form.set('video_task_id', input.videoTaskId)
       await pb.collection('videos').create(form)
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: videoArchiveKeys.all })
-      toast.success('成片已归档')
+      void queryClient.invalidateQueries({ queryKey: videoTaskKeys.all })
+      void queryClient.invalidateQueries({ queryKey: publishScheduleKeys.all })
+      toast.success('成片已归档，任务与排期已联动更新')
     },
   })
 }

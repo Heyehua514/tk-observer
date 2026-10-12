@@ -96,6 +96,7 @@ export type VideoArchiveInput = {
   productName: string
   creatorName: string
   file: File
+  videoTaskId?: string
 }
 
 export type MetricSnapshot = {

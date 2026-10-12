@@ -92,6 +92,7 @@ describe('serializeVideoArchiveInput', () => {
       publish_at: null,
       product_name: null,
       creator_name: null,
+      video_task_id: null,
     })
   })
 

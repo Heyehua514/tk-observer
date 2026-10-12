@@ -61,6 +61,7 @@ export function mapSupabaseVideoTaskRecord(
       status: String(record.status || ''),
       dueAt: String(record.due_at || ''),
       owner: String(record.owner_name || ''),
+      region: String(record.region || ''),
     },
   ])[0]
 }
@@ -76,6 +77,15 @@ export function mapSupabaseVideoArchiveRecord(
       creatorName: String(record.creator_name || ''),
       publishAt: String(record.publish_at || ''),
       fileUrl: String(record.file_path || ''),
+      views: Number(record.views || 0),
+      likes: Number(record.likes || 0),
+      comments: Number(record.comments || 0),
+      shares: Number(record.shares || 0),
+      completionRate: Number(record.completion_rate || 0),
+      conversionGmvCents: Number(record.conversion_gmv_cents || 0),
+      orderCount: Number(record.order_count || 0),
+      externalUrl: record.external_url ? String(record.external_url) : undefined,
+      videoTaskId: record.video_task_id ? String(record.video_task_id) : undefined,
     },
   ])[0]
 }

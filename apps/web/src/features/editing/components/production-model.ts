@@ -8,6 +8,9 @@ export type VideoTaskItem = {
   status: string
   dueAt: string
   owner: string
+  productName?: string
+  creatorName?: string
+  region?: string
 }
 
 export type VideoArchiveItem = Partial<VideoMetrics> & {
@@ -24,6 +27,7 @@ export type VideoArchiveItem = Partial<VideoMetrics> & {
   conversionGmvCents: number
   orderCount: number
   externalUrl?: string
+  videoTaskId?: string
 }
 
 export type PublishScheduleItem = {
@@ -52,6 +56,7 @@ type VideoTaskRecord = {
   status: string
   dueAt: string
   owner: string
+  region?: string
 }
 
 type VideoArchiveRecord = {
@@ -69,6 +74,7 @@ type VideoArchiveRecord = {
   conversionGmvCents?: number
   orderCount?: number
   externalUrl?: string
+  videoTaskId?: string
 }
 
 type PublishScheduleRecord = {
@@ -95,6 +101,9 @@ export function buildVideoTaskItems(
     status: record.status,
     dueAt: dateOnly(record.dueAt),
     owner: record.owner,
+    productName: record.productName || undefined,
+    creatorName: record.creatorName || undefined,
+    region: record.region || undefined,
   }))
 }
 
@@ -120,6 +129,7 @@ export function buildVideoArchiveItems(
       conversionGmvCents: Number(record.conversionGmvCents || 0),
       orderCount: Number(record.orderCount || 0),
       externalUrl: record.externalUrl ? String(record.externalUrl) : undefined,
+      videoTaskId: record.videoTaskId ? String(record.videoTaskId) : undefined,
     }))
 }
 

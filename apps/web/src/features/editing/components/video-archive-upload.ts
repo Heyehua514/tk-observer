@@ -29,6 +29,7 @@ export type VideoArchiveRowInput = {
   publish_at: string | null
   product_name: string | null
   creator_name: string | null
+  video_task_id: string | null
 }
 
 export function serializeVideoArchiveInput(
@@ -38,6 +39,7 @@ export function serializeVideoArchiveInput(
     publishAt: string
     productName: string
     creatorName: string
+    videoTaskId?: string
   },
   filePath: string
 ): VideoArchiveRowInput {
@@ -48,5 +50,6 @@ export function serializeVideoArchiveInput(
     publish_at: input.publishAt || null,
     product_name: input.productName || null,
     creator_name: input.creatorName || null,
+    video_task_id: input.videoTaskId || null,
   }
 }

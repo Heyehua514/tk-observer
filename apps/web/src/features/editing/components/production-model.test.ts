@@ -27,6 +27,9 @@ describe('production model', () => {
         status: 'editing',
         dueAt: '2026-08-12',
         owner: '谢洁',
+        productName: '东南亚选品',
+        creatorName: '磊哥',
+        region: undefined,
       },
     ])
   })

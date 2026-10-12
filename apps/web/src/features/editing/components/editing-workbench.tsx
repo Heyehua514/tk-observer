@@ -18,7 +18,8 @@ import { LoadStateError } from '@/components/shared/load-state-error'
 import { PageHeader } from '@/components/shared/page-header'
 import { TableSkeleton } from '@/components/shared/table-skeleton'
 import { AiAssistantPanel } from '@/features/shared-ai'
-import { useUpdateVideoTask } from '../hooks/use-create-video-task'
+import { useUpdateVideoTask, useTransitionVideoTaskStatus } from '../hooks/use-create-video-task'
+import { getNextTaskStatus, getVideoTaskStatusLabel, VIDEO_TASK_STATUSES } from '../video-task-lifecycle'
 import { usePublishSchedules } from '../hooks/use-publish-schedules'
 import { useVideoArchive } from '../hooks/use-video-archive'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
@@ -42,7 +43,7 @@ import { VideoArchiveUploadDialog } from './video-archive-upload-dialog'
 import { VideoMetricsDialog } from './video-metrics-dialog'
 import { formatGmv, calculateEngagementRate } from '../video-metrics-model'
 import type { VideoArchiveItem } from './production-model'
-import { Eye, Heart, ShoppingBag, Sparkles } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Eye, Film, Heart, Plus, ShoppingBag, Sparkles } from 'lucide-react'
 import { VideoIdeaFormDialog } from './video-idea-form'
 import { VideoIdeaTable } from './video-idea-table'
 import { VideoTaskFormDialog } from './video-task-form'
@@ -58,6 +59,8 @@ function ProductionSkeleton() {
   const [taskFormOpen, setTaskFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<VideoTaskItem | null>(null)
   const updateTask = useUpdateVideoTask()
+  const transitionTask = useTransitionVideoTaskStatus()
+  const [preselectedTaskForArchive, setPreselectedTaskForArchive] = useState<VideoTaskItem | null>(null)
 
   return (
     <Tabs defaultValue='tasks'>
@@ -118,43 +121,75 @@ function ProductionSkeleton() {
                       </div>
                     </td>
                     <td className='px-4 py-3'>
-                      <select
-                        value={task.status}
-                        onChange={(e) =>
-                          updateTask.mutate({
-                            id: task.id,
-                            input: { status: e.target.value },
-                          })
-                        }
-                        className='rounded border bg-transparent px-1 py-0.5 text-sm'
-                      >
-                        {['todo', 'editing', 'review', 'done'].map((st) => (
-                          <option key={st} value={st}>
-                            {
-                              {
-                                todo: '待处理',
-                                editing: '制作中',
-                                review: '待审核',
-                                done: '已完成',
-                              }[st]
-                            }
-                          </option>
-                        ))}
-                      </select>
+                      <div className='flex items-center gap-2'>
+                        <select
+                          value={task.status}
+                          onChange={(e) =>
+                            updateTask.mutate({
+                              id: task.id,
+                              input: { status: e.target.value },
+                            })
+                          }
+                          className='rounded border bg-transparent px-1 py-0.5 text-xs'
+                        >
+                          {VIDEO_TASK_STATUSES.map((st) => (
+                            <option key={st} value={st}>
+                              {getVideoTaskStatusLabel(st)}
+                            </option>
+                          ))}
+                        </select>
+                        {task.status === 'done' ? (
+                          <span className='inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'>
+                            <CheckCircle2 className='size-3' />
+                            已入排期
+                          </span>
+                        ) : (
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            className='h-6 px-2 text-[11px]'
+                            disabled={transitionTask.isPending}
+                            onClick={() => {
+                              const next = getNextTaskStatus(task.status)
+                              if (next) {
+                                transitionTask.mutate({ id: task.id, status: next })
+                              }
+                            }}
+                          >
+                            推进至 {getVideoTaskStatusLabel(getNextTaskStatus(task.status) || '')}
+                            <ArrowRight className='ml-1 size-2.5' />
+                          </Button>
+                        )}
+                      </div>
                     </td>
                     <td className='px-4 py-3'>{task.dueAt || '未填'}</td>
                     <td className='px-4 py-3'>{task.owner}</td>
                     <td className='px-4 py-3 text-right'>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onClick={() => {
-                          setEditingTask(task)
-                          setTaskFormOpen(true)
-                        }}
-                      >
-                        编辑
-                      </Button>
+                      <div className='flex items-center justify-end gap-1'>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          className='h-7 text-xs'
+                          onClick={() => {
+                            setPreselectedTaskForArchive(task)
+                            setArchiveUploadOpen(true)
+                          }}
+                        >
+                          <Film className='mr-1 size-3' />
+                          归档成片
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='h-7 text-xs'
+                          onClick={() => {
+                            setEditingTask(task)
+                            setTaskFormOpen(true)
+                          }}
+                        >
+                          编辑
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -174,6 +209,17 @@ function ProductionSkeleton() {
         />
       </TabsContent>
       <TabsContent value='archive' className='mt-5'>
+        <div className='mb-4 flex justify-end'>
+          <Button
+            onClick={() => {
+              setPreselectedTaskForArchive(null)
+              setArchiveUploadOpen(true)
+            }}
+          >
+            <Plus className='mr-1 size-4' />
+            上传成片
+          </Button>
+        </div>
         {archive.data?.length ? (
           <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
             {archive.data.map((item) => (
@@ -181,7 +227,14 @@ function ProductionSkeleton() {
                 key={item.id}
                 className='rounded-xl border bg-card/70 p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30 motion-reduce:transform-none motion-reduce:transition-none'
               >
-                <div className='font-medium'>{item.title}</div>
+                <div className='flex items-start justify-between gap-2'>
+                  <div className='font-medium'>{item.title}</div>
+                  {item.videoTaskId && (
+                    <span className='shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary'>
+                      任务流转
+                    </span>
+                  )}
+                </div>
                 <div className='mt-1 text-sm text-muted-foreground'>
                   {item.subtitle}
                 </div>
@@ -254,7 +307,11 @@ function ProductionSkeleton() {
         )}
         <VideoArchiveUploadDialog
           open={archiveUploadOpen}
-          onOpenChange={setArchiveUploadOpen}
+          onOpenChange={(open) => {
+            setArchiveUploadOpen(open)
+            if (!open) setPreselectedTaskForArchive(null)
+          }}
+          selectedTask={preselectedTaskForArchive}
         />
         <VideoMetricsDialog
           open={metricsDialogOpen}
