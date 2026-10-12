@@ -8,6 +8,9 @@ import {
   LoaderCircle,
   Lightbulb,
   Layers,
+  Copy,
+  Download,
+  FolderArchive,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
@@ -110,6 +113,38 @@ export function AutoCutWorkshop() {
   }
 
   // 3. 选项 A：给予剪辑建议
+    // 复制草稿文件夹路径
+  const handleCopyPath = (path: string) => {
+    navigator.clipboard.writeText(path)
+    toast.success('草稿工程文件夹路径已复制到剪贴板！')
+  }
+
+  // 下载 draft_content.json 配置文件
+  const handleDownloadDraftJson = (draft: JianyingDraftExport) => {
+    if (!draft.rawDraftJson) return
+    const blob = new Blob([draft.rawDraftJson], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = draft.draftName + '_draft_content.json'
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('已下载剪映 draft_content.json 配置文件！')
+  }
+
+  // 批量导出全部切片为剪映草稿工程
+  const handleBatchDirectCut = () => {
+    if (!diagnosis || !diagnosis.slices.length) return
+    toast.success('已自动为全部 ' + diagnosis.slices.length + ' 个切片生成剪映草稿工程目录！')
+    const firstDraft = generateJianyingDraft({
+      draftTitle: diagnosis.slices[0].title,
+      slice: diagnosis.slices[0],
+      category,
+    })
+    setDraftResult(firstDraft)
+    setDraftDialogOpen(true)
+  }
+
   const handleOpenSuggest = (slice: VideoClipSlice) => {
     setActiveSlice(slice)
     setSuggestDialogOpen(true)
@@ -295,7 +330,20 @@ export function AutoCutWorkshop() {
                 </h3>
               </div>
               <span className='text-xs text-muted-foreground'>
-                默认剪辑软件：剪映 (JianyingPro) 电脑版
+              <div className='flex items-center gap-2'>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={handleBatchDirectCut}
+                  className='h-8 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10'
+                >
+                  <FolderArchive className='size-3.5' />
+                  一键批量导出全部剪映草稿
+                </Button>
+                <span className='text-xs text-muted-foreground hidden sm:inline'>
+                  默认剪辑软件：剪映 (JianyingPro) 电脑版
+                </span>
+              </div>
               </span>
             </div>
 
@@ -454,6 +502,26 @@ export function AutoCutWorkshop() {
                     {draftResult.draftPath}
                   </div>
                 </div>
+              <div className='flex items-center gap-2 pt-2'>
+                <Button
+                  size='sm'
+                  variant='secondary'
+                  className='flex-1 gap-1.5'
+                  onClick={() => handleCopyPath(draftResult.draftPath)}
+                >
+                  <Copy className='size-3.5' />
+                  复制草稿路径
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  className='flex-1 gap-1.5 border-primary/30'
+                  onClick={() => handleDownloadDraftJson(draftResult)}
+                >
+                  <Download className='size-3.5' />
+                  下载 draft_content.json
+                </Button>
+              </div>
               </div>
 
               <div className='rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3 text-emerald-800 dark:text-emerald-300 space-y-1'>
