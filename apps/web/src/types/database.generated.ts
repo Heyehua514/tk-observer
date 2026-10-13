@@ -2125,6 +2125,66 @@ export type Database = {
         }
         Relationships: []
       }
+      product_radars: {
+        Row: {
+          category: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          growth_rate: number
+          heat_score: number
+          id: string
+          is_added_to_products: boolean
+          notes: string | null
+          region: string
+          sales_amount_minor: number
+          sales_volume: number
+          source_platform: string
+          source_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          growth_rate?: number
+          heat_score?: number
+          id?: string
+          is_added_to_products?: boolean
+          notes?: string | null
+          region?: string
+          sales_amount_minor?: number
+          sales_volume?: number
+          source_platform?: string
+          source_url?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          growth_rate?: number
+          heat_score?: number
+          id?: string
+          is_added_to_products?: boolean
+          notes?: string | null
+          region?: string
+          sales_amount_minor?: number
+          sales_volume?: number
+          source_platform?: string
+          source_url?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_path: string | null

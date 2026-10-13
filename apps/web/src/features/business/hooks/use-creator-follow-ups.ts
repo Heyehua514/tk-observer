@@ -1,6 +1,6 @@
-﻿/** 达人触达跟进记录查询 Hook。 */
+﻿/** 达人触达跟进记录查询与变更 Hook。 */
 import { useEffect } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -64,5 +64,34 @@ export function useCreatorFollowUps(creatorId: string) {
       }
     },
     enabled: !!creatorId,
+  })
+}
+
+/** 软删除达人触达跟进记录 */
+export function useDeleteCreatorFollowUp() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, creatorId }: { id: string; creatorId: string }) => {
+      const isSupabase = getDataProvider() === 'supabase'
+      if (isSupabase) {
+        const { error } = await getSupabaseClient()
+          .from('creator_follow_ups')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id)
+        if (error) throw error
+        return { id, creatorId }
+      }
+      try {
+        await pb.collection('creator_follow_ups').delete(id)
+      } catch {
+        // 软降级
+      }
+      return { id, creatorId }
+    },
+    onSuccess: ({ creatorId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: creatorFollowUpKeys.list(creatorId),
+      })
+    },
   })
 }

@@ -1,5 +1,5 @@
-﻿/** 成片表现数据回流查询 Hook：支持 Supabase 实时时间线与 PocketBase 兼容回退。 */
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+﻿/** 成片表现数据回流查询与维护 Hook：支持 Supabase 实时时间线、软删除与 PocketBase 兼容回退。 */
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -22,6 +22,7 @@ export function useVideoMetricsLogs(videoId: string) {
           .from('video_metrics_logs')
           .select('*')
           .eq('video_id', videoId)
+          .is('deleted_at', null)
           .order('logged_at', { ascending: false })
 
         if (error) throw error
@@ -58,5 +59,33 @@ export function useVideoMetricsLogs(videoId: string) {
     },
     enabled: Boolean(videoId),
     placeholderData: keepPreviousData,
+  })
+}
+
+/** 软删除成片表现数据打卡记录 */
+export function useDeleteVideoMetricsLog() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, videoId }: { id: string; videoId: string }) => {
+      if (getDataProvider() === 'supabase') {
+        const { error } = await getSupabaseClient()
+          .from('video_metrics_logs')
+          .update({ deleted_at: new Date().toISOString() })
+          .eq('id', id)
+        if (error) throw error
+        return { id, videoId }
+      }
+      try {
+        await pb.collection('video_metrics_logs').delete(id)
+      } catch {
+        // 兼容降级
+      }
+      return { id, videoId }
+    },
+    onSuccess: ({ videoId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: videoMetricsKeys.byVideo(videoId),
+      })
+    },
   })
 }

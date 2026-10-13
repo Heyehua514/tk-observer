@@ -1,4 +1,4 @@
-﻿/** 爆品雷达数据查询与变更 Hooks（含加入选品库联动） */
+﻿/** 爆品雷达数据查询与变更 Hooks（含加入选品库联动与软删除） */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabaseClient } from '@/lib/supabase'
 import { useCreateProduct } from '../hooks/use-product-crud'
@@ -93,8 +93,7 @@ export function useProductRadarList(filterParams?: ProductRadarFilterParams) {
     queryFn: async (): Promise<ProductRadarItem[]> => {
       try {
         const client = getSupabaseClient()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (client as any)
+        const { data, error } = await client
           .from('product_radars')
           .select('*')
           .is('deleted_at', null)
@@ -119,8 +118,7 @@ export function useCreateRadarItem() {
     mutationFn: async (item: Omit<ProductRadarItem, 'id' | 'createdAt' | 'updatedAt'>) => {
       const client = getSupabaseClient()
       const payload = serializeProductRadar(item)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (client as any)
+      const { data, error } = await client
         .from('product_radars')
         .insert([payload])
         .select()
@@ -164,8 +162,7 @@ export function useAddRadarToProductCatalog() {
       // 2. 标记雷达商品为已加入选品库
       try {
         const client = getSupabaseClient()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (client as any)
+        await client
           .from('product_radars')
           .update({ is_added_to_products: true })
           .eq('id', radarItem.id)
@@ -178,6 +175,25 @@ export function useAddRadarToProductCatalog() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: productRadarKeys.all })
       void queryClient.invalidateQueries({ queryKey: ['market', 'products'] })
+    },
+  })
+}
+
+/** 软删除爆品雷达数据 */
+export function useDeleteRadarItem() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const client = getSupabaseClient()
+      const { error } = await client
+        .from('product_radars')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+      if (error) throw error
+      return id
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: productRadarKeys.all })
     },
   })
 }
