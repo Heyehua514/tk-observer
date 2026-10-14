@@ -10,11 +10,13 @@ export function generateJianyingDraft({
   slice,
   category = 'spoken',
   customOutputPath,
+  sourceMediaFilePath,
 }: {
   draftTitle: string
   slice: VideoClipSlice
   category?: AutoCutCategory
   customOutputPath?: string
+  sourceMediaFilePath?: string
 }): JianyingDraftExport {
   const safeTitle = draftTitle.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40)
   const timestamp = Date.now()
@@ -44,7 +46,7 @@ export function generateJianyingDraft({
         {
           id: `mat_video_${slice.id}`,
           duration: durationMicroseconds,
-          path: '', // 留待挂载原始媒体
+          path: sourceMediaFilePath ? sourceMediaFilePath.replace(/\\/g, '/') : '',
           type: 'video',
         },
       ],
@@ -77,6 +79,10 @@ export function generateJianyingDraft({
             target_timerange: {
               duration: durationMicroseconds,
               start: 0,
+            },
+            source_timerange: {
+              duration: durationMicroseconds,
+              start: (slice.startSec || 0) * 1_000_000,
             },
             clip: {
               alpha: 1.0,

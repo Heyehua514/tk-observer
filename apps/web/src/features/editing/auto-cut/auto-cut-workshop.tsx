@@ -135,11 +135,13 @@ export function AutoCutWorkshop() {
   // 批量导出全部切片为剪映草稿工程
   const handleBatchDirectCut = () => {
     if (!diagnosis || !diagnosis.slices.length) return
+    const isLocalFile = sourceInput.includes(':') || sourceInput.startsWith('/') || sourceInput.endsWith('.mp4')
     toast.success('已自动为全部 ' + diagnosis.slices.length + ' 个切片生成剪映草稿工程目录！')
     const firstDraft = generateJianyingDraft({
       draftTitle: diagnosis.slices[0].title,
       slice: diagnosis.slices[0],
       category,
+      sourceMediaFilePath: isLocalFile ? sourceInput.trim() : undefined,
     })
     setDraftResult(firstDraft)
     setDraftDialogOpen(true)
@@ -152,10 +154,12 @@ export function AutoCutWorkshop() {
 
   // 4. 选项 B：直接协助剪辑（自动创建文件夹并生成剪映工程）
   const handleDirectCut = (slice: VideoClipSlice) => {
+    const isLocalFile = sourceInput.includes(':') || sourceInput.startsWith('/') || sourceInput.endsWith('.mp4')
     const draft = generateJianyingDraft({
       draftTitle: slice.title,
       slice,
       category,
+      sourceMediaFilePath: isLocalFile ? sourceInput.trim() : undefined,
     })
     setDraftResult(draft)
     setDraftDialogOpen(true)
