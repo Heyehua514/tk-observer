@@ -255,7 +255,7 @@ async function runSupabaseGlobalSearch(
   }
   if (allowed.includes('account')) {
     const { data } = await getSupabaseClient()
-      .from('video_accounts')
+      .from('competitor_accounts')
       .select('*')
       .or(`name.ilike.%${query}%,platform.ilike.%${query}%`)
       .is('deleted_at', null)

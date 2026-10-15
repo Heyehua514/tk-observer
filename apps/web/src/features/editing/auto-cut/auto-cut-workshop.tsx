@@ -203,6 +203,13 @@ export function AutoCutWorkshop() {
                 value={sourceInput}
                 onChange={(e) => setSourceInput(e.target.value)}
               />
+              <div className='flex flex-wrap items-center gap-1.5 pt-1 text-xs'>
+                <span className='text-muted-foreground text-[11px]'>公司矩阵一键选定：</span>
+                <button type='button' onClick={() => setSourceInput('抖音：TK观察磊哥')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>抖音: TK观察磊哥</button>
+                <button type='button' onClick={() => setSourceInput('抖音：磊哥出海笔记')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>抖音: 磊哥出海笔记</button>
+                <button type='button' onClick={() => setSourceInput('视频号：跨境TK磊哥')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>视频号: 跨境TK磊哥</button>
+                <button type='button' onClick={() => setSourceInput('小红书/公众号：TK观察')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>小红书/公众号: TK观察</button>
+              </div>
             </div>
             <div className='space-y-2'>
               <Label>原始视频预估时长 (分钟)</Label>
