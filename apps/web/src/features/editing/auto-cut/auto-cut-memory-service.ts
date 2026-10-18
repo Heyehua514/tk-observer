@@ -41,7 +41,6 @@ export function buildFailedCasePayload(
   recordedAt = new Date().toISOString()
 ): FailedCasePayload {
   const rawSource = (diagnosis.sourceNameOrUrl || '未命名素材').trim()
-  // source_id 严格收口在 80 字符以内，防止越界
   const sourceId = rawSource.slice(0, 80)
   const summary = (diagnosis.learnedExperienceSummary || '').slice(0, 500)
   const tone = diagnosis.overallPersona?.toneStyle || '无'
@@ -66,20 +65,25 @@ export async function persistAutoCutReflection({
 }: {
   diagnosis: VideoDeepDiagnosis
   saveMemory: (item: MemorySavePayload) => Promise<unknown>
-  supabaseClient?: {
-    from: (table: string) => {
-      insert: (record: Record<string, unknown>) => Promise<{ error: unknown | null }>
-    }
-  }
+  supabaseClient?: unknown
 }) {
   const memoryPayload = buildAutoCutMemoryPayload(diagnosis)
   await saveMemory(memoryPayload)
 
-  if (supabaseClient) {
+  if (supabaseClient && typeof supabaseClient === 'object' && 'from' in supabaseClient) {
     const casePayload = buildFailedCasePayload(diagnosis)
-    const { error } = await supabaseClient.from('failed_cases').insert(casePayload as unknown as Record<string, unknown>)
-    if (error) {
-      console.warn('Failed to insert failed_cases:', error)
+    try {
+      const client = supabaseClient as {
+        from: (table: string) => {
+          insert: (record: unknown) => PromiseLike<{ error: unknown | null }>
+        }
+      }
+      const res = await client.from('failed_cases').insert(casePayload)
+      if (res && res.error) {
+        console.warn('Failed to insert failed_cases:', res.error)
+      }
+    } catch (err) {
+      console.warn('Error persisting failed_cases:', err)
     }
   }
 
