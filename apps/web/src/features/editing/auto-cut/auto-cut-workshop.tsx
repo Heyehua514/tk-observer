@@ -32,6 +32,7 @@ import { useAiMemory } from '@/features/shared-ai/hooks/use-ai-memory'
 import type { AutoCutCategory, VideoDeepDiagnosis, VideoClipSlice, JianyingDraftExport } from './auto-cut-model'
 import { runDeepVideoDiagnosis } from './video-diagnosis-service'
 import { generateJianyingDraft } from './jianying-draft-service'
+import { persistAutoCutReflection } from './auto-cut-memory-service'
 
 export function AutoCutWorkshop() {
   const [category, setCategory] = useState<AutoCutCategory>('spoken')
@@ -86,22 +87,10 @@ export function AutoCutWorkshop() {
   const handleSaveToMemory = async () => {
     if (!diagnosis) return
     try {
-      // 写入 ai_memory 表
-      await memories.save({
-        memoryType: 'video_cut_style',
-        memoryKey: `对标拆解:${diagnosis.hotNewsRelevance.industryTopic.slice(0, 30)}`,
-        memoryValue: `${diagnosis.learnedExperienceSummary} | 黄金钩子:${diagnosis.viralDNA.hookPatterns.join('、')}`,
-        confidence: 0.9,
-        source: 'auto_cut_diagnosis',
-      })
-
-      // 同时写入 failed_cases 作为避坑经验
-      await getSupabaseClient().from('failed_cases').insert({
-        source_type: '剪辑',
-        source_id: diagnosis.sourceNameOrUrl.slice(0, 100),
-        reason: `【对标学习】${diagnosis.learnedExperienceSummary}`,
-        lessons: `人设画像: ${diagnosis.overallPersona.toneStyle}；痛点: ${diagnosis.viralDNA.corePainPoints.join('、')}`,
-        recorded_at: new Date().toISOString(),
+      await persistAutoCutReflection({
+        diagnosis,
+        saveMemory: memories.save,
+        supabaseClient: getSupabaseClient(),
       })
 
       toast.success('本次拆解与反思经验已成功回流入企业记忆库，AI 已完成自我进化！')
@@ -203,12 +192,21 @@ export function AutoCutWorkshop() {
                 value={sourceInput}
                 onChange={(e) => setSourceInput(e.target.value)}
               />
-              <div className='flex flex-wrap items-center gap-1.5 pt-1 text-xs'>
-                <span className='text-muted-foreground text-[11px]'>公司矩阵一键选定：</span>
-                <button type='button' onClick={() => setSourceInput('抖音：TK观察磊哥')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>抖音: TK观察磊哥</button>
-                <button type='button' onClick={() => setSourceInput('抖音：磊哥出海笔记')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>抖音: 磊哥出海笔记</button>
-                <button type='button' onClick={() => setSourceInput('视频号：跨境TK磊哥')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>视频号: 跨境TK磊哥</button>
-                <button type='button' onClick={() => setSourceInput('小红书/公众号：TK观察')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>小红书/公众号: TK观察</button>
+              <div className='space-y-1.5 pt-1.5 text-xs'>
+                <div className='flex flex-wrap items-center gap-1.5'>
+                  <span className='text-amber-500 font-semibold text-[11px] flex items-center gap-1'>★ 重点学习对标账号：</span>
+                  <button type='button' onClick={() => setSourceInput('对标账号：霞光社（出海商业深度与产业观察）')} className='rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 text-[11px] hover:bg-amber-500/20 transition-colors'>霞光社</button>
+                  <button type='button' onClick={() => setSourceInput('对标账号：白鲸出海（泛互联网与跨境出海生态）')} className='rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 text-[11px] hover:bg-amber-500/20 transition-colors'>白鲸出海</button>
+                  <button type='button' onClick={() => setSourceInput('对标账号：晚点财经 / 晚点LatePost（商业内幕与大厂战略）')} className='rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 text-[11px] hover:bg-amber-500/20 transition-colors'>晚点财经</button>
+                  <button type='button' onClick={() => setSourceInput('对标账号：36氪出海（全球化创投与商业模式）')} className='rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 text-[11px] hover:bg-amber-500/20 transition-colors'>36氪出海</button>
+                </div>
+                <div className='flex flex-wrap items-center gap-1.5'>
+                  <span className='text-muted-foreground text-[11px]'>公司自有矩阵账号：</span>
+                  <button type='button' onClick={() => setSourceInput('抖音：TK观察磊哥')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>抖音: TK观察磊哥</button>
+                  <button type='button' onClick={() => setSourceInput('抖音：磊哥出海笔记')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>抖音: 磊哥出海笔记</button>
+                  <button type='button' onClick={() => setSourceInput('视频号：跨境TK磊哥')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>视频号: 跨境TK磊哥</button>
+                  <button type='button' onClick={() => setSourceInput('小红书/公众号：TK观察')} className='rounded bg-muted px-1.5 py-0.5 text-[11px] hover:bg-primary/20 hover:text-primary transition-colors'>小红书/公众号: TK观察</button>
+                </div>
               </div>
             </div>
             <div className='space-y-2'>
