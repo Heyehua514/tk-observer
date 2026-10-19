@@ -5,6 +5,7 @@ import { useCreateProduct } from '../hooks/use-product-crud'
 import { mapProductRadarRow, serializeProductRadar, type ProductRadarRow } from './radar-supabase-mapper'
 import type { ProductRadarFilterParams, ProductRadarItem } from './types'
 import { filterAndSortRadarItems } from './radar-model'
+import { orchestrateRadarToProduct } from '@/features/cross-domain/lifecycle-orchestrator'
 
 export const productRadarKeys = {
   all: ['market', 'product_radars'] as const,
@@ -139,24 +140,23 @@ export function useAddRadarToProductCatalog() {
 
   return useMutation({
     mutationFn: async (radarItem: ProductRadarItem) => {
-      // 1. 在选品库创建商品（预估价格按雷达均价计算，以元为单位字符串传入）
-      const avgPriceYuan =
-        radarItem.salesVolume > 0
-          ? (radarItem.salesAmountMinor / radarItem.salesVolume / 100).toFixed(2)
-          : '19.99'
-      // 采购成本初算按售价约 30%
-      const estimatedCostYuan = (Number(avgPriceYuan) * 0.3).toFixed(2)
+      // 1. 使用跨域生命周期编排器统一换算与校验雷达数据
+      const orchestrated = orchestrateRadarToProduct(radarItem)
+      if (!orchestrated.valid || !orchestrated.data) {
+        throw new Error(orchestrated.errors.join('；') || '雷达数据流转校验未通过')
+      }
+      const data = orchestrated.data
 
       await createProduct.mutateAsync({
-        name: radarItem.title,
-        category: radarItem.category,
-        priceYuan: avgPriceYuan,
-        costYuan: estimatedCostYuan,
-        currency: radarItem.currency,
-        costCurrency: 'CNY',
-        exchangeRate: radarItem.currency === 'USD' ? 7.2 : 1.0,
-        region: radarItem.region,
-        status: 'draft',
+        name: data.name,
+        category: data.category,
+        priceYuan: (data.priceMinor / 100).toFixed(2),
+        costYuan: (data.costMinor / 100).toFixed(2),
+        currency: data.currency || 'USD',
+        costCurrency: data.costCurrency,
+        exchangeRate: data.exchangeRate,
+        region: data.region,
+        status: data.status,
       })
 
       // 2. 标记雷达商品为已加入选品库

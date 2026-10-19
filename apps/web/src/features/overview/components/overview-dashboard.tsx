@@ -59,6 +59,7 @@ import {
 import { UpcomingActivities } from './upcoming-activities'
 import { OverviewIntelligenceDigest } from './overview-intelligence-digest'
 import { CrossWorkspaceTasks } from './cross-workspace-tasks'
+import { CrossDomainPipelineCard } from '@/features/cross-domain'
 
 const rangeLabels: Record<OverviewMetricRange, string> = {
   '7d': '近 7 天',
@@ -231,6 +232,7 @@ export function OverviewDashboard() {
         label='总览目录'
         items={[
           { id: 'overview-metrics', label: '核心指标' },
+          { id: 'overview-lifecycle', label: '出海主链路' },
           { id: 'overview-trends', label: '走势与动态' },
           { id: 'overview-operations', label: '运营状态' },
         ]}
@@ -278,6 +280,9 @@ export function OverviewDashboard() {
           context={`近 ${metricRange === 'all' ? '全部' : metricRange === '7d' ? '7 天' : '30 天'} GMV 总额 ¥${(totalGmv / 100).toLocaleString()}`}
         />
       </div>
+      <section id='overview-lifecycle' className='scroll-mt-24'>
+        <CrossDomainPipelineCard />
+      </section>
       <div
         id='overview-trends'
         className='grid scroll-mt-24 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]'

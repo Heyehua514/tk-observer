@@ -7,6 +7,7 @@ import {
   filterPendingTasks,
   type CrossWorkspaceTask,
 } from './cross-workspace-tasks-model'
+import { useCrossWorkspaceTasks } from '../hooks/use-cross-workspace-tasks'
 
 const workspaceLabels: Record<CrossWorkspaceTask['workspace'], { name: string; href: string }> = {
   design: { name: '设计', href: '/design' },
@@ -15,11 +16,13 @@ const workspaceLabels: Record<CrossWorkspaceTask['workspace'], { name: string; h
 }
 
 export function CrossWorkspaceTasks({
-  tasks = [],
+  tasks,
 }: {
   tasks?: CrossWorkspaceTask[]
 }) {
-  const { overdue, dueSoon, normal } = filterPendingTasks(tasks)
+  const query = useCrossWorkspaceTasks()
+  const effectiveTasks = tasks ?? query.data ?? []
+  const { overdue, dueSoon, normal } = filterPendingTasks(effectiveTasks)
   const totalActionable = overdue.length + dueSoon.length
 
   return (

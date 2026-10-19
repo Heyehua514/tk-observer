@@ -264,3 +264,5 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 
 
 
+
+- 严禁在多业务域流转（如雷达转选品）中直接手写临时的浮点换算与假状态，必须经由编排器纯函数校验换算以防数据脏写与边界异常。
