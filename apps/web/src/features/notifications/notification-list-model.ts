@@ -1,15 +1,21 @@
 /** 通知列表筛选模型；权限：当前用户只读；用途：统一列表与铃铛筛选口径。 */
 import type { AppNotification, NotificationType } from '@/types/notification'
+import {
+  filterNotificationsByPreferences,
+  type NotificationPreferences,
+} from '@/features/settings/notification-preferences-model'
 
 export type NotificationFilter = 'all' | 'unread' | NotificationType
 
 export function filterNotifications(
   items: readonly AppNotification[],
-  filter: NotificationFilter
+  filter: NotificationFilter,
+  preferences?: NotificationPreferences | null
 ): AppNotification[] {
-  if (filter === 'all') return [...items]
-  if (filter === 'unread') return items.filter((item) => !item.isRead)
-  return items.filter((item) => item.type === filter)
+  const allowed = filterNotificationsByPreferences(items, preferences)
+  if (filter === 'all') return allowed
+  if (filter === 'unread') return allowed.filter((item) => !item.isRead)
+  return allowed.filter((item) => item.type === filter)
 }
 
 export type NotificationGroup = {

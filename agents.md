@@ -259,10 +259,5 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - After execution, verify the stated acceptance criteria and record the selected model, effort, priority, whether escalation occurred, and whether rework was needed.
 - Model or effort selection cannot guarantee lower token use. Optimize for the lowest configuration that passes verification, not the lowest label.
 
-
-
-
-
-
-
 - 严禁在多业务域流转（如雷达转选品）中直接手写临时的浮点换算与假状态，必须经由编排器纯函数校验换算以防数据脏写与边界异常。
+- 严禁在设置页新增或提供开关偏好后只写库不读取，必须在数据过滤与 UI 展示层实现闭环消费与安全默认降级。

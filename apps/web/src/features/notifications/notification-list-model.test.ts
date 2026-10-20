@@ -1,4 +1,4 @@
-/** 通知筛选纯函数测试；权限：无数据写入。 */
+﻿/** 通知筛选纯函数测试；权限：无数据写入。 */
 import type { AppNotification } from '@/types/notification'
 import { describe, expect, it } from 'vitest'
 import { filterNotifications } from './notification-list-model'
@@ -51,5 +51,21 @@ describe('filterNotifications', () => {
     expect(
       filterNotifications(items, 'design_review').map((item) => item.id)
     ).toEqual(['2'])
+  })
+  it('applies user notification preferences when provided', () => {
+    const prefs = {
+      deadlineEnabled: false,
+      reviewEnabled: true,
+      followUpEnabled: true,
+    }
+    expect(
+      filterNotifications(items, 'all', prefs).map((item) => item.id)
+    ).toEqual(['2', '3'])
+    expect(
+      filterNotifications(items, 'unread', prefs).map((item) => item.id)
+    ).toEqual(['3'])
+    expect(
+      filterNotifications(items, 'deadline', prefs).map((item) => item.id)
+    ).toEqual([])
   })
 })

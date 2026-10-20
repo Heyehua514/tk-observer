@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
 import { PageHeader } from '@/components/shared/page-header'
+import { useNotificationPreferences } from '@/features/settings/hooks/use-notification-preferences'
+import { filterNotificationsByPreferences } from '@/features/settings/notification-preferences-model'
 import {
   filterNotifications,
   notificationFilterLabels,
@@ -45,11 +47,21 @@ const filters: NotificationFilter[] = [
 
 export function NotificationsPage() {
   const notifications = useNotifications()
+  const preferenceQuery = useNotificationPreferences()
   const markRead = useMarkNotificationRead()
   const navigate = useNavigate()
   const [filter, setFilter] = useState<NotificationFilter>('all')
-  const items = notifications.data || []
-  const visible = filterNotifications(items, filter)
+  const rawItems = notifications.data || []
+  const items = filterNotificationsByPreferences(
+    rawItems,
+    preferenceQuery.data ?? null
+  )
+  const mutedCount = rawItems.length - items.length
+  const visible = filterNotifications(
+    rawItems,
+    filter,
+    preferenceQuery.data ?? null
+  )
   const groups = groupNotificationsByDay(visible)
 
   const openNotification = async (notification: AppNotification) => {
@@ -81,17 +93,43 @@ export function NotificationsPage() {
         title='通知中心'
         description='集中查看审批、到期、成交和协作跟进提醒。'
         action={
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={markAllRead}
-            disabled={!items.some((item) => !item.isRead) || markRead.isPending}
-          >
-            <CheckCheck className='size-4' />
-            全部已读
-          </Button>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => void navigate({ to: '/settings' })}
+            >
+              偏好设置
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={markAllRead}
+              disabled={
+                !items.some((item) => !item.isRead) || markRead.isPending
+              }
+            >
+              <CheckCheck className='size-4' />
+              全部已读
+            </Button>
+          </div>
         }
       />
+      {mutedCount > 0 && (
+        <div className='flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 text-xs text-muted-foreground'>
+          <span>
+            已按个人偏好过滤 {mutedCount} 条提醒（可在设置中随时开启）
+          </span>
+          <Button
+            variant='link'
+            size='sm'
+            className='h-auto p-0 text-xs'
+            onClick={() => void navigate({ to: '/settings' })}
+          >
+            前往调整
+          </Button>
+        </div>
+      )}
       <div className='flex flex-wrap gap-2'>
         {filters.map((value) => {
           const count = filterNotifications(items, value).length

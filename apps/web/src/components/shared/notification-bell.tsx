@@ -26,6 +26,8 @@ import {
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
 import { resolveNotificationTarget } from '@/features/notifications/notification-target'
+import { useNotificationPreferences } from '@/features/settings/hooks/use-notification-preferences'
+import { filterNotificationsByPreferences } from '@/features/settings/notification-preferences-model'
 
 const notificationIcons = {
   design_review: Palette,
@@ -39,7 +41,11 @@ export function NotificationBell() {
   const notifications = useNotifications()
   const markRead = useMarkNotificationRead()
   const navigate = useNavigate()
-  const items = notifications.data || []
+  const preferences = useNotificationPreferences()
+  const items = filterNotificationsByPreferences(
+    notifications.data || [],
+    preferences.data ?? null
+  )
   const unreadItems = items.filter((item) => !item.isRead)
   const previousUnread = useRef<number | null>(null)
   const bellControls = useAnimationControls()
