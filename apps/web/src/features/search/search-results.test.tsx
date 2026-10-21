@@ -40,10 +40,13 @@ it('renders grouped results with totals and item rows', async () => {
       <SearchResultsPage query='跨境' kind='creator' />
     </QueryClientProvider>
   )
-  await expect.element(screen.getByText('达人 · 共 8 条')).toBeInTheDocument()
+  await expect.element(screen.getByText('8 条结果')).toBeInTheDocument()
   await expect.element(screen.getByText('跨境班长')).toBeInTheDocument()
-  await expect.element(screen.getByText('推进建议')).toBeInTheDocument()
+  await expect.element(screen.getByText('智能推进建议')).toBeInTheDocument()
   await expect.element(screen.getByText('补充达人合作记录')).toBeInTheDocument()
+  await expect
+    .element(screen.getByText('前往达人管理 (带入「跨境」筛选)'))
+    .toBeInTheDocument()
 })
 
 it('shows an empty-state when no query is provided', async () => {

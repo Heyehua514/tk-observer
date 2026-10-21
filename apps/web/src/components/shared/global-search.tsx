@@ -5,7 +5,15 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { BookOpen, BrainCircuit, FileVideo, PackageSearch, Smartphone, Store, UserRoundSearch } from 'lucide-react'
+import {
+  BookOpen,
+  BrainCircuit,
+  FileVideo,
+  PackageSearch,
+  Smartphone,
+  Store,
+  UserRoundSearch,
+} from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useSearch } from '@/context/search-provider'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
@@ -17,6 +25,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { buildWorkbenchNavigation } from '@/features/search/search-navigation'
 import {
   runGlobalSearch,
   type GlobalSearchKind,
@@ -41,7 +50,7 @@ export function GlobalSearch() {
   const navigate = useNavigate()
   const groups = useQuery({
     queryKey: ['global-search', role, debouncedQuery],
-    queryFn: () => runGlobalSearch(debouncedQuery, role || ''),
+    queryFn: () => runGlobalSearch(debouncedQuery, role || '', { limit: 5 }),
     enabled: open && !!role && debouncedQuery.trim().length >= 2,
   })
 
@@ -60,78 +69,11 @@ export function GlobalSearch() {
 
   const openResult = async (result: SearchResult) => {
     close()
-    if (result.kind === 'creator' || result.kind === 'company') {
-      await navigate({
-        to: '/business',
-        search: {
-          page: 1,
-          perPage: 20,
-          query: '',
-          region: 'all',
-          status: 'all',
-          bizOnly: false,
-          sort: '-updated',
-          tab: result.kind === 'company' ? 'companies' : 'creators',
-          companyPage: 1,
-          companyQuery: '',
-          companyRegion: 'all',
-          companyKind: 'all',
-          companySort: '-updated',
-          recordType: result.kind,
-          recordId: result.id,
-        },
-      })
-    } else if (result.kind === 'product') {
-      await navigate({
-        to: '/market',
-        search: { query: '', recordType: result.kind, recordId: result.id },
-      })
-    } else if (result.kind === 'knowledge' || result.kind === 'ai_memory') {
-      await navigate({
-        to: '/overview',
-        search: { recordType: result.kind, recordId: result.id },
-      })
-    } else if (result.kind === 'account') {
-      await navigate({
-        to: '/editing',
-        search: {
-          section: 'competitors',
-          tab: 'list',
-          page: 1,
-          perPage: 20,
-          query: '',
-          account: 'all',
-          videoType: 'all',
-          tag: '',
-          dateFrom: '',
-          dateTo: '',
-          viral: 'all',
-          sort: '-views',
-          recordType: 'account',
-          recordId: result.id,
-        },
-      })
-    } else {
-      await navigate({
-        to: '/editing',
-        search: {
-          section: 'production',
-          tab: 'list',
-          page: 1,
-          perPage: 20,
-          query: '',
-          account: 'all',
-          videoType: 'all',
-          tag: '',
-          dateFrom: '',
-          dateTo: '',
-          viral: 'all',
-          sort: '-views',
-          recordType: result.kind,
-          recordId: result.id,
-        },
-      })
-    }
+    const target = buildWorkbenchNavigation(result.kind, debouncedQuery, result)
+    await navigate({
+      to: target.to,
+      search: target.search,
+    })
   }
 
   return (

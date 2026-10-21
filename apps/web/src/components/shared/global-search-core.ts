@@ -2,9 +2,9 @@
  * 全局搜索复用：跨工作台按关键词/角色执行搜索，供顶部弹窗与 /search 结果页共用。
  */
 import { getDataProvider } from '@/lib/data-provider'
+import { searchDifyKnowledge } from '@/lib/dify-client'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
-import { searchDifyKnowledge } from '@/lib/dify-client'
 import {
   mapSupabaseCompanySearch,
   mapSupabaseCreatorSearch,
@@ -15,7 +15,14 @@ import {
   mapSupabaseAccountSearch,
 } from './global-search-supabase-mapper'
 
-export type GlobalSearchKind = 'creator' | 'product' | 'video' | 'company' | 'knowledge' | 'ai_memory' | 'account'
+export type GlobalSearchKind =
+  | 'creator'
+  | 'product'
+  | 'video'
+  | 'company'
+  | 'knowledge'
+  | 'ai_memory'
+  | 'account'
 export type SearchResult = {
   id: string
   kind: GlobalSearchKind
@@ -32,6 +39,11 @@ export type SearchGroup = {
 export type SearchNextAction = {
   label: string
   reason: string
+}
+
+export interface GlobalSearchOptions {
+  limit?: number
+  kind?: GlobalSearchKind | 'all'
 }
 
 /** 根据已选搜索结果生成只读推进建议，不写入任务或业务数据。 */
@@ -62,10 +74,11 @@ export function buildSearchNextActions(
 
 export async function runGlobalSearch(
   query: string,
-  role: string
+  role: string,
+  options?: GlobalSearchOptions
 ): Promise<SearchGroup[]> {
   if (getDataProvider() === 'supabase')
-    return runSupabaseGlobalSearch(query, role)
+    return runSupabaseGlobalSearch(query, role, options)
   const tasks: Promise<SearchGroup>[] = []
   if (role === 'owner' || role === 'boss' || role === 'business') {
     tasks.push(
@@ -155,69 +168,87 @@ export async function runGlobalSearch(
 
 async function runSupabaseGlobalSearch(
   query: string,
-  role: string
+  role: string,
+  options?: GlobalSearchOptions
 ): Promise<SearchGroup[]> {
   const allowed = supabaseAccessByRole[role] ?? []
+  const limit = options?.limit ?? 5
+  const targetKind =
+    options?.kind && options.kind !== 'all' ? options.kind : undefined
   const groups: SearchGroup[] = []
-  if (allowed.includes('creator') || allowed.includes('company')) {
-    const { data } = await getSupabaseClient()
+  if (
+    allowed.includes('creator') &&
+    (!targetKind || targetKind === 'creator')
+  ) {
+    const { data, count } = await getSupabaseClient()
       .from('creators')
-      .select('*')
+      .select('*', { count: 'exact' })
       .or(
         `nickname.ilike.%${query}%,tiktok_url.ilike.%${query}%,region.ilike.%${query}%`
       )
       .is('deleted_at', null)
-      .limit(5)
-    if (data?.length) {
+      .limit(limit)
+    if (data?.length || (count !== null && count > 0)) {
       groups.push({
         kind: 'creator',
         title: '达人',
-        total: data.length,
-        items: data.map(mapSupabaseCreatorSearch),
+        total: count ?? data?.length ?? 0,
+        items: (data || []).map(mapSupabaseCreatorSearch),
       })
     }
   }
-  if (allowed.includes('company')) {
-    const { data } = await getSupabaseClient()
+  if (
+    allowed.includes('company') &&
+    (!targetKind || targetKind === 'company')
+  ) {
+    const { data, count } = await getSupabaseClient()
       .from('clients')
-      .select('*')
+      .select('*', { count: 'exact' })
       .or(
         `name.ilike.%${query}%,contact_name.ilike.%${query}%,company.ilike.%${query}%`
       )
       .is('deleted_at', null)
-      .limit(5)
-    if (data?.length) {
+      .limit(limit)
+    if (data?.length || (count !== null && count > 0)) {
       groups.push({
         kind: 'company',
         title: '客户',
-        total: data.length,
-        items: data.map(mapSupabaseCompanySearch),
+        total: count ?? data?.length ?? 0,
+        items: (data || []).map(mapSupabaseCompanySearch),
       })
     }
   }
-  if (allowed.includes('product')) {
-    const { data } = await getSupabaseClient()
+  if (
+    allowed.includes('product') &&
+    (!targetKind || targetKind === 'product')
+  ) {
+    const { data, count } = await getSupabaseClient()
       .from('products')
-      .select('*')
+      .select('*', { count: 'exact' })
       .or(`name.ilike.%${query}%,category.ilike.%${query}%`)
       .is('deleted_at', null)
-      .limit(5)
-    if (data?.length) {
+      .limit(limit)
+    if (data?.length || (count !== null && count > 0)) {
       groups.push({
         kind: 'product',
         title: '商品',
-        total: data.length,
-        items: data.map(mapSupabaseProductSearch),
+        total: count ?? data?.length ?? 0,
+        items: (data || []).map(mapSupabaseProductSearch),
       })
     }
   }
 
-  if (allowed.includes('knowledge')) {
-    const { data } = await getSupabaseClient()
+  if (
+    allowed.includes('knowledge') &&
+    (!targetKind || targetKind === 'knowledge')
+  ) {
+    const { data, count } = await getSupabaseClient()
       .from('failed_cases')
-      .select('*')
-      .or(`case_title.ilike.%${query}%,reason.ilike.%${query}%,department.ilike.%${query}%`)
-      .limit(5)
+      .select('*', { count: 'exact' })
+      .or(
+        `case_title.ilike.%${query}%,reason.ilike.%${query}%,department.ilike.%${query}%`
+      )
+      .limit(limit)
     const difyRecords = await searchDifyKnowledge({ query, topK: 3 })
     const combinedKnowledge = [
       ...(data || []).map(mapSupabaseKnowledgeSearch),
@@ -232,58 +263,64 @@ async function runSupabaseGlobalSearch(
       groups.push({
         kind: 'knowledge',
         title: '避坑案例与知识',
-        total: combinedKnowledge.length,
-        items: combinedKnowledge.slice(0, 5),
+        total: (count ?? data?.length ?? 0) + difyRecords.length,
+        items: combinedKnowledge.slice(0, limit),
       })
     }
   }
-  if (allowed.includes('ai_memory')) {
-    const { data } = await getSupabaseClient()
+  if (
+    allowed.includes('ai_memory') &&
+    (!targetKind || targetKind === 'ai_memory')
+  ) {
+    const { data, count } = await getSupabaseClient()
       .from('ai_memory')
-      .select('*')
+      .select('*', { count: 'exact' })
       .or(`memory_key.ilike.%${query}%,memory_value.ilike.%${query}%`)
       .is('deleted_at', null)
-      .limit(5)
-    if (data?.length) {
+      .limit(limit)
+    if (data?.length || (count !== null && count > 0)) {
       groups.push({
         kind: 'ai_memory',
         title: 'AI爆款记忆库',
-        total: data.length,
-        items: data.map(mapSupabaseAiMemorySearch),
+        total: count ?? data?.length ?? 0,
+        items: (data || []).map(mapSupabaseAiMemorySearch),
       })
     }
   }
-  if (allowed.includes('account')) {
-    const { data } = await getSupabaseClient()
+  if (
+    allowed.includes('account') &&
+    (!targetKind || targetKind === 'account')
+  ) {
+    const { data, count } = await getSupabaseClient()
       .from('competitor_accounts')
-      .select('*')
+      .select('*', { count: 'exact' })
       .or(`name.ilike.%${query}%,platform.ilike.%${query}%`)
       .is('deleted_at', null)
-      .limit(5)
-    if (data?.length) {
+      .limit(limit)
+    if (data?.length || (count !== null && count > 0)) {
       groups.push({
         kind: 'account',
         title: '对标监控账号',
-        total: data.length,
-        items: data.map(mapSupabaseAccountSearch),
+        total: count ?? data?.length ?? 0,
+        items: (data || []).map(mapSupabaseAccountSearch),
       })
     }
   }
-  if (allowed.includes('video')) {
-    const { data } = await getSupabaseClient()
+  if (allowed.includes('video') && (!targetKind || targetKind === 'video')) {
+    const { data, count } = await getSupabaseClient()
       .from('videos')
-      .select('*')
+      .select('*', { count: 'exact' })
       .or(
         `title.ilike.%${query}%,creator_name.ilike.%${query}%,product_name.ilike.%${query}%`
       )
       .is('deleted_at', null)
-      .limit(5)
-    if (data?.length) {
+      .limit(limit)
+    if (data?.length || (count !== null && count > 0)) {
       groups.push({
         kind: 'video',
         title: '视频',
-        total: data.length,
-        items: data.map(mapSupabaseVideoSearch),
+        total: count ?? data?.length ?? 0,
+        items: (data || []).map(mapSupabaseVideoSearch),
       })
     }
   }
@@ -291,8 +328,24 @@ async function runSupabaseGlobalSearch(
 }
 
 const supabaseAccessByRole: Record<string, GlobalSearchKind[]> = {
-  owner: ['creator', 'company', 'product', 'video', 'knowledge', 'ai_memory', 'account'],
-  boss: ['creator', 'company', 'product', 'video', 'knowledge', 'ai_memory', 'account'],
+  owner: [
+    'creator',
+    'company',
+    'product',
+    'video',
+    'knowledge',
+    'ai_memory',
+    'account',
+  ],
+  boss: [
+    'creator',
+    'company',
+    'product',
+    'video',
+    'knowledge',
+    'ai_memory',
+    'account',
+  ],
   business: ['creator', 'company', 'knowledge'],
   market: ['product', 'account', 'knowledge'],
   editing: ['video', 'ai_memory', 'account'],

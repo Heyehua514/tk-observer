@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import { ExternalLink } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/empty-state'
 import {
   runGlobalSearch,
@@ -10,8 +13,7 @@ import {
   type SearchResult,
 } from '@/components/shared/global-search-core'
 import { PageHeader } from '@/components/shared/page-header'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { buildWorkbenchNavigation } from './search-navigation'
 
 const titleByKind: Record<GlobalSearchKind, string> = {
   creator: '达人',
@@ -34,84 +36,29 @@ export function SearchResultsPage({
   const role = useAuthStore((state) => state.user?.role)
   const navigate = useNavigate()
   const results = useQuery({
-    queryKey: ['search-results', role, query],
-    queryFn: () => runGlobalSearch(query, role || ''),
+    queryKey: ['search-results', role, query, selectedKind],
+    queryFn: () =>
+      runGlobalSearch(query, role || '', {
+        limit: 50,
+        kind: selectedKind as GlobalSearchKind | 'all',
+      }),
     enabled: !!role && !!query.trim(),
   })
 
   const handleOpenResult = async (item: SearchResult) => {
-    if (item.kind === 'creator' || item.kind === 'company') {
-      await navigate({
-        to: '/business',
-        search: {
-          page: 1,
-          perPage: 20,
-          query: '',
-          region: 'all',
-          status: 'all',
-          bizOnly: false,
-          sort: '-updated',
-          tab: item.kind === 'company' ? 'companies' : 'creators',
-          companyPage: 1,
-          companyQuery: '',
-          companyRegion: 'all',
-          companyKind: 'all',
-          companySort: '-updated',
-          recordType: item.kind,
-          recordId: item.id,
-        },
-      })
-    } else if (item.kind === 'product') {
-      await navigate({
-        to: '/market',
-        search: { query: '', recordType: item.kind, recordId: item.id },
-      })
-    } else if (item.kind === 'knowledge' || item.kind === 'ai_memory') {
-      await navigate({
-        to: '/overview',
-        search: { recordType: item.kind, recordId: item.id },
-      })
-    } else if (item.kind === 'account') {
-      await navigate({
-        to: '/editing',
-        search: {
-          section: 'competitors',
-          tab: 'list',
-          page: 1,
-          perPage: 20,
-          query: '',
-          account: 'all',
-          videoType: 'all',
-          tag: '',
-          dateFrom: '',
-          dateTo: '',
-          viral: 'all',
-          sort: '-views',
-          recordType: 'account',
-          recordId: item.id,
-        },
-      })
-    } else {
-      await navigate({
-        to: '/editing',
-        search: {
-          section: 'production',
-          tab: 'list',
-          page: 1,
-          perPage: 20,
-          query: '',
-          account: 'all',
-          videoType: 'all',
-          tag: '',
-          dateFrom: '',
-          dateTo: '',
-          viral: 'all',
-          sort: '-views',
-          recordType: item.kind,
-          recordId: item.id,
-        },
-      })
-    }
+    const route = buildWorkbenchNavigation(item.kind, query.trim(), item)
+    await navigate({
+      to: route.to,
+      search: route.search,
+    })
+  }
+
+  const handleJumpToWorkbench = async (targetKind: GlobalSearchKind) => {
+    const route = buildWorkbenchNavigation(targetKind, query.trim())
+    await navigate({
+      to: route.to,
+      search: route.search,
+    })
   }
 
   const trimmed = query.trim()
@@ -173,12 +120,32 @@ export function SearchResultsPage({
           )}
 
           {groups
-            .filter((group) => selectedKind === 'all' || group.kind === selectedKind)
+            .filter(
+              (group) => selectedKind === 'all' || group.kind === selectedKind
+            )
             .map((group) => (
               <section key={group.kind} className='space-y-3'>
-                <div className='flex items-center gap-2 text-sm font-medium'>
-                  <span>{titleByKind[group.kind]}</span>
-                  <Badge variant='secondary'>{group.total} 条</Badge>
+                <div className='flex flex-wrap items-center justify-between gap-2 border-b pb-2'>
+                  <div className='flex items-center gap-2 text-sm font-medium'>
+                    <span>{titleByKind[group.kind]}</span>
+                    <Badge variant='secondary'>{group.total} 条结果</Badge>
+                    {group.items.length < group.total && (
+                      <span className='text-xs text-muted-foreground'>
+                        (当前展示前 {group.items.length} 条)
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    className='h-7 gap-1 text-xs'
+                    onClick={() => void handleJumpToWorkbench(group.kind)}
+                  >
+                    <span>
+                      {buildWorkbenchNavigation(group.kind, trimmed).label}
+                    </span>
+                    <ExternalLink className='size-3' />
+                  </Button>
                 </div>
                 <div className='divide-y rounded-lg border bg-card'>
                   {group.items.map((item) => (
@@ -188,7 +155,9 @@ export function SearchResultsPage({
                       className='cursor-pointer p-4 transition-colors hover:bg-muted/50'
                     >
                       <div className='flex items-center justify-between'>
-                        <div className='font-medium text-foreground'>{item.label}</div>
+                        <div className='font-medium text-foreground'>
+                          {item.label}
+                        </div>
                         <Badge variant='outline' className='text-xs'>
                           {titleByKind[item.kind]}
                         </Badge>
