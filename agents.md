@@ -262,3 +262,5 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - 严禁在多业务域流转（如雷达转选品）中直接手写临时的浮点换算与假状态，必须经由编排器纯函数校验换算以防数据脏写与边界异常。
 - 严禁在设置页新增或提供开关偏好后只写库不读取，必须在数据过滤与 UI 展示层实现闭环消费与安全默认降级。
 - 严禁在全局搜索跳转目标工作台时硬编码清空搜索参数（如 `query: ''`），必须由纯契约导航函数完整透传搜索关键词并由后端如实返回精确总条数以防假态。
+- 严禁在 PowerShell here-string（@' / @"）头部同行书写内容，必须让开头标记独占一行并以匹配的结束标记收尾，避免整段脚本解析失败。
+- 严禁单元测试直接依赖浏览器全局 sessionStorage 或真实 QueryClient，必须注入 fake storage/query client 验证缓存清理行为，避免 Node 测试环境出现未定义全局变量。

@@ -4,7 +4,7 @@
 // 用途：设计人员维护素材、设计任务与品牌规范
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { regions } from '@/types/commerce'
-import { requireRoles } from '@/lib/auth'
+import { requirePathAccess } from '@/lib/auth'
 import { RouteError } from '@/components/shared/route-error'
 import { DesignWorkbench } from '@/features/design'
 import { designAssetStatusLabels } from '@/features/design/constants'
@@ -44,7 +44,7 @@ function parseSearch(search: Record<string, unknown>): DesignAssetListParams {
 }
 
 export const Route = createFileRoute('/_app/design/')({
-  beforeLoad: () => requireRoles(['design', 'business']),
+  beforeLoad: () => requirePathAccess('/design'),
   validateSearch: parseSearch,
   component: DesignRoute,
   errorComponent: RouteError,

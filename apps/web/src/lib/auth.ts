@@ -13,6 +13,11 @@ import { ClientResponseError, type RecordModel } from 'pocketbase'
 import { useAuthStore } from '@/stores/auth-store'
 import { getDataProvider } from '@/lib/data-provider'
 import { clearPocketBaseSession, pb } from '@/lib/pocketbase'
+import {
+  canRoleAccess,
+  getRouteRoles,
+  type ProtectedAppPath,
+} from '@/lib/route-access'
 import { getSupabaseClient } from '@/lib/supabase'
 
 export const ACCESS_DENIED_SESSION_KEY = 'tk-observer-access-denied'
@@ -300,9 +305,13 @@ export function requireAuthentication() {
 
 export function requireRoles(allowedRoles: readonly UserRole[]) {
   const user = requireAuthentication()
-  if (user.role !== 'owner' && user.role !== 'boss' && !allowedRoles.includes(user.role)) {
+  if (!canRoleAccess(user.role, allowedRoles)) {
     sessionStorage.setItem(ACCESS_DENIED_SESSION_KEY, 'true')
     throw redirect({ to: getDefaultRoute(user.role) })
   }
   return user
+}
+
+export function requirePathAccess(path: ProtectedAppPath) {
+  return requireRoles(getRouteRoles(path))
 }

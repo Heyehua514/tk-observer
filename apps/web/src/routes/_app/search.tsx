@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- TanStack 文件路由需导出 Route */
 // 路由：/search?q=&kind=；权限：已登录；用途：全局搜索“查看全部”结果页。
 import { createFileRoute } from '@tanstack/react-router'
-import { requireRoles } from '@/lib/auth'
+import { requirePathAccess } from '@/lib/auth'
 import { RouteError } from '@/components/shared/route-error'
 import { SearchResultsPage } from '@/features/search'
 
@@ -15,8 +15,7 @@ function parseSearch(search: Record<string, unknown>): SearchParams {
 }
 
 export const Route = createFileRoute('/_app/search')({
-  beforeLoad: () =>
-    requireRoles(['business', 'boss', 'market', 'design', 'editing']),
+  beforeLoad: () => requirePathAccess('/search'),
   validateSearch: parseSearch,
   component: SearchRoute,
   errorComponent: RouteError,

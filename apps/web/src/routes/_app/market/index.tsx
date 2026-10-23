@@ -3,7 +3,7 @@
 // 权限：market, boss
 // 用途：市场人员维护选品、竞品、投放与活动排期
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { requireRoles } from '@/lib/auth'
+import { requirePathAccess } from '@/lib/auth'
 import { RouteError } from '@/components/shared/route-error'
 import { MarketWorkbench, type MarketSearchParams } from '@/features/market'
 
@@ -16,7 +16,7 @@ function parseSearch(search: Record<string, unknown>): MarketSearchParams {
 }
 
 export const Route = createFileRoute('/_app/market/')({
-  beforeLoad: () => requireRoles(['market']),
+  beforeLoad: () => requirePathAccess('/market'),
   validateSearch: parseSearch,
   component: MarketRoute,
   errorComponent: RouteError,

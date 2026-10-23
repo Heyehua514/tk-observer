@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { logout } from '@/lib/auth'
 import { getRequestErrorMessage } from '@/lib/errors'
 import { registerServiceWorker } from '@/lib/register-sw'
+import { clearClientSession } from '@/lib/session-cleanup'
 import { DirectionProvider } from '@/context/direction-provider'
 import { FontProvider } from '@/context/font-provider'
 import { ThemeProvider } from '@/context/theme-provider'
@@ -37,7 +38,7 @@ export const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof ClientResponseError && error.status === 401) {
         void logout().then(() => {
-          queryClient.clear()
+          clearClientSession(queryClient)
           toast.error('登录状态已失效，请重新登录')
           void router.navigate({ to: '/login', replace: true })
         })

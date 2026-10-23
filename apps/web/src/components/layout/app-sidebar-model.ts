@@ -1,9 +1,9 @@
 import type { UserRole } from '@/types/auth'
+import { canAccessPath, type ProtectedAppPath } from '@/lib/route-access'
 
 export function canSeeNavigationItem(
   role: UserRole,
-  item: { role: UserRole; to: string }
+  item: { to: ProtectedAppPath }
 ) {
-  if (item.to === '/intelligence') return true
-  return role === 'owner' || role === 'boss' || role === item.role
+  return canAccessPath(role, item.to)
 }

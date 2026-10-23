@@ -3,7 +3,7 @@
 // 权限：business, boss
 // 用途：商务人员管理合作达人，支持搜索、筛选、分页和完整 CRUD
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { requireRoles } from '@/lib/auth'
+import { requirePathAccess } from '@/lib/auth'
 import { RouteError } from '@/components/shared/route-error'
 import { BusinessWorkbench } from '@/features/business'
 import { cooperationStatuses, regions } from '@/features/business/constants'
@@ -110,7 +110,7 @@ function parseSearch(search: Record<string, unknown>): BusinessSearch {
 }
 
 export const Route = createFileRoute('/_app/business/')({
-  beforeLoad: () => requireRoles(['business']),
+  beforeLoad: () => requirePathAccess('/business'),
   validateSearch: parseSearch,
   component: BusinessRoute,
   errorComponent: RouteError,

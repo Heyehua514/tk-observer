@@ -16,7 +16,6 @@ import {
 import { useAuthStore } from '@/stores/auth-store'
 import { useLayout } from '@/context/layout-provider'
 import { useRecentPages } from '@/hooks/use-recent-pages'
-import { canSeeNavigationItem } from './app-sidebar-model'
 import {
   Sidebar,
   SidebarContent,
@@ -30,6 +29,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { canSeeNavigationItem } from './app-sidebar-model'
 
 const titleByPath: Record<string, { title: string; icon: typeof Store }> = {
   '/overview': { title: '总览工作台', icon: ChartNoAxesCombined },
@@ -43,43 +43,36 @@ const navigation = [
   {
     title: '总览工作台',
     to: '/overview' as const,
-    role: 'boss' as const,
     icon: ChartNoAxesCombined,
   },
   {
     title: '团队日历',
     to: '/overview/calendar' as const,
-    role: 'boss' as const,
     icon: CalendarDays,
   },
   {
     title: '每日情报',
     to: '/intelligence' as const,
-    role: 'business' as const,
     icon: Newspaper,
   },
   {
     title: '商务工作台',
     to: '/business' as const,
-    role: 'business' as const,
     icon: BriefcaseBusiness,
   },
   {
     title: '市场工作台',
     to: '/market' as const,
-    role: 'market' as const,
     icon: Store,
   },
   {
     title: '设计工作台',
     to: '/design' as const,
-    role: 'design' as const,
     icon: Palette,
   },
   {
     title: '剪辑工作台',
     to: '/editing' as const,
-    role: 'editing' as const,
     icon: Clapperboard,
   },
 ]
@@ -109,11 +102,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navigation
-                .filter(
-                  (item) =>
-                    canSeeNavigationItem(role, item) ||
-                    (role === 'business' && item.to === '/design')
-                )
+                .filter((item) => canSeeNavigationItem(role, item))
                 .map((item) => (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton

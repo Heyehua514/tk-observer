@@ -18,6 +18,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { getRuntimeDesktopUpdaterEnvironment } from '@/lib/desktop-updater'
 import { checkAndInstallDesktopUpdate } from '@/lib/desktop-updater-actions'
 import { getStoredServerUrl, setPocketBaseUrl } from '@/lib/pocketbase'
+import { clearClientSession } from '@/lib/session-cleanup'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -107,7 +108,7 @@ export function ServerSettings() {
     }
     await setPocketBaseUrl(values.url)
     useAuthStore.getState().reset()
-    queryClient.clear()
+    clearClientSession(queryClient)
     toast.success('服务器地址已保存，请重新登录')
     await navigate({ to: '/login', replace: true })
   }

@@ -3,7 +3,7 @@ import { canSeeNavigationItem } from './app-sidebar-model'
 
 describe('app sidebar navigation visibility', () => {
   it('shows the shared intelligence center to every authenticated role', () => {
-    const item = { role: 'business' as const, to: '/intelligence' }
+    const item = { to: '/intelligence' as const }
 
     expect(canSeeNavigationItem('boss', item)).toBe(true)
     expect(canSeeNavigationItem('business', item)).toBe(true)
@@ -13,17 +13,8 @@ describe('app sidebar navigation visibility', () => {
   })
 
   it('keeps role-specific workbenches restricted', () => {
-    expect(
-      canSeeNavigationItem('market', {
-        role: 'business',
-        to: '/business',
-      })
-    ).toBe(false)
-    expect(
-      canSeeNavigationItem('boss', {
-        role: 'business',
-        to: '/business',
-      })
-    ).toBe(true)
+    expect(canSeeNavigationItem('market', { to: '/business' })).toBe(false)
+    expect(canSeeNavigationItem('boss', { to: '/business' })).toBe(true)
+    expect(canSeeNavigationItem('business', { to: '/design' })).toBe(true)
   })
 })

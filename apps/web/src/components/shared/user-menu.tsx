@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { KeyRound, LogOut, Settings, UserRound } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { logout } from '@/lib/auth'
+import { clearClientSession } from '@/lib/session-cleanup'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,8 +27,7 @@ export function UserMenu() {
 
   const signOut = async () => {
     await logout()
-    queryClient.clear()
-    sessionStorage.clear()
+    clearClientSession(queryClient)
     await navigate({ to: '/login', replace: true })
   }
 
