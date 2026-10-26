@@ -1,9 +1,16 @@
 /** 总览首页 UI 自检；验证空态和指标对比文案更像正在使用的系统。 */
+import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import { OverviewDashboard } from './overview-dashboard'
+
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ to, children }: { to: string; children: ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
+}))
 
 vi.mock('@/lib/data-provider', () => ({
   getDataProvider: () => 'supabase',

@@ -4,6 +4,7 @@ import { render } from 'vitest-browser-react'
 import { CompetitorWorkbench } from './competitor-workbench'
 
 vi.mock('@/features/editing/hooks/use-competitor-accounts', () => ({
+  competitorAccountKeys: { all: ['competitor-accounts'] },
   useCompetitorAccounts: () => ({
     data: [
       {

@@ -90,7 +90,7 @@ it('成片归档空态提供可用的上传入口', async () => {
   await userEvent.click(screen.getByRole('tab', { name: '成片归档' }))
   await expect.element(screen.getByText('还没有归档成片')).toBeInTheDocument()
   await expect
-    .element(screen.getByRole('button', { name: '上传成片' }))
+    .element(screen.getByRole('button', { name: '上传成片' }).first())
     .toBeEnabled()
 })
 

@@ -4,7 +4,7 @@ import { render, type RenderResult } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import { SearchProvider } from '@/context/search-provider'
 
-const GLOBAL_SEARCH_PLACEHOLDER = '搜索达人、商品、视频、客户…'
+const GLOBAL_SEARCH_PLACEHOLDER = '搜索知识、案例、对标账号、达人、商品、视频…'
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),

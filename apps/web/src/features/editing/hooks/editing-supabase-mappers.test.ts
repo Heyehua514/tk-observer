@@ -29,6 +29,9 @@ describe('editing Supabase mappers', () => {
       status: 'doing',
       dueAt: '2026-08-12',
       owner: '谢洁',
+      productName: 'TK增长课',
+      creatorName: '跨境小杨',
+      region: undefined,
     })
   })
 

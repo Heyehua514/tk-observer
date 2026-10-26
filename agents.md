@@ -264,3 +264,4 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - 严禁在全局搜索跳转目标工作台时硬编码清空搜索参数（如 `query: ''`），必须由纯契约导航函数完整透传搜索关键词并由后端如实返回精确总条数以防假态。
 - 严禁在 PowerShell here-string（@' / @"）头部同行书写内容，必须让开头标记独占一行并以匹配的结束标记收尾，避免整段脚本解析失败。
 - 严禁单元测试直接依赖浏览器全局 sessionStorage 或真实 QueryClient，必须注入 fake storage/query client 验证缓存清理行为，避免 Node 测试环境出现未定义全局变量。
+- 严禁在 ProductRow 等派生模型的测试夹具中省略 profitInCnyMinor、priceInCnyMinor、costInCnyMinor、marginLevel，必须复用 `buildProductRows` 或构造完整夹具，避免 ¥NaN 假故障掩盖真实回归。

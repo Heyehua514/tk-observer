@@ -20,6 +20,12 @@ const productCatalog = vi.hoisted(() =>
               marginMinor: 10700,
               marginRate: 53.8,
               currency: 'CNY',
+              costCurrency: 'CNY',
+              exchangeRate: 1,
+              priceInCnyMinor: 19900,
+              costInCnyMinor: 9200,
+              profitInCnyMinor: 10700,
+              marginLevel: 'high',
               status: 'active',
               region: 'US',
             },
@@ -104,7 +110,7 @@ it('shows competitor monitoring and ad overview instead of empty placeholders', 
   await expect.element(screen.getByText('0 个公众号')).toBeInTheDocument()
   await expect.element(screen.getByText('暂无监测账号')).toBeInTheDocument()
   await expect
-    .element(screen.getByText('AI 助手入口:市场工作台'))
+    .element(screen.getByText('AI 助手入口:market'))
     .toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('tab', { name: '投放数据' }))
@@ -142,7 +148,7 @@ it('formats product amounts from minor units using the record currency', async (
   expect(productCatalog).toHaveBeenCalledWith('')
   await expect.element(screen.getByText('¥199.00')).toBeInTheDocument()
   await expect.element(screen.getByText('¥92.00')).toBeInTheDocument()
-  await expect.element(screen.getByText('¥107.00')).toBeInTheDocument()
+  await expect.element(screen.getByText('+¥107.00')).toBeInTheDocument()
 })
 
 it('requires confirmation before deleting a product', async () => {

@@ -10,13 +10,16 @@ describe('data provider environment', () => {
     expect(getDataProvider()).toBe('supabase')
   })
 
-  it('requires URL and anon key only when Supabase is selected', async () => {
+  it('uses the production fallback when Supabase environment variables are empty', async () => {
     vi.stubEnv('VITE_DATA_PROVIDER', 'supabase')
     vi.stubEnv('VITE_SUPABASE_URL', '')
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', '')
     vi.resetModules()
     const { getSupabaseEnvironment } = await import('./data-provider')
-    expect(() => getSupabaseEnvironment()).toThrow('Supabase环境变量未配置完整')
+    expect(getSupabaseEnvironment()).toEqual({
+      url: 'https://mddldiwthvnaefwtlnme.supabase.co',
+      anonKey: 'sb_publishable_dvK9zPS9leT2v5n9omM4gA_F0lAOY2w',
+    })
   })
 
   it('rejects unsupported provider names', async () => {
