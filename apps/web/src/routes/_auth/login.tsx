@@ -16,6 +16,7 @@ import {
   registerAccount,
   RegistrationError,
 } from '@/lib/auth'
+import { getDataProvider } from '@/lib/data-provider'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -45,7 +46,7 @@ type LoginValues = z.infer<typeof loginSchema>
 
 const registerSchema = z
   .object({
-    memberName: z.string().min(1, '请选择您的姓名'),
+    memberName: z.string().optional(),
     email: z.string().trim().min(1, '请输入邮箱').email('请输入有效邮箱'),
     password: z.string().min(8, '密码至少 8 位'),
     passwordConfirm: z.string().min(1, '请再次输入密码'),
@@ -59,6 +60,8 @@ type RegisterValues = z.infer<typeof registerSchema>
 const loginMessages = {
   ACCOUNT_NOT_FOUND: '账号不存在',
   WRONG_PASSWORD: '密码错误，请重试',
+  ACCOUNT_PENDING: '账号尚未获得成员邀请，请联系 owner',
+  ACCOUNT_DISABLED: '账号已停用，请联系 owner',
   NETWORK: '无法连接服务器，请检查网络',
 } as const
 
@@ -67,6 +70,7 @@ const registrationMessages = {
   INVALID_INPUT: '注册信息不符合要求，请检查后重试',
   INVALID_MEMBER: '请从公司成员名单中选择您的姓名',
   MEMBER_REGISTERED: '该成员已注册，请直接登录或联系管理员',
+  INVITE_REQUIRED: '该邮箱尚未收到成员邀请，请联系 owner',
   NETWORK: '无法连接服务器，请检查网络',
 } as const
 
@@ -78,6 +82,7 @@ function LoginPage() {
   const [submitError, setSubmitError] = useState('')
   const [now, setNow] = useState(() => new Date())
   const navigate = useNavigate()
+  const isPocketBase = getDataProvider() === 'pocketbase'
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -122,6 +127,10 @@ function LoginPage() {
   }
 
   const submitRegistration = async (values: RegisterValues) => {
+    if (isPocketBase && !values.memberName?.trim()) {
+      registerForm.setError('memberName', { message: '请选择您的姓名' })
+      return
+    }
     setSubmitError('')
     try {
       const user = await registerAccount(values)
@@ -276,33 +285,35 @@ function LoginPage() {
                 autoComplete='off'
                 onSubmit={registerForm.handleSubmit(submitRegistration)}
               >
-                <FormField
-                  control={registerForm.control}
-                  name='memberName'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>姓名</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className='w-full'>
-                            <SelectValue placeholder='请选择您的姓名' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {memberOptions.map((member) => (
-                            <SelectItem key={member.name} value={member.name}>
-                              {member.name} · {member.workbench}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {isPocketBase && (
+                  <FormField
+                    control={registerForm.control}
+                    name='memberName'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>姓名</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className='w-full'>
+                              <SelectValue placeholder='请选择您的姓名' />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {memberOptions.map((member) => (
+                              <SelectItem key={member.name} value={member.name}>
+                                {member.name} · {member.workbench}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={registerForm.control}
                   name='email'
@@ -388,14 +399,16 @@ function LoginPage() {
                   {registerForm.formState.isSubmitting && (
                     <LoaderCircle className='size-4 animate-spin' />
                   )}
-                  注册并进入工作台
+                  {isPocketBase ? '注册并进入工作台' : '注册账号'}
                 </Button>
               </form>
             </Form>
           </TabsContent>
         </Tabs>
         <p className='mt-4 text-center text-xs text-foreground/70'>
-          首次使用请先注册公司账号
+          {isPocketBase
+            ? '首次使用请先注册公司账号'
+            : '注册后需由 owner 邀请同一邮箱，邀请生效后即可登录'}
         </p>
       </section>
     </div>

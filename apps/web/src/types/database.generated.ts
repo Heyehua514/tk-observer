@@ -2187,6 +2187,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           avatar_path: string | null
           created_at: string
           id: string
@@ -2199,6 +2201,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_path?: string | null
           created_at?: string
           id: string
@@ -2211,6 +2215,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_path?: string | null
           created_at?: string
           id?: string

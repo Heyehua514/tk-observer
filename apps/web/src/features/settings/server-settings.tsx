@@ -39,6 +39,7 @@ import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/shared/page-header'
 import { getClientUpdateSurface } from './client-update-model'
 import { DifySettingsCard } from './components/dify-settings-card'
+import { MemberAccessCard } from './components/member-access-card'
 
 const schema = z.object({
   url: z.string().trim().url('请输入完整的 http 或 https 地址'),
@@ -175,6 +176,7 @@ export function ServerSettings() {
         </CardContent>
       </Card>
       <DifySettingsCard />
+      <MemberAccessCard />
       <Card className='glass-card max-w-2xl rounded-2xl border bg-background/60 shadow-none backdrop-blur-xl'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-base'>

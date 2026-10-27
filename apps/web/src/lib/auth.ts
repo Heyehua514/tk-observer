@@ -22,13 +22,19 @@ import { getSupabaseClient } from '@/lib/supabase'
 
 export const ACCESS_DENIED_SESSION_KEY = 'tk-observer-access-denied'
 
-export type LoginErrorCode = 'ACCOUNT_NOT_FOUND' | 'WRONG_PASSWORD' | 'NETWORK'
+export type LoginErrorCode =
+  | 'ACCOUNT_NOT_FOUND'
+  | 'WRONG_PASSWORD'
+  | 'ACCOUNT_PENDING'
+  | 'ACCOUNT_DISABLED'
+  | 'NETWORK'
 
 export type RegistrationErrorCode =
   | 'EMAIL_REGISTERED'
   | 'INVALID_INPUT'
   | 'INVALID_MEMBER'
   | 'MEMBER_REGISTERED'
+  | 'INVITE_REQUIRED'
   | 'NETWORK'
 
 export class LoginError extends Error {
@@ -65,6 +71,7 @@ function mapUser(record: RecordModel): AppUser {
 type SupabaseProfile = {
   name: string
   role: string | null
+  status: string
   avatar_path: string | null
 }
 
@@ -89,7 +96,7 @@ async function fetchSupabaseProfile(userId: string) {
   const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from('profiles')
-    .select('name, role, avatar_path')
+    .select('name, role, status, avatar_path')
     .eq('id', userId)
     .maybeSingle()
   if (error) throw error
@@ -105,11 +112,24 @@ async function loginWithSupabasePassword(email: string, password: string) {
     })
     if (error || !data.user) throw error || new Error('NO_USER')
     const profile = await fetchSupabaseProfile(data.user.id)
+    if (
+      !profile ||
+      profile.status === 'pending' ||
+      profile.status === 'invited'
+    ) {
+      await supabase.auth.signOut()
+      throw new LoginError('ACCOUNT_PENDING')
+    }
+    if (profile.status === 'disabled') {
+      await supabase.auth.signOut()
+      throw new LoginError('ACCOUNT_DISABLED')
+    }
     const user = mapSupabaseUser(data.user.id, data.user.email, profile)
     useAuthStore.getState().setUser(user)
     return user
-  } catch {
+  } catch (error) {
     useAuthStore.getState().reset()
+    if (error instanceof LoginError) throw error
     throw new LoginError('NETWORK')
   }
 }
@@ -158,7 +178,7 @@ export async function loginWithPassword(email: string, password: string) {
 
 type RegistrationInput = {
   email: string
-  memberName: string
+  memberName?: string
   password: string
   passwordConfirm: string
 }
@@ -174,17 +194,40 @@ export async function registerAccount(input: RegistrationInput) {
       const { data, error } = await supabase.auth.signUp({
         email: input.email.trim(),
         password: input.password,
-        options: { data: { name: input.memberName } },
+        options: {
+          data: input.memberName?.trim()
+            ? { name: input.memberName.trim() }
+            : {},
+        },
       })
       if (error || !data.user) throw error || new Error('NO_USER')
+      if (data.user.identities?.length === 0) {
+        throw new RegistrationError('EMAIL_REGISTERED')
+      }
       const profile = await fetchSupabaseProfile(data.user.id)
+      if (!profile || profile.status !== 'active' || !profile.role) {
+        await supabase.auth.signOut()
+        throw new RegistrationError('INVITE_REQUIRED')
+      }
       const user = mapSupabaseUser(data.user.id, data.user.email, profile)
       useAuthStore.getState().setUser(user)
       return user
-    } catch {
+    } catch (error) {
       useAuthStore.getState().reset()
+      if (error instanceof RegistrationError) throw error
+      const code =
+        typeof error === 'object' && error && 'code' in error
+          ? String(error.code)
+          : ''
+      if (code === 'user_already_exists' || code === 'email_exists') {
+        throw new RegistrationError('EMAIL_REGISTERED')
+      }
       throw new RegistrationError('NETWORK')
     }
+  }
+
+  if (!input.memberName?.trim()) {
+    throw new RegistrationError('INVALID_MEMBER')
   }
 
   try {
@@ -192,7 +235,7 @@ export async function registerAccount(input: RegistrationInput) {
       method: 'POST',
       body: {
         email: input.email.trim(),
-        memberName: input.memberName,
+        memberName: input.memberName.trim(),
         password: input.password,
         passwordConfirm: input.passwordConfirm,
       },
@@ -214,6 +257,7 @@ export async function registerAccount(input: RegistrationInput) {
       'INVALID_INPUT',
       'INVALID_MEMBER',
       'MEMBER_REGISTERED',
+      'INVITE_REQUIRED',
     ]
     if (
       typeof code === 'string' &&
