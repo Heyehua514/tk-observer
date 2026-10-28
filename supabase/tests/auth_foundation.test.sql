@@ -1,11 +1,12 @@
 begin;
-select plan(16);
+select plan(18);
 
 select has_table('public', 'profiles', 'profiles table exists');
 select has_table('public', 'member_invitations', 'member invitations table exists');
 select has_function('public', 'current_user_role', array[]::text[]);
 select has_function('public', 'current_user_status', array[]::text[]);
 select has_function('public', 'has_any_role', array['text[]']);
+select has_function('public', 'guard_member_invitation_transition', array[]::text[]);
 select policies_are('public', 'profiles', array[
   'active members can read active profiles',
   'owners can manage profiles'
@@ -29,6 +30,11 @@ select trigger_is(
 select trigger_is(
   'public', 'member_invitations', 'member_invitation_links_pending_profile',
   'public', 'link_invitation_to_pending_profile'
+);
+
+select trigger_is(
+  'public', 'member_invitations', 'member_invitations_guard_transition',
+  'public', 'guard_member_invitation_transition'
 );
 
 select * from finish();

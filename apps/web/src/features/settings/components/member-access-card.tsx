@@ -43,6 +43,7 @@ import { LoadStateError } from '@/components/shared/load-state-error'
 import { useMemberInvitations } from '../hooks/use-member-invitations'
 import {
   getEffectiveInvitationStatus,
+  getInvitationActions,
   invitationRoles,
   type InvitationRole,
   type MemberInvitation,
@@ -235,6 +236,7 @@ export function MemberAccessCard() {
             <TableBody>
               {invitations.data.map((invitation) => {
                 const status = getEffectiveInvitationStatus(invitation)
+                const actions = getInvitationActions(invitation)
                 return (
                   <TableRow key={invitation.id}>
                     <TableCell className='font-medium'>
@@ -251,7 +253,7 @@ export function MemberAccessCard() {
                     </TableCell>
                     <TableCell>{formatDate(invitation.expiresAt)}</TableCell>
                     <TableCell className='text-right'>
-                      {status === 'invited' ? (
+                      {actions.canRevoke ? (
                         <Button
                           type='button'
                           variant='ghost'
@@ -261,7 +263,7 @@ export function MemberAccessCard() {
                         >
                           撤销
                         </Button>
-                      ) : status === 'revoked' || status === 'expired' ? (
+                      ) : actions.canReinvite ? (
                         <Button
                           type='button'
                           variant='ghost'

@@ -265,4 +265,8 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - 严禁在 PowerShell here-string（@' / @"）头部同行书写内容，必须让开头标记独占一行并以匹配的结束标记收尾，避免整段脚本解析失败。
 - 严禁单元测试直接依赖浏览器全局 sessionStorage 或真实 QueryClient，必须注入 fake storage/query client 验证缓存清理行为，避免 Node 测试环境出现未定义全局变量。
 - 严禁在 ProductRow 等派生模型的测试夹具中省略 profitInCnyMinor、priceInCnyMinor、costInCnyMinor、marginLevel，必须复用 `buildProductRows` 或构造完整夹具，避免 ¥NaN 假故障掩盖真实回归。
-- 严禁在 PowerShell 双引号内嵌含多行、引号或括号的 Python 替换脚本，必须使用独占行 here-string 管道交给 `python -`，避免命令解析失败并中断任务。
+- 严禁在 PowerShell 双引号内嵌含多行、引号或括号的 Python 替换脚本；纯 ASCII 脚本可使用独占行 here-string 管道交给 `python -`，含中文的批量文本必须使用独占行 here-string 配合 `[System.IO.File]::WriteAllText()` 与 `UTF8Encoding($false)` 写入，避免命令解析失败或中文被替换为问号。
+
+- 严禁在 Windows/PowerShell 工作区显式将执行 shell 指定为 `bash`，必须保持 `powershell`，否则 `Get-Content`、`Select-String` 等原生命令会被错误解析并污染排查链路。
+- 严禁用 `Remove-Item` 清理文件名字面量包含 `$null` 的目标；必须先核对绝对路径，再使用 `[System.IO.File]::Delete()` 定点删除，避免命令解析与安全策略误拦截。
+- 严禁将含中文的内容通过 PowerShell 5 here-string 管道传给外部 `python`；外部进程输入可能按本地代码页转码为问号，必须用 `[System.IO.File]::WriteAllText()` 原生写入 UTF-8。

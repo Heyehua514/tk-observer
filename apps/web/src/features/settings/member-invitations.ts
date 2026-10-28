@@ -47,7 +47,19 @@ export function getEffectiveInvitationStatus(
   now = Date.now()
 ): InvitationStatus {
   if (invitation.status !== 'invited') return invitation.status
-  return new Date(invitation.expiresAt).getTime() <= now ? 'expired' : 'invited'
+  const expiresAt = new Date(invitation.expiresAt).getTime()
+  return Number.isFinite(expiresAt) && expiresAt > now ? 'invited' : 'expired'
+}
+
+export function getInvitationActions(
+  invitation: Pick<MemberInvitation, 'status' | 'expiresAt'>,
+  now = Date.now()
+) {
+  const status = getEffectiveInvitationStatus(invitation, now)
+  return {
+    canRevoke: status === 'invited',
+    canReinvite: status === 'revoked' || status === 'expired',
+  }
 }
 
 export function mapMemberInvitation(
@@ -69,7 +81,7 @@ export function mapMemberInvitation(
   }
   return {
     id: row.id,
-    email: row.email,
+    email: normalizeInvitationEmail(row.email),
     name: row.name,
     role: row.role,
     status: row.status as InvitationStatus,
@@ -103,6 +115,15 @@ export async function saveMemberInvitation(
   }
 
   const email = normalizeInvitationEmail(input.email)
+  const name = input.name.trim()
+  if (
+    !name ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    !isInvitationRole(input.role)
+  ) {
+    throw new Error('邀请信息无效')
+  }
+
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
   const supabase = getSupabaseClient()
   const { data: existing, error: lookupError } = await supabase
@@ -117,7 +138,7 @@ export async function saveMemberInvitation(
 
   const payload = {
     email,
-    name: input.name.trim(),
+    name,
     role: input.role,
     status: 'invited' as const,
     invited_by: invitedBy,
@@ -126,10 +147,17 @@ export async function saveMemberInvitation(
   }
 
   const query = existing
-    ? supabase.from('member_invitations').update(payload).eq('id', existing.id)
+    ? supabase
+        .from('member_invitations')
+        .update(payload)
+        .eq('id', existing.id)
+        .eq('status', existing.status)
     : supabase.from('member_invitations').insert(payload)
-  const { data, error } = await query.select(invitationSelect).single()
+  const { data, error } = await query.select(invitationSelect).maybeSingle()
   if (error) throw error
+  if (!data) {
+    throw new Error('邀请状态已变化，请刷新后重试')
+  }
   const invitation = mapMemberInvitation(data)
   if (!invitation) throw new Error('邀请数据无效')
   return invitation
@@ -143,9 +171,14 @@ export async function revokeMemberInvitation(id: string) {
     .from('member_invitations')
     .update({ status: 'revoked', accepted_at: null })
     .eq('id', id)
+    .eq('status', 'invited')
+    .gt('expires_at', new Date().toISOString())
     .select(invitationSelect)
-    .single()
+    .maybeSingle()
   if (error) throw error
+  if (!data) {
+    throw new Error('仅待使用邀请可撤销，请刷新后重试')
+  }
   const invitation = mapMemberInvitation(data)
   if (!invitation) throw new Error('邀请数据无效')
   return invitation

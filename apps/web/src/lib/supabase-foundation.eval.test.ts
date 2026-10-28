@@ -3,6 +3,7 @@ import config from '../../../../supabase/config.toml?raw'
 import sql from '../../../../supabase/migrations/20260810000100_auth_foundation.sql?raw'
 import storageSql from '../../../../supabase/migrations/20260810000200_storage_foundation.sql?raw'
 import admissionSql from '../../../../supabase/migrations/20261027000100_member_admission_workflow.sql?raw'
+import transitionGuardSql from '../../../../supabase/migrations/20261028000100_member_invitation_transition_guard.sql?raw'
 
 it('keeps Supabase invitation-only and RLS protected', () => {
   expect(sql).toContain('alter table public.profiles enable row level security')
@@ -15,6 +16,20 @@ it('activates invited pending accounts without trusting role metadata', () => {
   expect(admissionSql).toContain('public.link_invitation_to_pending_profile')
   expect(admissionSql).toContain('approved_at = now()')
   expect(admissionSql).not.toContain("raw_user_meta_data ->> 'role'")
+})
+
+it('guards invitation acceptance and prevents accepted records from drifting', () => {
+  expect(transitionGuardSql).toContain(
+    'public.guard_member_invitation_transition'
+  )
+  expect(transitionGuardSql).toContain('accepted invitation is immutable')
+  expect(transitionGuardSql).toContain(
+    'invitation can only be accepted for an active matching profile'
+  )
+  expect(transitionGuardSql).toContain(
+    'member_invitations_accepted_at_consistent'
+  )
+  expect(transitionGuardSql).not.toContain("raw_user_meta_data ->> 'role'")
 })
 
 it('keeps every workspace bucket private and owner gated', () => {
