@@ -700,7 +700,7 @@ export type Database = {
             referencedColumns: ['id'],
           },
         ],
-      },
+      }
       creators: {
         Row: {
           category: string | null
@@ -1760,12 +1760,17 @@ export type Database = {
         Row: {
           created_at: string
           deleted_at: string | null
+          failure_count: number
           file_name: string
           id: string
           imported_at: string
           legacy_id: string | null
           new_count: number
+          rolled_back_at: string | null
+          rolled_back_by: string | null
+          skipped_count: number
           snapshot: Json
+          status: string
           total_rows: number
           updated_at: string
           updated_count: number
@@ -1773,12 +1778,17 @@ export type Database = {
         Insert: {
           created_at?: string
           deleted_at?: string | null
+          failure_count?: number
           file_name: string
           id?: string
           imported_at: string
           legacy_id?: string | null
           new_count?: number
+          rolled_back_at?: string | null
+          rolled_back_by?: string | null
+          skipped_count?: number
           snapshot?: Json
+          status?: string
           total_rows?: number
           updated_at?: string
           updated_count?: number
@@ -1786,15 +1796,53 @@ export type Database = {
         Update: {
           created_at?: string
           deleted_at?: string | null
+          failure_count?: number
           file_name?: string
           id?: string
           imported_at?: string
           legacy_id?: string | null
           new_count?: number
+          rolled_back_at?: string | null
+          rolled_back_by?: string | null
+          skipped_count?: number
           snapshot?: Json
+          status?: string
           total_rows?: number
           updated_at?: string
           updated_count?: number
+        }
+        Relationships: []
+      }
+      video_idea_import_changes: {
+        Row: {
+          after_data: Json
+          before_data: Json | null
+          created_at: string
+          id: string
+          import_history_id: string
+          operation: string
+          row_number: number
+          video_idea_id: string | null
+        }
+        Insert: {
+          after_data: Json
+          before_data?: Json | null
+          created_at?: string
+          id?: string
+          import_history_id: string
+          operation: string
+          row_number: number
+          video_idea_id?: string | null
+        }
+        Update: {
+          after_data?: Json
+          before_data?: Json | null
+          created_at?: string
+          id?: string
+          import_history_id?: string
+          operation?: string
+          row_number?: number
+          video_idea_id?: string | null
         }
         Relationships: []
       }
@@ -2736,11 +2784,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "video_metrics_logs_video_id_fkey"
-            columns: ["video_id"]
-            isOneToOne: false
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
+            foreignKeyName: 'video_metrics_logs_video_id_fkey',
+            columns: ['video_id'],
+            isOneToOne: false,
+            referencedRelation: 'videos',
+            referencedColumns: ['id'],
           },
         ]
       }
@@ -2938,6 +2986,16 @@ export type Database = {
         }[]
       }
       has_any_role: { Args: { required_roles: string[] }; Returns: boolean }
+      import_video_ideas: {
+        Args: {
+          p_failure_count?: number
+          p_file_name: string
+          p_rows: Json
+          p_skipped_count?: number
+          p_total_rows: number
+        }
+        Returns: Json
+      }
       invalidate_import_history: {
         Args: { target_id: string }
         Returns: boolean
@@ -2953,6 +3011,10 @@ export type Database = {
       refresh_event_phase_completion: {
         Args: { target_phase_id: string }
         Returns: undefined
+      }
+      rollback_video_idea_import: {
+        Args: { target_import_id: string }
+        Returns: Json
       }
       run_deadline_checks: { Args: never; Returns: Json }
       show_limit: { Args: never; Returns: number }

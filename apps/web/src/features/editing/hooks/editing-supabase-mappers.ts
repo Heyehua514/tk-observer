@@ -84,8 +84,12 @@ export function mapSupabaseVideoArchiveRecord(
       completionRate: Number(record.completion_rate || 0),
       conversionGmvCents: Number(record.conversion_gmv_cents || 0),
       orderCount: Number(record.order_count || 0),
-      externalUrl: record.external_url ? String(record.external_url) : undefined,
-      videoTaskId: record.video_task_id ? String(record.video_task_id) : undefined,
+      externalUrl: record.external_url
+        ? String(record.external_url)
+        : undefined,
+      videoTaskId: record.video_task_id
+        ? String(record.video_task_id)
+        : undefined,
     },
   ])[0]
 }
@@ -201,6 +205,10 @@ export function mapSupabaseImportHistory(
     totalRows: Number(record.total_rows || 0),
     newCount: Number(record.new_count || 0),
     updatedCount: Number(record.updated_count || 0),
+    skippedCount: Number(record.skipped_count || 0),
+    failureCount: Number(record.failure_count || 0),
+    status: record.status === 'rolled_back' ? 'rolled_back' : 'completed',
+    rolledBackAt: record.rolled_back_at ? String(record.rolled_back_at) : null,
     snapshot: {
       totalVideos: Number(
         (record.snapshot as { totalVideos?: number })?.totalVideos || 0

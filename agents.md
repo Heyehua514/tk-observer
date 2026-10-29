@@ -270,3 +270,4 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - 严禁在 Windows/PowerShell 工作区显式将执行 shell 指定为 `bash`，必须保持 `powershell`，否则 `Get-Content`、`Select-String` 等原生命令会被错误解析并污染排查链路。
 - 严禁用 `Remove-Item` 清理文件名字面量包含 `$null` 的目标；必须先核对绝对路径，再使用 `[System.IO.File]::Delete()` 定点删除，避免命令解析与安全策略误拦截。
 - 严禁将含中文的内容通过 PowerShell 5 here-string 管道传给外部 `python`；外部进程输入可能按本地代码页转码为问号，必须用 `[System.IO.File]::WriteAllText()` 原生写入 UTF-8。
+- 严禁用 `--browser.enabled=false` 关闭 Web 浏览器测试环境；项目全量前端验证必须执行 `pnpm --dir apps/web test`，避免 DOM 与浏览器全局缺失造成批量假失败。

@@ -122,6 +122,10 @@ export function mapImportHistory(record: RecordModel): ImportHistory {
     totalRows: Number(record.total_rows || 0),
     newCount: Number(record.new_count || 0),
     updatedCount: Number(record.updated_count || 0),
+    skippedCount: Number(record.skipped_count || 0),
+    failureCount: Number(record.failure_count || 0),
+    status: record.status === 'rolled_back' ? 'rolled_back' : 'completed',
+    rolledBackAt: record.rolled_back_at ? String(record.rolled_back_at) : null,
     snapshot: metricSnapshot(record.snapshot),
     created: String(record.created || ''),
   }

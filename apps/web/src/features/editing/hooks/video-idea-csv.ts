@@ -1,4 +1,4 @@
-/** 爆款选题 CSV 模板、解析与导出工具；使用 Papa Parse 处理引号、逗号和换行。 */
+/** 爆款选题 CSV 模板、预检、失败行导出与导出工具；使用 Papa Parse 处理引号、逗号和换行。 */
 import { z } from 'zod'
 import Papa from 'papaparse'
 import {
@@ -9,19 +9,31 @@ import {
 } from '../constants'
 import type { VideoIdea, VideoIdeaInput } from '../types'
 
+export type VideoIdeaCsvFailure = {
+  rowNumber: number
+  reason: string
+  raw: Record<string, string>
+}
+
 export type VideoIdeaCsvPreflight = {
   rows: VideoIdeaInput[]
-  duplicateKeys: string[]
+  totalRows: number
+  validCount: number
+  skippedCount: number
+  failedCount: number
+  failures: VideoIdeaCsvFailure[]
 }
 
 export function formatImportFeedback(result: {
   newCount: number
   updatedCount?: number
   skippedCount: number
+  failureCount?: number
 }) {
   const parts = [`新增 ${result.newCount} 条`]
   if (result.updatedCount) parts.push(`更新 ${result.updatedCount} 条`)
   if (result.skippedCount) parts.push(`跳过 ${result.skippedCount} 条重复数据`)
+  if (result.failureCount) parts.push(`失败 ${result.failureCount} 条`)
   return `导入完成：${parts.join('，')}。请人工确认记录后再继续后续操作。`
 }
 
@@ -67,12 +79,97 @@ function normalizeDate(value: string) {
     .padStart(2, '0')}-${day.toString().padStart(2, '0')}`
 }
 
-export async function parseVideoIdeaCsv(file: File): Promise<VideoIdeaInput[]> {
+function parseCsvRow(raw: Record<string, string>): VideoIdeaInput {
+  const row = csvRowSchema.safeParse(raw)
+  if (!row.success) {
+    throw new Error(row.error.issues[0]?.message || '字段无效')
+  }
+  const value = row.data
+  if (!videoAccounts.includes(value.账号 as (typeof videoAccounts)[number])) {
+    throw new Error('账号不在允许名单中')
+  }
+  if (!videoTypes.includes(value.视频类型 as (typeof videoTypes)[number])) {
+    throw new Error('视频类型不在允许名单中')
+  }
+  const account = value.账号 as VideoIdeaInput['account']
+  const videoType = value.视频类型 as VideoIdeaInput['videoType']
+  if (!accountVideoTypes[account].includes(videoType)) {
+    throw new Error('该账号不支持此视频类型')
+  }
+  const completionRate = integer(value.完播率, '完播率')
+  if (completionRate > 100) throw new Error('完播率不能超过 100')
+  return {
+    account,
+    videoType,
+    title: value.标题.trim(),
+    description: value.内容简述.trim(),
+    sourceUrl: '',
+    tags: value.标签.trim(),
+    publishDate: normalizeDate(value.发布日期),
+    views: integer(value.播放量, '播放量'),
+    likes: integer(value.点赞, '点赞'),
+    comments: integer(value.评论, '评论'),
+    shares: integer(value.转发, '转发'),
+    completionRate,
+    followerGain: integer(value.涨粉, '涨粉'),
+  }
+}
+
+export function preflightVideoIdeaCsv(
+  rawRows: readonly Record<string, string>[]
+): VideoIdeaCsvPreflight {
+  const rows: VideoIdeaInput[] = []
+  const failures: VideoIdeaCsvFailure[] = []
+  const seen = new Set<string>()
+  let skippedCount = 0
+
+  rawRows.forEach((raw, index) => {
+    try {
+      const row = parseCsvRow(raw)
+      const key = `${row.title}\u0000${row.publishDate}`
+      if (seen.has(key)) {
+        skippedCount += 1
+        return
+      }
+      seen.add(key)
+      rows.push(row)
+    } catch (error) {
+      failures.push({
+        rowNumber: index + 2,
+        reason: error instanceof Error ? error.message : '字段无效',
+        raw: { ...raw },
+      })
+    }
+  })
+
+  return {
+    rows,
+    totalRows: rawRows.length,
+    validCount: rows.length,
+    skippedCount,
+    failedCount: failures.length,
+    failures,
+  }
+}
+
+export function isVideoIdeaCsvPreflightImportable(
+  result: VideoIdeaCsvPreflight
+) {
+  return (
+    result.validCount > 0 &&
+    result.totalRows ===
+      result.validCount + result.skippedCount + result.failedCount
+  )
+}
+
+export async function parseVideoIdeaCsv(
+  file: File
+): Promise<VideoIdeaCsvPreflight> {
   const text = await file.text()
   return parseVideoIdeaCsvText(text)
 }
 
-export function parseVideoIdeaCsvText(text: string): VideoIdeaInput[] {
+export function parseVideoIdeaCsvText(text: string): VideoIdeaCsvPreflight {
   const parsed = Papa.parse<Record<string, string>>(text, {
     header: true,
     skipEmptyLines: true,
@@ -88,60 +185,21 @@ export function parseVideoIdeaCsvText(text: string): VideoIdeaInput[] {
     throw new Error(`CSV 缺少必需列：${missingHeaders.join('、')}`)
   }
   if (!parsed.data.length) throw new Error('CSV 没有可导入的数据行')
-  return parsed.data.map((raw, index) => {
-    const row = csvRowSchema.safeParse(raw)
-    if (!row.success) {
-      throw new Error(
-        `第 ${index + 2} 行：${row.error.issues[0]?.message || '字段无效'}`
-      )
-    }
-    const value = row.data
-    if (!videoAccounts.includes(value.账号 as (typeof videoAccounts)[number])) {
-      throw new Error(`第 ${index + 2} 行：账号不在允许名单中`)
-    }
-    if (!videoTypes.includes(value.视频类型 as (typeof videoTypes)[number])) {
-      throw new Error(`第 ${index + 2} 行：视频类型不在允许名单中`)
-    }
-    const account = value.账号 as VideoIdeaInput['account']
-    const videoType = value.视频类型 as VideoIdeaInput['videoType']
-    if (!accountVideoTypes[account].includes(videoType)) {
-      throw new Error(`第 ${index + 2} 行：该账号不支持此视频类型`)
-    }
-    const completionRate = integer(value.完播率, '完播率')
-    if (completionRate > 100)
-      throw new Error(`第 ${index + 2} 行：完播率不能超过 100`)
-    return {
-      account,
-      videoType,
-      title: value.标题.trim(),
-      description: value.内容简述.trim(),
-      sourceUrl: '',
-      tags: value.标签.trim(),
-      publishDate: normalizeDate(value.发布日期),
-      views: integer(value.播放量, '播放量'),
-      likes: integer(value.点赞, '点赞'),
-      comments: integer(value.评论, '评论'),
-      shares: integer(value.转发, '转发'),
-      completionRate,
-      followerGain: integer(value.涨粉, '涨粉'),
-    }
-  })
+  return preflightVideoIdeaCsv(parsed.data)
 }
 
-export function preflightVideoIdeaCsv(
-  rows: VideoIdeaInput[]
-): VideoIdeaCsvPreflight {
-  const seen = new Set<string>()
-  const duplicateKeys = new Set<string>()
-  for (const row of rows) {
-    const key = `${row.title}\u0000${row.publishDate}`
-    if (seen.has(key)) duplicateKeys.add(`${row.title}（${row.publishDate}）`)
-    seen.add(key)
-  }
-  if (duplicateKeys.size) {
-    throw new Error(`CSV 存在重复视频：${[...duplicateKeys].join('、')}`)
-  }
-  return { rows, duplicateKeys: [] }
+export function exportVideoIdeaCsvFailures(
+  failures: readonly VideoIdeaCsvFailure[]
+) {
+  const columns = ['行号', '失败原因', ...csvTemplateHeaders]
+  const rows = failures.map(({ rowNumber, reason, raw }) => ({
+    行号: rowNumber,
+    失败原因: reason,
+    ...Object.fromEntries(
+      csvTemplateHeaders.map((header) => [header, raw[header] || ''])
+    ),
+  }))
+  return `\ufeff${Papa.unparse(rows, { columns })}`
 }
 
 export function exportVideoIdeasCsv(ideas: readonly VideoIdea[]) {

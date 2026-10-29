@@ -14,8 +14,20 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { getDataProvider } from '@/lib/data-provider'
 import { formatBeijingTime } from '@/lib/format'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
@@ -26,6 +38,7 @@ import {
 } from '@/components/ui/dialog'
 import { EmptyState } from '@/components/shared/empty-state'
 import { useImportHistory } from '../hooks/use-import-history'
+import { useRollbackVideoIdeaImport } from '../hooks/use-rollback-video-idea-import'
 import { useVideoIdeaAnalytics } from '../hooks/use-video-idea-analytics'
 import type { ImportHistory, MetricSnapshot } from '../types'
 import { editingDataErrorDescription } from './editing-empty-copy'
@@ -87,6 +100,23 @@ const snapshotLabels: Record<keyof MetricSnapshot, string> = {
 
 function ImportHistoryTimeline({ history }: { history: ImportHistory[] }) {
   const [selected, setSelected] = useState<ImportHistory | null>(null)
+  const [rollbackTarget, setRollbackTarget] = useState<ImportHistory | null>(
+    null
+  )
+  const rollback = useRollbackVideoIdeaImport()
+  const canRollback = getDataProvider() === 'supabase'
+
+  const confirmRollback = async () => {
+    if (!rollbackTarget) return
+    try {
+      await rollback.mutateAsync(rollbackTarget.id)
+      setRollbackTarget(null)
+      setSelected(null)
+    } catch {
+      // The mutation hook reports the database conflict without closing the dialog.
+    }
+  }
+
   return (
     <>
       <Card className='shadow-none'>
@@ -101,24 +131,53 @@ function ImportHistoryTimeline({ history }: { history: ImportHistory[] }) {
           ) : (
             <div className='space-y-3'>
               {history.map((item) => (
-                <button
+                <div
                   key={item.id}
-                  className='flex w-full items-center justify-between gap-4 border-b pb-3 text-left last:border-0 last:pb-0'
-                  onClick={() => setSelected(item)}
+                  className='flex flex-col gap-3 border-b pb-3 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between'
                 >
-                  <div>
-                    <div className='font-medium'>{item.fileName}</div>
+                  <button
+                    className='min-w-0 flex-1 text-left'
+                    onClick={() => setSelected(item)}
+                  >
+                    <div className='truncate font-medium'>{item.fileName}</div>
                     <div className='mt-1 text-xs text-muted-foreground'>
                       {formatBeijingTime(item.importedAt)}
                     </div>
-                  </div>
-                  <div className='text-right text-sm'>
-                    <div>新增 {item.newCount} 条</div>
-                    <div className='text-xs text-muted-foreground'>
+                  </button>
+                  <div className='flex flex-wrap items-center gap-2 text-right text-sm'>
+                    <Badge
+                      variant={
+                        item.status === 'rolled_back' ? 'secondary' : 'default'
+                      }
+                    >
+                      {item.status === 'rolled_back' ? '已撤销' : '已完成'}
+                    </Badge>
+                    <span>新增 {item.newCount} 条</span>
+                    {item.updatedCount > 0 && (
+                      <span>更新 {item.updatedCount} 条</span>
+                    )}
+                    {item.skippedCount > 0 && (
+                      <span>跳过 {item.skippedCount} 条</span>
+                    )}
+                    {item.failureCount > 0 && (
+                      <span className='text-destructive'>
+                        失败 {item.failureCount} 条
+                      </span>
+                    )}
+                    <span className='text-xs text-muted-foreground'>
                       共 {item.totalRows} 行
-                    </div>
+                    </span>
+                    {item.status === 'completed' && canRollback && (
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setRollbackTarget(item)}
+                      >
+                        整批撤销
+                      </Button>
+                    )}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -131,28 +190,95 @@ function ImportHistoryTimeline({ history }: { history: ImportHistory[] }) {
         <DialogContent className='sm:max-w-lg'>
           <DialogHeader>
             <DialogTitle>{selected?.fileName}</DialogTitle>
-            <DialogDescription>这次导入带来的指标快照</DialogDescription>
+            <DialogDescription>这次导入的状态与指标快照</DialogDescription>
           </DialogHeader>
           {selected && (
-            <dl className='grid grid-cols-2 gap-3 text-sm'>
-              {Object.entries(selected.snapshot).map(([key, value]) => (
-                <div key={key}>
-                  <dt className='text-muted-foreground'>
-                    {snapshotLabels[key as keyof MetricSnapshot]}
-                  </dt>
-                  <dd className='font-medium'>
-                    {typeof value === 'number' ? value.toLocaleString() : value}
-                  </dd>
+            <div className='space-y-4'>
+              <div className='grid grid-cols-2 gap-3 rounded-lg border p-4 text-sm sm:grid-cols-3'>
+                <div>
+                  <div className='text-muted-foreground'>状态</div>
+                  <div className='font-medium'>
+                    {selected.status === 'rolled_back' ? '已撤销' : '已完成'}
+                  </div>
                 </div>
-              ))}
-            </dl>
+                <div>
+                  <div className='text-muted-foreground'>总行数</div>
+                  <div className='font-medium'>{selected.totalRows}</div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>新增 / 更新</div>
+                  <div className='font-medium'>
+                    {selected.newCount} / {selected.updatedCount}
+                  </div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>重复跳过</div>
+                  <div className='font-medium'>{selected.skippedCount}</div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>校验失败</div>
+                  <div className='font-medium'>{selected.failureCount}</div>
+                </div>
+                {selected.rolledBackAt && (
+                  <div>
+                    <div className='text-muted-foreground'>撤销时间</div>
+                    <div className='font-medium'>
+                      {formatBeijingTime(selected.rolledBackAt)}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <dl className='grid grid-cols-2 gap-3 text-sm'>
+                {Object.entries(selected.snapshot).map(([key, value]) => (
+                  <div key={key}>
+                    <dt className='text-muted-foreground'>
+                      {snapshotLabels[key as keyof MetricSnapshot]}
+                    </dt>
+                    <dd className='font-medium'>
+                      {typeof value === 'number'
+                        ? value.toLocaleString()
+                        : value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           )}
         </DialogContent>
       </Dialog>
+      <AlertDialog
+        open={Boolean(rollbackTarget)}
+        onOpenChange={(open) => !open && setRollbackTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认整批撤销这次导入？</AlertDialogTitle>
+            <AlertDialogDescription>
+              将删除本批次新增的 {rollbackTarget?.newCount || 0}{' '}
+              条记录，并恢复本批次更新的 {rollbackTarget?.updatedCount || 0}{' '}
+              条记录导入前数据。若批次内记录在导入后被修改或删除，系统会拒绝撤销且不会产生部分回滚。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={rollback.isPending}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-destructive text-white hover:bg-destructive/90'
+              disabled={rollback.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                void confirmRollback()
+              }}
+            >
+              {rollback.isPending ? '撤销中...' : '确认撤销'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
-
 export function IdeaAnalytics() {
   const analytics = useVideoIdeaAnalytics()
   const history = useImportHistory()

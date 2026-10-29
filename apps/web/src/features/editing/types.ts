@@ -13,7 +13,8 @@ export type VideoType =
   | '饭局交流'
   | '饭局感受'
 
-export type EditingSection = 'ideas' | 'competitors' | 'trends' | 'production' | 'autocut'
+export type EditingSection =
+  'ideas' | 'competitors' | 'trends' | 'production' | 'autocut'
 export type IdeaTab = 'list' | 'analytics'
 export type ViralFilter = 'all' | 'viral' | 'normal'
 export type VideoIdeaSort = '-views' | '-completion_rate' | '-follower_gain'
@@ -157,6 +158,10 @@ export type ImportHistory = {
   totalRows: number
   newCount: number
   updatedCount: number
+  skippedCount: number
+  failureCount: number
+  status: 'completed' | 'rolled_back'
+  rolledBackAt: string | null
   snapshot: MetricSnapshot
   created: string
 }

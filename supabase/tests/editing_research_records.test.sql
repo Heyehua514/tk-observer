@@ -20,12 +20,12 @@ select trigger_is('public', 'video_ideas', 'video_ideas_set_updated_at', 'public
 select trigger_is('public', 'competitor_accounts', 'competitor_accounts_set_updated_at', 'public', 'set_updated_at');
 select trigger_is('public', 'import_history', 'import_history_enforce_immutable', 'public', 'enforce_import_history_immutable');
 select policies_are('public', 'video_ideas', array[
-  'editing collaborators can read video ideas', 'editing collaborators can create video ideas',
-  'editing collaborators can update video ideas', 'owners can hard delete video ideas'
+  'video data importers can read video ideas', 'video data importers can create video ideas',
+  'video data importers can update video ideas', 'owners can hard delete video ideas'
 ]);
 select policies_are('public', 'import_history', array[
-  'editing collaborators can read import history', 'editing collaborators can create import history',
-  'editing collaborators can invalidate import history', 'owners can hard delete import history'
+  'video data importers can read import history', 'video data importers can create import history',
+  'video data importers can invalidate import history', 'owners can hard delete import history'
 ]);
 select policies_are('public', 'competitor_accounts', array[
   'competitor collaborators can read competitor accounts', 'competitor collaborators can create competitor accounts',
@@ -66,13 +66,14 @@ select lives_ok($$
   ) values ('跨境TK磊哥', '口播', '研究测试选题', now(), 1000, 50)
 $$, 'editing can create video ideas');
 select lives_ok($$
-  insert into public.import_history (
-    id, imported_at, file_name, total_rows, new_count, updated_count, snapshot
-  ) values (
-    '61000000-0000-0000-0000-000000000001', now(), 'ideas.csv', 1, 1, 0,
-    '{"totalVideos":1}'::jsonb
+  select public.import_video_ideas(
+    'ideas.csv',
+    '[{"account":"跨境TK磊哥","video_type":"口播","title":"导入测试选题","publish_date":"2026-08-24T00:00:00Z","views":1000,"completion_rate":50}]'::jsonb,
+    1,
+    0,
+    0
   )
-$$, 'editing can create import history');
+$$, 'editing can import video ideas atomically');
 select lives_ok($$
   insert into public.competitor_accounts (
     id, name, platform, category, follower_count, avg_views
@@ -117,11 +118,14 @@ select is((select count(*) from public.competitor_accounts), 0::bigint, 'market 
 
 select set_config('request.jwt.claims', '{"sub":"60000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
 select throws_ok($$
-  update public.import_history set file_name = 'rewritten.csv'
-  where id = '61000000-0000-0000-0000-000000000001'
-$$, '42501', 'import history is immutable', 'import history payload cannot be rewritten');
+  insert into public.import_history (
+    imported_at, file_name, total_rows, new_count, snapshot
+  ) values (now(), 'forged.csv', 1, 1, '{}'::jsonb)
+$$, '42501', 'permission denied for table import_history', 'authenticated cannot forge import history');
 select lives_ok($$
-  select public.invalidate_import_history('61000000-0000-0000-0000-000000000001')
+  select public.invalidate_import_history((
+    select id from public.import_history where file_name = 'ideas.csv'
+  ))
 $$, 'editing can invalidate import history');
 
 select * from finish();

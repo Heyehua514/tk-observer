@@ -24,3 +24,10 @@
 - 影响：新增迁移 `20261028000100_member_invitation_transition_guard.sql` 与 18 条 pgTAP 断言无法在本地 PostgreSQL 实例验证；静态测试、Web 全量测试、类型检查、RLS 与 Schema 审计已通过。
 - 建议：安装并启用 Docker Desktop + WSL2 后执行 `pnpm supabase:start`，再执行 `pnpm supabase:test`。
 - 处置：已按三击熔断记录并旁路跳过，不将数据库实跑标记为通过。
+
+## 2026-10-29 [BLOCKED] Supabase 选题导入恢复测试无法实跑
+
+- 现象：`pnpm supabase:test` 返回 `LegacyDbConnectError`，无法连接 `127.0.0.1:54322`，返回 `ECONNREFUSED`。
+- 影响：新增迁移 `20261029000100_video_idea_import_recovery.sql` 与 27 条 pgTAP 断言无法在本地 PostgreSQL 实例验证；Web 全量测试、类型检查、RLS、Schema 与 PocketBase freeze 审计已通过。
+- 建议：启用 Docker Desktop + WSL2 后执行 `pnpm supabase:start`，再执行 `pnpm supabase:test` 完成数据库实跑与撤销并发验收。
+- 处置：已按三击熔断记录并旁路继续，不将数据库实跑标记为通过。

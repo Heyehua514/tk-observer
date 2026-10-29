@@ -37,6 +37,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -71,9 +79,11 @@ import {
   useVideoIdeas,
 } from '../hooks/use-video-ideas'
 import {
-  parseVideoIdeaCsv,
-  preflightVideoIdeaCsv,
+  exportVideoIdeaCsvFailures,
   exportVideoIdeasCsv,
+  isVideoIdeaCsvPreflightImportable,
+  parseVideoIdeaCsv,
+  type VideoIdeaCsvPreflight,
 } from '../hooks/video-idea-csv'
 import type { VideoIdea, VideoIdeaListParams } from '../types'
 import { editingDataErrorDescription } from './editing-empty-copy'
@@ -134,6 +144,10 @@ export function VideoIdeaTable({
   const [selection, setSelection] = useState<Record<string, boolean>>({})
   const [detail, setDetail] = useState<VideoIdea | null>(null)
   const [deleteIds, setDeleteIds] = useState<string[]>([])
+  const [pendingImport, setPendingImport] = useState<{
+    fileName: string
+    preflight: VideoIdeaCsvPreflight
+  } | null>(null)
 
   const columns = useMemo<ColumnDef<VideoIdea>[]>(
     () => [
@@ -290,11 +304,39 @@ export function VideoIdeaTable({
     event.target.value = ''
     if (!file) return
     try {
-      const rows = preflightVideoIdeaCsv(await parseVideoIdeaCsv(file)).rows
-      importIdeas.mutate({ fileName: file.name, rows })
+      const preflight = await parseVideoIdeaCsv(file)
+      if (!isVideoIdeaCsvPreflightImportable(preflight)) {
+        toast.error('CSV 没有可导入的有效数据，请下载失败报告后修正文件')
+        return
+      }
+      setPendingImport({ fileName: file.name, preflight })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'CSV 导入失败')
     }
+  }
+  const confirmImport = async () => {
+    if (!pendingImport) return
+    const { fileName, preflight } = pendingImport
+    try {
+      await importIdeas.mutateAsync({
+        fileName,
+        rows: preflight.rows,
+        totalRows: preflight.totalRows,
+        skippedCount: preflight.skippedCount,
+        failureCount: preflight.failedCount,
+      })
+      setPendingImport(null)
+    } catch {
+      // Mutation state renders the actionable error while keeping the preview open.
+    }
+  }
+  const downloadFailures = () => {
+    if (!pendingImport?.preflight.failures.length) return
+    const baseName = pendingImport.fileName.replace(/\.csv$/iu, '')
+    downloadCsv(
+      `${baseName}-失败行.csv`,
+      exportVideoIdeaCsvFailures(pendingImport.preflight.failures)
+    )
   }
   const handleExport = async () => {
     try {
@@ -582,6 +624,100 @@ export function VideoIdeaTable({
         open={Boolean(detail)}
         onOpenChange={(open) => !open && setDetail(null)}
       />
+      <Dialog
+        open={Boolean(pendingImport)}
+        onOpenChange={(open) => {
+          if (!open && !importIdeas.isPending) setPendingImport(null)
+        }}
+      >
+        <DialogContent className='sm:max-w-xl'>
+          <DialogHeader>
+            <DialogTitle>确认导入 CSV</DialogTitle>
+            <DialogDescription>
+              预检完成。请确认有效、重复跳过和失败行数量后执行原子导入。
+            </DialogDescription>
+          </DialogHeader>
+          {pendingImport && (
+            <div className='space-y-4'>
+              <div className='grid grid-cols-2 gap-3 rounded-lg border p-4 text-sm sm:grid-cols-4'>
+                <div>
+                  <div className='text-muted-foreground'>总行数</div>
+                  <div className='text-xl font-semibold'>
+                    {pendingImport.preflight.totalRows}
+                  </div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>可导入</div>
+                  <div className='text-xl font-semibold'>
+                    {pendingImport.preflight.validCount}
+                  </div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>重复跳过</div>
+                  <div className='text-xl font-semibold'>
+                    {pendingImport.preflight.skippedCount}
+                  </div>
+                </div>
+                <div>
+                  <div className='text-muted-foreground'>校验失败</div>
+                  <div className='text-xl font-semibold text-destructive'>
+                    {pendingImport.preflight.failedCount}
+                  </div>
+                </div>
+              </div>
+              {pendingImport.preflight.failures.length > 0 && (
+                <div className='space-y-2'>
+                  <div className='text-sm font-medium'>失败行预览</div>
+                  <div className='max-h-40 space-y-1 overflow-y-auto rounded-lg bg-muted p-3 text-xs'>
+                    {pendingImport.preflight.failures
+                      .slice(0, 8)
+                      .map((failure) => (
+                        <div key={failure.rowNumber}>
+                          第 {failure.rowNumber} 行：{failure.reason}
+                        </div>
+                      ))}
+                    {pendingImport.preflight.failures.length > 8 && (
+                      <div>
+                        另有 {pendingImport.preflight.failures.length - 8}{' '}
+                        条失败行
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {importIdeas.isError && (
+                <p className='text-sm text-destructive'>
+                  导入失败：
+                  {importIdeas.error instanceof Error
+                    ? importIdeas.error.message
+                    : '请稍后重试'}
+                </p>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            {Boolean(pendingImport?.preflight.failures.length) && (
+              <Button variant='outline' onClick={downloadFailures}>
+                <Download className='size-4' />
+                下载失败行
+              </Button>
+            )}
+            <Button
+              variant='outline'
+              disabled={importIdeas.isPending}
+              onClick={() => setPendingImport(null)}
+            >
+              取消
+            </Button>
+            <Button
+              disabled={importIdeas.isPending}
+              onClick={() => void confirmImport()}
+            >
+              {importIdeas.isPending ? '导入中...' : '确认导入'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <AlertDialog
         open={deleteIds.length > 0}
         onOpenChange={(open) => !open && setDeleteIds([])}

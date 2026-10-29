@@ -1,4 +1,4 @@
-/** CSV 导入 mutation：同标题同发布日期更新指标，新视频新增，并写入 import_history 快照。 */
+/** CSV 导入 mutation：Supabase 由单次 RPC 原子写入，PocketBase 保留兼容回退。 */
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
@@ -12,11 +12,19 @@ import {
 } from './editing-mappers'
 import {
   mapSupabaseImportHistory,
-  mapSupabaseVideoIdeaSummary,
   serializeSupabaseVideoIdea,
 } from './editing-supabase-mappers'
+import { importHistoryKeys } from './use-import-history'
 import { videoIdeaKeys } from './use-video-ideas'
 import { formatImportFeedback } from './video-idea-csv'
+
+export type ImportVideoIdeasInput = {
+  fileName: string
+  rows: VideoIdeaInput[]
+  totalRows?: number
+  skippedCount?: number
+  failureCount?: number
+}
 
 export function useImportVideoIdeas() {
   const queryClient = useQueryClient()
@@ -24,67 +32,37 @@ export function useImportVideoIdeas() {
     mutationFn: async ({
       fileName,
       rows,
-    }: {
-      fileName: string
-      rows: VideoIdeaInput[]
-    }) => {
+      totalRows = rows.length,
+      skippedCount = 0,
+      failureCount = 0,
+    }: ImportVideoIdeasInput) => {
       if (getDataProvider() === 'supabase') {
-        const supabase = getSupabaseClient()
-        let newCount = 0
-        let updatedCount = 0
-        for (const row of rows) {
-          const { data: existing, error: existingError } = await supabase
-            .from('video_ideas')
-            .select('id')
-            .eq('title', row.title)
-            .gte('publish_date', `${row.publishDate} 00:00:00.000Z`)
-            .lte('publish_date', `${row.publishDate} 23:59:59.999Z`)
-            .maybeSingle()
-          if (existingError) throw existingError
-          const mutation = existing
-            ? supabase
-                .from('video_ideas')
-                .update(serializeSupabaseVideoIdea(row))
-                .eq('id', existing.id)
-            : supabase
-                .from('video_ideas')
-                .insert(serializeSupabaseVideoIdea(row))
-          const { error } = await mutation
-          if (error) throw error
-          if (existing) updatedCount += 1
-          else newCount += 1
+        const { data, error } = await getSupabaseClient().rpc(
+          'import_video_ideas',
+          {
+            p_file_name: fileName,
+            p_rows: rows.map(serializeSupabaseVideoIdea),
+            p_total_rows: totalRows,
+            p_skipped_count: skippedCount,
+            p_failure_count: failureCount,
+          }
+        )
+        if (error) throw error
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          throw new Error('导入完成但未返回历史记录')
         }
-        const summaryResult = await supabase
-          .from('video_idea_summary')
-          .select('*')
-          .maybeSingle()
-        if (summaryResult.error) throw summaryResult.error
-        const historyResult = await supabase
-          .from('import_history')
-          .insert({
-            imported_at: new Date().toISOString(),
-            file_name: fileName,
-            total_rows: rows.length,
-            new_count: newCount,
-            updated_count: updatedCount,
-            snapshot: summaryResult.data
-              ? mapSupabaseVideoIdeaSummary(summaryResult.data)
-              : mapSupabaseVideoIdeaSummary({
-                  total_videos: 0,
-                  monthly_new: 0,
-                  viral_count: 0,
-                  viral_rate: 0,
-                  average_completion_rate: 0,
-                  average_views: 0,
-                  total_follower_gain: 0,
-                }),
-          })
-          .select('*')
-          .single()
-        if (historyResult.error) throw historyResult.error
-        const history = mapSupabaseImportHistory(historyResult.data)
-        return { history, newCount, updatedCount, skippedCount: 0 }
+        const history = mapSupabaseImportHistory(
+          data as Record<string, unknown>
+        )
+        return {
+          history,
+          newCount: history.newCount,
+          updatedCount: history.updatedCount,
+          skippedCount: history.skippedCount,
+          failureCount: history.failureCount,
+        }
       }
+
       let newCount = 0
       let updatedCount = 0
       for (const row of rows) {
@@ -114,22 +92,33 @@ export function useImportVideoIdeas() {
       const summary = await pb
         .collection('video_idea_summary')
         .getOne('videoideasum001')
-      const snapshot = mapVideoIdeaSummary(summary)
-      const history = mapImportHistory(
+      const savedHistory = mapImportHistory(
         await pb.collection('import_history').create({
           imported_at: new Date().toISOString(),
           file_name: fileName,
-          total_rows: rows.length,
+          total_rows: totalRows,
           new_count: newCount,
           updated_count: updatedCount,
-          snapshot,
+          snapshot: mapVideoIdeaSummary(summary),
         })
       )
-      return { history, newCount, updatedCount, skippedCount: 0 }
+      const history = {
+        ...savedHistory,
+        totalRows,
+        skippedCount,
+        failureCount,
+      }
+      return {
+        history,
+        newCount,
+        updatedCount,
+        skippedCount,
+        failureCount,
+      }
     },
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: videoIdeaKeys.all })
-      void queryClient.invalidateQueries({ queryKey: ['import-history'] })
+      void queryClient.invalidateQueries({ queryKey: importHistoryKeys.all })
       toast.success(formatImportFeedback(result))
     },
   })
