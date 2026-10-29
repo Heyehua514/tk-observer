@@ -1,4 +1,5 @@
 /** 设计工作台主体：素材库、设计任务看板与静态品牌规范。 */
+import { useState } from 'react'
 import {
   BriefcaseBusiness,
   ClipboardCheck,
@@ -14,13 +15,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { AiAssistantPanel } from '@/features/shared-ai'
+import { BrandGuidelinesBoard } from '../brand/brand-guidelines-board'
 import { useDesignAssets } from '../hooks/use-design-assets'
 import { DesignRequirements } from '../requirements'
 import { useDesignRequirements } from '../requirements/use-design-requirements'
 import { DesignTasksBoard } from '../tasks'
 import type { DesignAssetListParams } from '../types'
 import { DesignAssetGrid } from './design-asset-grid'
-import { BrandGuidelinesBoard } from '../brand/brand-guidelines-board'
 
 const brandAssetParams: DesignAssetListParams = {
   query: '',
@@ -28,6 +29,8 @@ const brandAssetParams: DesignAssetListParams = {
   region: 'all',
   sort: '-updated',
 }
+
+type DesignTab = 'requirements' | 'assets' | 'tasks' | 'brand'
 
 export function DesignWorkbench({
   params,
@@ -38,6 +41,7 @@ export function DesignWorkbench({
 }) {
   const role = useAuthStore((state) => state.user?.role)
   const canDesign = role === 'design' || role === 'boss'
+  const [selectedTab, setSelectedTab] = useState<DesignTab>('requirements')
   const brandAssets = useDesignAssets(brandAssetParams)
   const brandRequirements = useDesignRequirements('all')
   const assetCount = brandAssets.data?.length || 0
@@ -47,13 +51,29 @@ export function DesignWorkbench({
   const deliveredRequirementCount =
     brandRequirements.data?.filter((item) => item.status === 'delivered')
       .length || 0
+
+  const hasDeepLinkedAsset =
+    canDesign &&
+    params.recordType === 'design_asset' &&
+    Boolean(params.recordId)
+  const activeTab: DesignTab = hasDeepLinkedAsset ? 'assets' : selectedTab
+
   return (
     <div className='space-y-6'>
       <PageHeader
         title='设计工作台'
         description='集中维护业务素材、设计任务和品牌视觉规范。'
       />
-      <Tabs defaultValue='requirements'>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          const nextTab = value as DesignTab
+          setSelectedTab(nextTab)
+          if (nextTab !== 'assets' && hasDeepLinkedAsset) {
+            onParamsChange({ recordType: undefined, recordId: undefined })
+          }
+        }}
+      >
         <TabsList>
           <TabsTrigger value='requirements'>
             <BriefcaseBusiness className='size-4' />

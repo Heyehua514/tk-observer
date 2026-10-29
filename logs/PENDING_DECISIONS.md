@@ -31,3 +31,17 @@
 - 影响：新增迁移 `20261029000100_video_idea_import_recovery.sql` 与 27 条 pgTAP 断言无法在本地 PostgreSQL 实例验证；Web 全量测试、类型检查、RLS、Schema 与 PocketBase freeze 审计已通过。
 - 建议：启用 Docker Desktop + WSL2 后执行 `pnpm supabase:start`，再执行 `pnpm supabase:test` 完成数据库实跑与撤销并发验收。
 - 处置：已按三击熔断记录并旁路继续，不将数据库实跑标记为通过。
+
+## 2026-10-29 [BLOCKED] Supabase 设计审核通知测试无法实跑
+
+- 现象：`pnpm supabase:test` 再次返回 `LegacyDbConnectError`，无法连接 `127.0.0.1:54322`，提示需启动 Docker 与 Supabase。
+- 影响：新增迁移 `20261029000200_design_review_result_notification.sql` 与 14 条 pgTAP 断言（常规 10 条 + eval 4 条）无法在本地 PostgreSQL 实例验证；Web 全量测试、类型检查、ESLint、RLS、Schema 与 PocketBase freeze 审计已通过。
+- 建议：启用 Docker Desktop + WSL2 后执行 `pnpm supabase:start`，再执行 `pnpm supabase:test`，与选题导入恢复迁移一并完成 41 条 pgTAP 实跑。
+- 处置：本轮仅尝试一次即按已知环境阻塞记录并旁路继续，不将数据库实跑标记为通过。
+
+## 2026-10-29 [BLOCKED] GitHub 推送失败
+
+- 现象：`git push origin main` 返回 `fatal: unable to access 'https://github.com/Heyehua514/tk-observer.git/': Recv failure: Connection was reset`。
+- 影响：本地提交 `53ebad6` 已完成，但远程 `origin/main` 尚未同步。
+- 建议：网络恢复后仅重试一次 `git push origin main`，确认远程分支后继续。
+- 处置：按单点最多重试 3 次约束，首次失败后立即记录并停止重试，不重复推送。

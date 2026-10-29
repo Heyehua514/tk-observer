@@ -3,7 +3,7 @@ import type { AppNotification } from '@/types/notification'
 
 export type DeepLinkTarget = {
   to: string
-  recordType?: 'opportunity'
+  recordType?: 'opportunity' | 'design_asset'
   recordId?: string
   taskId?: string
 }
@@ -25,6 +25,9 @@ export function resolveNotificationTarget(
   const recordId = notification.recordId
   if (recordType === 'opportunity' && base === '/business') {
     return { to: '/business', recordType, recordId }
+  }
+  if (recordType === 'design_asset' && base === '/design') {
+    return { to: '/design', recordType, recordId }
   }
   if (recordType === 'event_task') {
     const match = /^\/market\/events\/[^/?#]+/.exec(notification.link)

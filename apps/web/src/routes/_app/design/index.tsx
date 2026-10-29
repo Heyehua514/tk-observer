@@ -40,6 +40,9 @@ function parseSearch(search: Record<string, unknown>): DesignAssetListParams {
       sorts.includes(search.sort as DesignAssetListParams['sort'])
         ? (search.sort as DesignAssetListParams['sort'])
         : '-updated',
+    recordType:
+      search.recordType === 'design_asset' ? 'design_asset' : undefined,
+    recordId: typeof search.recordId === 'string' ? search.recordId : undefined,
   }
 }
 

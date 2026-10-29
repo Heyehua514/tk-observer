@@ -2,7 +2,7 @@
  * 设计素材库与审批操作主组件。
  * 路由：/design；权限：design, boss；实时展示素材更新。
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { regions } from '@/types/commerce'
 import { CheckCircle2, Clock3, Plus, Send, XCircle } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
@@ -51,10 +51,29 @@ export function DesignAssetGrid({
   const updateStatus = useUpdateDesignAssetStatus()
   const [uploadOpen, setUploadOpen] = useState(false)
   const [reviewing, setReviewing] = useState<DesignAsset | null>(null)
+  const focusRef = useRef<HTMLElement | null>(null)
+  const consumedReviewFocus = useRef('')
   const latestUpdate = assets.data?.reduce(
     (latest, item) => (item.updated > latest ? item.updated : latest),
     ''
   )
+
+  useEffect(() => {
+    if (!params.recordId || !assets.data?.length) return
+    const focusedAsset = assets.data.find(
+      (asset) => asset.id === params.recordId
+    )
+    if (!focusedAsset) return
+    focusRef.current?.scrollIntoView({ block: 'center' })
+    if (
+      role === 'boss' &&
+      focusedAsset.status === 'pending_review' &&
+      consumedReviewFocus.current !== focusedAsset.id
+    ) {
+      consumedReviewFocus.current = focusedAsset.id
+      setReviewing(focusedAsset)
+    }
+  }, [assets.data, params.recordId, role])
 
   return (
     <div className='space-y-4'>
@@ -155,10 +174,17 @@ export function DesignAssetGrid({
         <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
           {assets.data.map((asset) => {
             const StatusIcon = statusIcons[asset.status]
+            const isFocused = asset.id === params.recordId
             return (
               <article
                 key={asset.id}
-                className='overflow-hidden rounded-xl border bg-card/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30 motion-reduce:transform-none motion-reduce:transition-none'
+                ref={isFocused ? focusRef : undefined}
+                data-focused={isFocused ? 'true' : undefined}
+                className={
+                  isFocused
+                    ? 'overflow-hidden rounded-xl border border-primary bg-card/70 ring-2 ring-primary/20 transition-transform duration-200 hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none'
+                    : 'overflow-hidden rounded-xl border bg-card/70 transition-transform duration-200 hover:-translate-y-0.5 hover:border-primary/30 motion-reduce:transform-none motion-reduce:transition-none'
+                }
               >
                 <div className='flex aspect-[3/2] items-center justify-center bg-muted/30'>
                   {asset.fileUrl ? (

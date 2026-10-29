@@ -12,7 +12,7 @@ export type AppNotification = {
   title: string
   content: string
   link: string
-  recordType?: 'opportunity' | 'event_task'
+  recordType?: 'opportunity' | 'event_task' | 'design_asset'
   recordId?: string
   isRead: boolean
   created: string

@@ -32,4 +32,6 @@ export type DesignAssetListParams = {
   status: DesignAssetStatus | 'all'
   region: Region | 'all'
   sort: '-updated' | '-created' | 'file_name' | '-file_name'
+  recordType?: 'design_asset'
+  recordId?: string
 }
