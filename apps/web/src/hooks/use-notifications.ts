@@ -1,7 +1,7 @@
 /**
  * 当前用户通知查询，通过 PocketBase realtime 同步新通知和已读状态。
  */
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AppNotification } from '@/types/notification'
 import type { RecordModel } from 'pocketbase'
@@ -34,6 +34,7 @@ function mapNotification(record: RecordModel): AppNotification {
 
 export function useNotifications() {
   const recipient = useAuthStore((state) => state.user?.id || '')
+  const subscriptionId = useId()
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export function useNotifications() {
       // 因此采用全表订阅 + 收到任意变更即失效查询，列表内容由 REST 查询按 recipient 精确过滤，
       // 保证铃铛始终只显示当前用户的通知（与 use-companies 的订阅模式一致）。
       const channel = getSupabaseClient()
-        .channel(`notifications:${recipient}`)
+        .channel(`notifications:${recipient}:${subscriptionId}`)
         .on(
           'postgres_changes',
           {
@@ -81,7 +82,7 @@ export function useNotifications() {
       disposed = true
       unsubscribe?.()
     }
-  }, [queryClient, recipient])
+  }, [queryClient, recipient, subscriptionId])
 
   return useQuery({
     queryKey: notificationKeys.list(recipient),

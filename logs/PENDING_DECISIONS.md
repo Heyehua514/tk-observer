@@ -45,3 +45,15 @@
 - 影响：本地提交 `53ebad6` 已完成，但远程 `origin/main` 尚未同步。
 - 建议：网络恢复后仅重试一次 `git push origin main`，确认远程分支后继续。
 - 处置：按单点最多重试 3 次约束，首次失败后立即记录并停止重试，不重复推送。
+## 2026-10-30 [BLOCKED] Supabase pgTAP 实跑环境未恢复
+
+- 现象：`pnpm supabase:test` 返回 `LegacyDbConnectError`，无法连接 `127.0.0.1:54322`，错误为 `ECONNREFUSED`；本机无可用 Docker。
+- 影响：2026-10-29 新增的两份迁移共 41 条 pgTAP（选题导入 27 条 + 设计审核通知 14 条）仍无法在本地 PostgreSQL 实例验证；今日未新增数据库迁移。
+- 建议：启用 Docker Desktop + WSL2 后执行 `pnpm supabase:start`，再执行 `pnpm supabase:test`，完成后恢复 `[BLOCKED]` 标记。
+- 处置：按三击熔断规则仅尝试一次并旁路跳过，不将数据库实跑标记为通过。
+## 2026-10-30 GitHub 推送失败（记录并旁路）
+
+- 现象：`git push origin main` 返回 `fatal: unable to access 'https://github.com/Heyehua514/tk-observer.git/': Recv failure: Connection was reset`。
+- 影响：本地提交 `b2ae3ef` 已完成，但远程 `origin/main` 尚未同步；本地领先远程 1 个提交。
+- 建议：网络恢复后仅重试一次 `git push origin main`；无需代码改动。
+- 处置：按三击熔断规则首次失败后立即记录并停止重试，不重复推送。

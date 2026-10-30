@@ -272,3 +272,5 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - 严禁将含中文的内容通过 PowerShell 5 here-string 管道传给外部 `python`；外部进程输入可能按本地代码页转码为问号，必须用 `[System.IO.File]::WriteAllText()` 原生写入 UTF-8。
 - 严禁用 `--browser.enabled=false` 关闭 Web 浏览器测试环境；项目全量前端验证必须执行 `pnpm --dir apps/web test`，避免 DOM 与浏览器全局缺失造成批量假失败。
 - 严禁在 React Effect 中同步调用 setState 驱动仅由路由参数决定的派生状态；应直接由 props 派生受控值，并在用户切换时通过事件清理深链参数，避免级联渲染与 Tab 无法切换。
+
+- 严禁多个 `useNotifications()` 消费者共用同一 Supabase Realtime channel topic；topic 必须按订阅实例唯一。通知打开逻辑必须复用统一服务，已读回写失败时仍须 fail-open 精确导航。

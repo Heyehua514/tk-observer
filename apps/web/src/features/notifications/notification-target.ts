@@ -8,6 +8,12 @@ export type DeepLinkTarget = {
   taskId?: string
 }
 
+export type DeepLinkSearch = {
+  taskId?: string
+  recordType?: 'opportunity' | 'design_asset'
+  recordId?: string
+}
+
 const allowedLinks = [
   '/overview',
   '/business',
@@ -34,4 +40,14 @@ export function resolveNotificationTarget(
     return { to: match?.[0] || '/market', taskId: recordId }
   }
   return { to: base || '/overview' }
+}
+
+export function buildNotificationSearch(
+  target: DeepLinkTarget
+): DeepLinkSearch {
+  if (target.taskId) return { taskId: target.taskId }
+  if (target.recordType && target.recordId) {
+    return { recordType: target.recordType, recordId: target.recordId }
+  }
+  return {}
 }

@@ -4,7 +4,7 @@
  */
 import { useEffect, useRef } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import type { AppNotification, NotificationType } from '@/types/notification'
+import type { NotificationType } from '@/types/notification'
 import { motion, useAnimationControls, useReducedMotion } from 'framer-motion'
 import {
   Bell,
@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/popover'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
-import { resolveNotificationTarget } from '@/features/notifications/notification-target'
+import { useOpenNotification } from '@/features/notifications/use-open-notification'
 import { useNotificationPreferences } from '@/features/settings/hooks/use-notification-preferences'
 import { filterNotificationsByPreferences } from '@/features/settings/notification-preferences-model'
 
@@ -41,6 +41,7 @@ export function NotificationBell() {
   const notifications = useNotifications()
   const markRead = useMarkNotificationRead()
   const navigate = useNavigate()
+  const openNotification = useOpenNotification()
   const preferences = useNotificationPreferences()
   const items = filterNotificationsByPreferences(
     notifications.data || [],
@@ -64,20 +65,6 @@ export function NotificationBell() {
     }
     previousUnread.current = unreadItems.length
   }, [bellControls, reduceMotion, unreadItems.length])
-
-  const openNotification = async (notification: AppNotification) => {
-    if (!notification.isRead) await markRead.mutateAsync([notification.id])
-    const target = resolveNotificationTarget(notification)
-    await navigate({
-      to: target.to,
-      search: target.taskId
-        ? { taskId: target.taskId }
-        : target.recordType && target.recordId
-          ? { recordType: target.recordType, recordId: target.recordId }
-          : {},
-      replace: true,
-    })
-  }
 
   return (
     <Popover>

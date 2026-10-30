@@ -1,7 +1,10 @@
 /** 通知深链解析纯函数测试；权限：无数据写入。 */
 import type { AppNotification } from '@/types/notification'
 import { describe, expect, it } from 'vitest'
-import { resolveNotificationTarget } from './notification-target'
+import {
+  buildNotificationSearch,
+  resolveNotificationTarget,
+} from './notification-target'
 
 function notification(overrides: Partial<AppNotification>): AppNotification {
   return {
@@ -80,5 +83,23 @@ describe('resolveNotificationTarget', () => {
         })
       )
     ).toEqual({ to: '/business' })
+  })
+})
+describe('buildNotificationSearch', () => {
+  it('builds exact record and task search params', () => {
+    expect(
+      buildNotificationSearch({
+        to: '/design',
+        recordType: 'design_asset',
+        recordId: 'asset-42',
+      })
+    ).toEqual({ recordType: 'design_asset', recordId: 'asset-42' })
+    expect(
+      buildNotificationSearch({
+        to: '/market/events/event-9',
+        taskId: 'task-3',
+      })
+    ).toEqual({ taskId: 'task-3' })
+    expect(buildNotificationSearch({ to: '/overview' })).toEqual({})
   })
 })

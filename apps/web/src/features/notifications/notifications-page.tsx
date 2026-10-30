@@ -1,7 +1,7 @@
 /** 通知中心列表页；路由：/notifications；权限：所有已登录角色。 */
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import type { AppNotification, NotificationType } from '@/types/notification'
+import type { NotificationType } from '@/types/notification'
 import {
   CheckCheck,
   CircleDollarSign,
@@ -10,7 +10,6 @@ import {
   Palette,
   type LucideIcon,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { formatBeijingTime } from '@/lib/format'
 import { useMarkNotificationRead } from '@/hooks/use-mark-notification-read'
 import { useNotifications } from '@/hooks/use-notifications'
@@ -26,7 +25,7 @@ import {
   groupNotificationsByDay,
   type NotificationFilter,
 } from './notification-list-model'
-import { resolveNotificationTarget } from './notification-target'
+import { useOpenNotification } from './use-open-notification'
 
 const notificationIcons = {
   design_review: Palette,
@@ -50,6 +49,7 @@ export function NotificationsPage() {
   const preferenceQuery = useNotificationPreferences()
   const markRead = useMarkNotificationRead()
   const navigate = useNavigate()
+  const openNotification = useOpenNotification()
   const [filter, setFilter] = useState<NotificationFilter>('all')
   const rawItems = notifications.data || []
   const items = filterNotificationsByPreferences(
@@ -63,24 +63,6 @@ export function NotificationsPage() {
     preferenceQuery.data ?? null
   )
   const groups = groupNotificationsByDay(visible)
-
-  const openNotification = async (notification: AppNotification) => {
-    try {
-      if (!notification.isRead) await markRead.mutateAsync([notification.id])
-      const target = resolveNotificationTarget(notification)
-      await navigate({
-        to: target.to,
-        search: target.taskId
-          ? { taskId: target.taskId }
-          : target.recordType && target.recordId
-            ? { recordType: target.recordType, recordId: target.recordId }
-            : {},
-        replace: true,
-      })
-    } catch {
-      toast.error('通知打开失败，请稍后重试')
-    }
-  }
 
   const markAllRead = () => {
     const unread = items.filter((item) => !item.isRead).map((item) => item.id)
