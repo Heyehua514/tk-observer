@@ -1,7 +1,8 @@
-/** 设计通知深链测试；权限：design 定位素材，boss 自动打开待审素材。 */
+/** 设计通知深链测试；权限：design 定位素材，owner/boss 自动打开待审素材。 */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
+import { userEvent } from 'vitest/browser'
 import type { DesignAsset, DesignAssetListParams } from '../types'
 import { DesignWorkbench } from './design-workbench'
 
@@ -66,17 +67,25 @@ const linkedParams: DesignAssetListParams = {
   recordId: 'asset-2',
 }
 
-function renderWorkbench() {
+function renderWorkbench({
+  params = linkedParams,
+  cachedAssets = assets,
+  onParamsChange = vi.fn(),
+}: {
+  params?: DesignAssetListParams
+  cachedAssets?: DesignAsset[]
+  onParamsChange?: (patch: Partial<DesignAssetListParams>) => void
+} = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   })
-  queryClient.setQueryData(['design-assets', 'list', baseParams], assets)
-  queryClient.setQueryData(['design-assets', 'list', linkedParams], assets)
+  queryClient.setQueryData(['design-assets', 'list', baseParams], cachedAssets)
+  queryClient.setQueryData(['design-assets', 'list', params], cachedAssets)
   queryClient.setQueryData(['design', 'requirements', 'all'], [])
   queryClient.setQueryData(['design', 'tasks'], [])
   return render(
     <QueryClientProvider client={queryClient}>
-      <DesignWorkbench params={linkedParams} onParamsChange={vi.fn()} />
+      <DesignWorkbench params={params} onParamsChange={onParamsChange} />
     </QueryClientProvider>
   )
 }
@@ -116,4 +125,65 @@ it('opens the pending review dialog automatically for a boss deep link', async (
   await expect
     .element(screen.getByRole('heading', { name: '审核设计稿' }))
     .toBeInTheDocument()
+})
+it('opens the pending review dialog automatically for an owner deep link', async () => {
+  authState.role = 'owner'
+  const screen = await renderWorkbench()
+
+  await expect
+    .element(screen.getByRole('heading', { name: '审核设计稿' }))
+    .toBeInTheDocument()
+})
+
+it('shows a recoverable missing-target state for a deleted asset', async () => {
+  const onParamsChange = vi.fn()
+  const missingParams: DesignAssetListParams = {
+    ...baseParams,
+    recordType: 'design_asset',
+    recordId: 'missing-asset',
+  }
+  const screen = await renderWorkbench({
+    params: missingParams,
+    cachedAssets: [],
+    onParamsChange,
+  })
+
+  await expect.element(screen.getByText('目标素材不可用')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '查看全部素材' }))
+
+  expect(onParamsChange).toHaveBeenCalledWith({
+    recordType: undefined,
+    recordId: undefined,
+  })
+})
+
+it('blocks forbidden design asset links for business without exposing the asset tab', async () => {
+  authState.role = 'business'
+  const onParamsChange = vi.fn()
+  const screen = await renderWorkbench({ onParamsChange })
+
+  await expect.element(screen.getByText('无法打开目标素材')).toBeInTheDocument()
+  expect(document.querySelectorAll('[role="tab"]')).toHaveLength(1)
+  await userEvent.click(screen.getByRole('button', { name: '返回设计需求' }))
+
+  expect(onParamsChange).toHaveBeenCalledWith({
+    recordType: undefined,
+    recordId: undefined,
+  })
+})
+
+it('clears the deep link when the user resets asset filters', async () => {
+  const onParamsChange = vi.fn()
+  const screen = await renderWorkbench({ onParamsChange })
+
+  await userEvent.click(screen.getByRole('button', { name: '重置' }))
+
+  expect(onParamsChange).toHaveBeenCalledWith({
+    query: '',
+    status: 'all',
+    region: 'all',
+    sort: '-updated',
+    recordType: undefined,
+    recordId: undefined,
+  })
 })

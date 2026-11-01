@@ -1,13 +1,21 @@
 /**
  * 设计素材库与审批操作主组件。
- * 路由：/design；权限：design, boss；实时展示素材更新。
+ * 路由：/design；权限：owner, boss, design；实时展示素材更新。
  */
 import { useEffect, useRef, useState } from 'react'
 import { regions } from '@/types/commerce'
-import { CheckCircle2, Clock3, Plus, Send, XCircle } from 'lucide-react'
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock3,
+  Plus,
+  Send,
+  XCircle,
+} from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { formatBeijingTime } from '@/lib/format'
 import { useSearch } from '@/hooks/use-search'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,8 +27,13 @@ import {
 } from '@/components/ui/select'
 import { EmptyState } from '@/components/shared/empty-state'
 import { FilterBar } from '@/components/shared/filter-bar'
+import { LoadStateError } from '@/components/shared/load-state-error'
 import { SearchBar } from '@/components/shared/search-bar'
 import { designAssetStatusLabels } from '../constants'
+import {
+  canReviewDesignAssets,
+  resolveDesignAssetDeepLink,
+} from '../design-asset-deep-link'
 import { useDesignAssets } from '../hooks/use-design-assets'
 import { useUpdateDesignAssetStatus } from '../hooks/use-update-design-asset-status'
 import type {
@@ -57,23 +70,37 @@ export function DesignAssetGrid({
     (latest, item) => (item.updated > latest ? item.updated : latest),
     ''
   )
+  const deepLink = resolveDesignAssetDeepLink({
+    recordType: params.recordType,
+    recordId: params.recordId,
+    role,
+    assets: assets.data,
+    isLoading: assets.isLoading,
+    isError: assets.isError,
+  })
+  const linkedAsset = deepLink.status === 'found' ? deepLink.asset : null
+  const canReview = canReviewDesignAssets(role)
+  const clearDeepLink = () =>
+    onParamsChange({ recordType: undefined, recordId: undefined })
+  const updateFilters = (patch: Partial<DesignAssetListParams>) =>
+    onParamsChange({
+      ...patch,
+      recordType: undefined,
+      recordId: undefined,
+    })
 
   useEffect(() => {
-    if (!params.recordId || !assets.data?.length) return
-    const focusedAsset = assets.data.find(
-      (asset) => asset.id === params.recordId
-    )
-    if (!focusedAsset) return
+    if (!linkedAsset) return
     focusRef.current?.scrollIntoView({ block: 'center' })
     if (
-      role === 'boss' &&
-      focusedAsset.status === 'pending_review' &&
-      consumedReviewFocus.current !== focusedAsset.id
+      canReview &&
+      linkedAsset.status === 'pending_review' &&
+      consumedReviewFocus.current !== linkedAsset.id
     ) {
-      consumedReviewFocus.current = focusedAsset.id
-      setReviewing(focusedAsset)
+      consumedReviewFocus.current = linkedAsset.id
+      setReviewing(linkedAsset)
     }
-  }, [assets.data, params.recordId, role])
+  }, [canReview, linkedAsset])
 
   return (
     <div className='space-y-4'>
@@ -93,7 +120,7 @@ export function DesignAssetGrid({
 
       <FilterBar
         onReset={() =>
-          onParamsChange({
+          updateFilters({
             query: '',
             status: 'all',
             region: 'all',
@@ -103,13 +130,13 @@ export function DesignAssetGrid({
       >
         <SearchBar
           value={params.query}
-          onChange={(query) => onParamsChange({ query })}
+          onChange={(query) => updateFilters({ query })}
           placeholder='搜索文件名或尺寸'
         />
         <Select
           value={params.status}
           onValueChange={(status) =>
-            onParamsChange({
+            updateFilters({
               status: status as DesignAssetListParams['status'],
             })
           }
@@ -129,7 +156,7 @@ export function DesignAssetGrid({
         <Select
           value={params.region}
           onValueChange={(region) =>
-            onParamsChange({
+            updateFilters({
               region: region as DesignAssetListParams['region'],
             })
           }
@@ -149,7 +176,7 @@ export function DesignAssetGrid({
         <Select
           value={params.sort}
           onValueChange={(sort) =>
-            onParamsChange({ sort: sort as DesignAssetListParams['sort'] })
+            updateFilters({ sort: sort as DesignAssetListParams['sort'] })
           }
         >
           <SelectTrigger className='w-36'>
@@ -164,7 +191,30 @@ export function DesignAssetGrid({
         </Select>
       </FilterBar>
 
-      {assets.isLoading ? (
+      {deepLink.status === 'missing' && (
+        <Alert>
+          <AlertCircle />
+          <AlertTitle>目标素材不可用</AlertTitle>
+          <AlertDescription className='flex flex-wrap items-center justify-between gap-2'>
+            <span>该素材可能已被删除，或当前账号无权查看。</span>
+            <Button variant='outline' size='sm' onClick={clearDeepLink}>
+              查看全部素材
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {assets.isError && !assets.data?.length ? (
+        <LoadStateError
+          title='素材加载失败'
+          description={
+            deepLink.status === 'error'
+              ? '无法确认目标素材状态，请检查数据服务和当前账号权限后重试。'
+              : '请检查数据服务和当前账号权限后重试。'
+          }
+          onRetry={() => void assets.refetch()}
+        />
+      ) : assets.isLoading ? (
         <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
           {Array.from({ length: 6 }, (_, i) => (
             <div key={i} className='h-48 animate-pulse rounded-xl bg-muted' />
@@ -174,7 +224,7 @@ export function DesignAssetGrid({
         <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
           {assets.data.map((asset) => {
             const StatusIcon = statusIcons[asset.status]
-            const isFocused = asset.id === params.recordId
+            const isFocused = linkedAsset?.id === asset.id
             return (
               <article
                 key={asset.id}
@@ -241,7 +291,7 @@ export function DesignAssetGrid({
                           提交审核
                         </Button>
                       )}
-                    {role === 'boss' && asset.status === 'pending_review' && (
+                    {canReview && asset.status === 'pending_review' && (
                       <Button size='sm' onClick={() => setReviewing(asset)}>
                         审核
                       </Button>

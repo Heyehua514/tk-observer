@@ -1,6 +1,6 @@
 /**
  * 设计稿审批弹窗。
- * 路由：/design；权限：boss；驳回时理由必填。
+ * 路由：/design；权限：owner, boss；驳回时理由必填。
  */
 import { useEffect } from 'react'
 import { z } from 'zod'

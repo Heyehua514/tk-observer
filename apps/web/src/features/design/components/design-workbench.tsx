@@ -1,6 +1,7 @@
 /** 设计工作台主体：素材库、设计任务看板与静态品牌规范。 */
 import { useState } from 'react'
 import {
+  AlertCircle,
   BriefcaseBusiness,
   ClipboardCheck,
   Download,
@@ -10,12 +11,14 @@ import {
   Rows3,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { AiAssistantPanel } from '@/features/shared-ai'
 import { BrandGuidelinesBoard } from '../brand/brand-guidelines-board'
+import { canAccessDesignAssets } from '../design-asset-deep-link'
 import { useDesignAssets } from '../hooks/use-design-assets'
 import { DesignRequirements } from '../requirements'
 import { useDesignRequirements } from '../requirements/use-design-requirements'
@@ -40,7 +43,11 @@ export function DesignWorkbench({
   onParamsChange: (patch: Partial<DesignAssetListParams>) => void
 }) {
   const role = useAuthStore((state) => state.user?.role)
-  const canDesign = role === 'design' || role === 'boss'
+  const canDesign = canAccessDesignAssets(role)
+  const hasForbiddenAssetDeepLink =
+    params.recordType === 'design_asset' &&
+    Boolean(params.recordId) &&
+    !canDesign
   const [selectedTab, setSelectedTab] = useState<DesignTab>('requirements')
   const brandAssets = useDesignAssets(brandAssetParams)
   const brandRequirements = useDesignRequirements('all')
@@ -64,6 +71,27 @@ export function DesignWorkbench({
         title='设计工作台'
         description='集中维护业务素材、设计任务和品牌视觉规范。'
       />
+      {hasForbiddenAssetDeepLink && (
+        <Alert variant='destructive'>
+          <AlertCircle />
+          <AlertTitle>无法打开目标素材</AlertTitle>
+          <AlertDescription className='flex flex-wrap items-center justify-between gap-2'>
+            <span>当前账号无权查看设计素材库，或该素材已不可用。</span>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() =>
+                onParamsChange({
+                  recordType: undefined,
+                  recordId: undefined,
+                })
+              }
+            >
+              返回设计需求
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
