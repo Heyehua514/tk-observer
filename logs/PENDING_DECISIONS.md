@@ -57,3 +57,13 @@
 - 影响：本地提交 `b2ae3ef` 已完成，但远程 `origin/main` 尚未同步；本地领先远程 1 个提交。
 - 建议：网络恢复后仅重试一次 `git push origin main`；无需代码改动。
 - 处置：按三击熔断规则首次失败后立即记录并停止重试，不重复推送。
+## 2026-11-01 [BLOCKED] AI 云端通道未部署（缺平台凭据）
+
+- 现象：对 `https://mddldiwthvnaefwtlnme.supabase.co/functions/v1/ai-proxy` 发 POST 返回 `404`（函数未部署）；`npx supabase projects list` 返回 `LegacyPlatformAuthRequiredError: Access token not provided`，本机无 `SUPABASE_ACCESS_TOKEN`，工作区也无 `.env` 提供凭据。
+- 影响：跨设备 AI 自动回退通道代码与测试已完成，但线上未生效；换设备时若本机 WorkBuddy 不在线仍会提示“本机 WorkBuddy 与云端 AI 通道均不可用”。
+- 建议（需用户执行，属生产变更）：
+  1. `npx supabase login`（或设置 `SUPABASE_ACCESS_TOKEN`）。
+  2. `npx supabase secrets set AI_API_KEY=<deepseek key> AI_MODEL=deepseek-chat AI_BASE_URL=https://api.deepseek.com/v1 --project-ref mddldiwthvnaefwtlnme`。
+  3. `npx supabase functions deploy ai-proxy --project-ref mddldiwthvnaefwtlnme`。
+  4. 两台设备登录同一账号，在工作台 AI 面板各发起一次分析，确认返回 `channel: "cloud"`。
+- 处置：按三击熔断记录后旁路，不将线上可用标记为已验收。部署文档见 `docs/ai-cloud-fallback.md`。
