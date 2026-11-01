@@ -5,7 +5,10 @@ import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 import { VideoAiPanel } from './video-ai-panel'
 
-vi.mock('@/lib/data-provider', () => ({ getDataProvider: () => 'supabase' }))
+vi.mock('@/lib/data-provider', () => ({
+  getDataProvider: () => 'supabase',
+  getSupabaseEnvironment: () => ({ url: 'https://test.supabase.co', anonKey: 'anon-key' }),
+}))
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: () => ({
     from: () => ({

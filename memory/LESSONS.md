@@ -30,3 +30,5 @@
 
 22. **通知导航 fail-open 与 Realtime 订阅隔离**：通知已读回写属于辅助状态，PATCH 失败时必须提示后继续导航到精确目标，严禁阻断主流程；通知中心与铃铛必须复用统一打开服务并覆盖失败路径，同一页面多个 Supabase Realtime 消费者必须使用唯一 channel topic，严禁共用按用户 ID 拼接的 topic 导致 subscribe 后追加回调错误。
 23. **设计素材深链降级与权限单一契约**：设计素材深链必须区分目标缺失、查询失败与角色无权，并提供可恢复出口；`owner/boss/design` 可查看素材，`owner/boss` 可审核，筛选变化必须清除深链参数，严禁把无权限或加载失败伪装成空素材库。
+24. **AI 通道必须跨设备可用且不回退裸露密钥**：前端调用 AI 必须“本机网关优先、Supabase Edge Function 自动回退”，云端只接受有效用户 JWT，模型 Key 仅存 Edge Function Secrets；严禁把本机 127.0.0.1 失败直接暴露为“未接入”，也严禁让浏览器读取模型 Key。
+25. **测试 Mock 必须覆盖间接依赖的全部导出**：`vi.mock('@/lib/data-provider')` 等模块级 Mock 必须包含被测链路间接 import 的所有函数（如 `getSupabaseEnvironment`），否则会出现与业务无关的导入失败；改动共享模块导出后必须扫一遍全部 Mock 工厂。

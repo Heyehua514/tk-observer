@@ -6,6 +6,9 @@ import { playwright } from '@vitest/browser-playwright'
 import path from 'node:path'
 import { defaultExclude } from 'vitest/config'
 
+// 允许在 Playwright 自带 Chromium 不可用时改用本机 Chrome 执行浏览器测试。
+const chromeExecutablePath = process.env.PLAYWRIGHT_CHROME_PATH
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -31,7 +34,11 @@ export default defineConfig({
     exclude: [...defaultExclude, 'e2e/**'],
     browser: {
       enabled: true,
-      provider: playwright(),
+      provider: playwright(
+        chromeExecutablePath
+          ? { launchOptions: { executablePath: chromeExecutablePath } }
+          : {}
+      ),
       instances: [{ browser: 'chromium' }],
     },
     coverage: {

@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { callWorkBuddyGateway } from './workbuddy-gateway'
+import {
+  DEFAULT_GATEWAY,
+  callWorkBuddyGateway,
+  getStoredGatewayUrl,
+  setStoredGatewayUrl,
+} from './workbuddy-gateway'
 
 afterEach(() => {
   vi.useRealTimers()
@@ -56,11 +61,6 @@ it('aborts a stalled gateway request after the client deadline', async () => {
   })
   expect(signal?.aborted).toBe(true)
 })
-import {
-  DEFAULT_GATEWAY,
-  getStoredGatewayUrl,
-  setStoredGatewayUrl,
-} from './workbuddy-gateway'
 
 describe('workbuddy-gateway storage utilities', () => {
   it('returns DEFAULT_GATEWAY when nothing is stored', () => {
@@ -72,5 +72,39 @@ describe('workbuddy-gateway storage utilities', () => {
     setStoredGatewayUrl('http://192.168.1.100:8877/analyze')
     expect(getStoredGatewayUrl()).toBe('http://192.168.1.100:8877/analyze')
     localStorage.removeItem('tk.workbuddy.gateway')
+  })
+})
+
+describe('cloud ai fallback', () => {
+  afterEach(() => {
+    localStorage.removeItem('sb-test-auth-token')
+  })
+
+  it('falls back to the supabase ai-proxy when the local gateway is offline', async () => {
+    localStorage.setItem('sb-test-auth-token', JSON.stringify({ access_token: 'token-1' }))
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, text: '云端分析结果' }), { status: 200 })
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(callWorkBuddyGateway('分析任务')).resolves.toBe('云端分析结果')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock.mock.calls[1][0]).toContain('/functions/v1/ai-proxy')
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({
+      headers: expect.objectContaining({ Authorization: 'Bearer token-1' }),
+    })
+  })
+
+  it('keeps the stable error when neither channel is available', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error('offline'))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(callWorkBuddyGateway('分析任务')).rejects.toMatchObject({
+      message: 'GATEWAY_UNAVAILABLE',
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })

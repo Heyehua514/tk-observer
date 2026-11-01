@@ -1,4 +1,4 @@
-﻿/** 成片表现数据打卡与复盘对话框。 */
+/** 成片表现数据打卡与复盘对话框。 */
 import { useState } from 'react'
 import { Eye, Heart, MessageSquare, Percent, Share2, ShoppingBag, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import type { VideoArchiveItem } from './production-model'
 import { useCreateVideoMetricsLog } from '../hooks/use-create-video-metrics-log'
 import { type VideoMetricsLogInput } from '../video-metrics-model'
+import { VideoMetricsTrendPanel } from './video-metrics-trend-panel'
 
 export function VideoMetricsDialog({
   open,
@@ -77,7 +78,7 @@ export function VideoMetricsDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className='sm:max-w-md'>
+      <DialogContent className='max-h-[86vh] overflow-y-auto sm:max-w-md'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <TrendingUp className='size-5 text-primary' />
@@ -207,6 +208,8 @@ export function VideoMetricsDialog({
             </Button>
           </DialogFooter>
         </form>
+
+        <VideoMetricsTrendPanel videoId={video?.id || ''} />
       </DialogContent>
     </Dialog>
   )
