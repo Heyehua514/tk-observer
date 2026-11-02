@@ -33,3 +33,4 @@
 24. **AI 通道必须跨设备可用且不回退裸露密钥**：前端调用 AI 必须“本机网关优先、Supabase Edge Function 自动回退”，云端只接受有效用户 JWT，模型 Key 仅存 Edge Function Secrets；严禁把本机 127.0.0.1 失败直接暴露为“未接入”，也严禁让浏览器读取模型 Key。
 25. **测试 Mock 必须覆盖间接依赖的全部导出**：`vi.mock('@/lib/data-provider')` 等模块级 Mock 必须包含被测链路间接 import 的所有函数（如 `getSupabaseEnvironment`），否则会出现与业务无关的导入失败；改动共享模块导出后必须扫一遍全部 Mock 工厂。
 26. **Agent 环境下的 Supabase CLI 登录**：`supabase login` 在 Codex/CI 环境会被判定为非交互并直接失败，必须加 `--agent no --no-browser`，再把浏览器给出的验证码回填；Edge Function 部署本身不依赖 Docker。
+27. **深链初始 Tab 与清除参数一致性**：深链页面必须用 `recordType/recordId` 初始化受控 Tab，并把受控值保留到用户主动切换；清除深链参数时不得把用户弹回默认 Tab，严禁只靠派生 `activeTab` 而不写入 `selectedTab` 初始值。
