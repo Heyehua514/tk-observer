@@ -151,6 +151,9 @@ it('shows a recoverable missing-target state for a deleted asset', async () => {
   await expect.element(screen.getByText('目标素材不可用')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: '查看全部素材' }))
 
+  await expect
+    .element(screen.getByRole('tab', { name: '素材库' }))
+    .toHaveAttribute('aria-selected', 'true')
   expect(onParamsChange).toHaveBeenCalledWith({
     recordType: undefined,
     recordId: undefined,

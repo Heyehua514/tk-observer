@@ -6,6 +6,8 @@
  */
 import { defineConfig } from 'playwright/test'
 
+const chromePath = process.env.PLAYWRIGHT_CHROME_PATH
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
@@ -16,6 +18,9 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4173',
     viewport: { width: 1440, height: 900 },
     trace: 'retain-on-failure',
+    ...(chromePath
+      ? { launchOptions: { executablePath: chromePath } }
+      : {}),
   },
   // 沙箱环境下 Playwright 派生的预览服务监听会被拒绝；外部已起服务时跳过 webServer。
   webServer: process.env.E2E_USE_EXTERNAL_SERVER

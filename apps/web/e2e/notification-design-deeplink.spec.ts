@@ -152,3 +152,111 @@ test('read-state failure does not block exact design asset navigation', async ({
     await context.close()
   }
 })
+
+const businessUser = {
+  id: 'business-1',
+  email: 'business@example.test',
+  name: '董雨辰',
+  role: 'business',
+}
+
+test('missing linked asset keeps a recoverable design route', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ serviceWorkers: 'block' })
+  const page = await context.newPage()
+  try {
+    await page.addInitScript((user) => {
+      sessionStorage.setItem('tk-observer-user-session', JSON.stringify(user))
+    }, bossUser)
+    await page.route('**/rest/v1/**', async (route) => {
+      const request = route.request()
+      if (request.method() === 'OPTIONS') {
+        await route.fulfill({ status: 204, headers: corsHeaders() })
+        return
+      }
+      const table = new URL(request.url()).pathname.split('/').at(-1)
+      if (table === 'notifications') {
+        await fulfillJson(route, [])
+        return
+      }
+      if (table === 'notification_preferences') {
+        await fulfillJson(route, {
+          deadline_enabled: true,
+          review_enabled: true,
+          follow_up_enabled: true,
+        })
+        return
+      }
+      if (table === 'design_assets') {
+        await fulfillJson(route, assets.slice(0, 1))
+        return
+      }
+      await fulfillJson(route, [])
+    })
+
+    await page.goto('/design?recordType=design_asset&recordId=deleted-asset')
+    await expect(page.getByText('目标素材不可用')).toBeVisible()
+    await expect(page.getByRole('tab', { name: '素材库' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    await page.getByRole('button', { name: '查看全部素材' }).click()
+    await expect(page).not.toHaveURL(/recordType=design_asset/)
+    await expect(
+      page.locator('article', { hasText: '已通过素材.png' })
+    ).toBeVisible()
+  } finally {
+    await context.close()
+  }
+})
+
+test('business cannot open a forbidden design asset deep link', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ serviceWorkers: 'block' })
+  const page = await context.newPage()
+  try {
+    await page.addInitScript((user) => {
+      sessionStorage.setItem('tk-observer-user-session', JSON.stringify(user))
+    }, businessUser)
+    await page.route('**/rest/v1/**', async (route) => {
+      const request = route.request()
+      if (request.method() === 'OPTIONS') {
+        await route.fulfill({ status: 204, headers: corsHeaders() })
+        return
+      }
+      const table = new URL(request.url()).pathname.split('/').at(-1)
+      if (table === 'notifications') {
+        await fulfillJson(route, [])
+        return
+      }
+      if (table === 'notification_preferences') {
+        await fulfillJson(route, {
+          deadline_enabled: true,
+          review_enabled: true,
+          follow_up_enabled: true,
+        })
+        return
+      }
+      if (table === 'design_assets') {
+        await fulfillJson(route, assets)
+        return
+      }
+      await fulfillJson(route, [])
+    })
+
+    await page.goto('/design?recordType=design_asset&recordId=asset-2')
+    await expect(page.getByText('无法打开目标素材')).toBeVisible()
+    await expect(page.getByRole('tab', { name: '素材库' })).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: '设计需求' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    await page.getByRole('button', { name: '返回设计需求' }).click()
+    await expect(page).not.toHaveURL(/recordType=design_asset/)
+    await expect(page.getByText('无法打开目标素材')).toHaveCount(0)
+  } finally {
+    await context.close()
+  }
+})

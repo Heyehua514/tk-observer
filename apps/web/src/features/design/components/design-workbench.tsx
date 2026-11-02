@@ -48,7 +48,11 @@ export function DesignWorkbench({
     params.recordType === 'design_asset' &&
     Boolean(params.recordId) &&
     !canDesign
-  const [selectedTab, setSelectedTab] = useState<DesignTab>('requirements')
+  const [selectedTab, setSelectedTab] = useState<DesignTab>(() =>
+    canDesign && params.recordType === 'design_asset' && params.recordId
+      ? 'assets'
+      : 'requirements'
+  )
   const brandAssets = useDesignAssets(brandAssetParams)
   const brandRequirements = useDesignRequirements('all')
   const assetCount = brandAssets.data?.length || 0
