@@ -57,6 +57,14 @@
 - 影响：本地提交 `b2ae3ef` 已完成，但远程 `origin/main` 尚未同步；本地领先远程 1 个提交。
 - 建议：网络恢复后仅重试一次 `git push origin main`；无需代码改动。
 - 处置：按三击熔断规则首次失败后立即记录并停止重试，不重复推送。
+## 2026-11-02 AI 云端通道已部署（阻塞解除）
+
+- 处置：已完成 `supabase login`、写入 Secrets（AI_API_KEY/AI_BASE_URL/AI_MODEL）、部署 `ai-proxy`，函数状态 ACTIVE 且 `verify_jwt: true`。
+- 验证：未登录 POST 返回 `401 AUTH_REQUIRED`；上游 `/chat/completions` 直连返回正常；部署产物已包含 `index.ts` 与 `core.mjs`。
+- 剩余：登录态双设备各发起一次分析，确认前端自动回退成功（需在浏览器完成）。
+
+### 原记录（已解除，仅存档）
+
 ## 2026-11-01 [BLOCKED] AI 云端通道未部署（缺平台凭据）
 
 - 现象：对 `https://mddldiwthvnaefwtlnme.supabase.co/functions/v1/ai-proxy` 发 POST 返回 `404`（函数未部署）；`npx supabase projects list` 返回 `LegacyPlatformAuthRequiredError: Access token not provided`，本机无 `SUPABASE_ACCESS_TOKEN`，工作区也无 `.env` 提供凭据。

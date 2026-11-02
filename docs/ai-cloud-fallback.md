@@ -81,4 +81,10 @@ Content-Type: application/json
 
 ## 当前状态
 
-代码、纯逻辑测试与 Web 全量测试已通过；Edge Function 尚未使用生产 Secrets 部署，需由管理员执行上面的部署命令后，才能把“跨设备 AI 可用”标记为线上验证完成。
+已于 2026-11-02 部署到 `mddldiwthvnaefwtlnme`，函数状态 `ACTIVE`，`verify_jwt: true`。
+
+- 上游通道：`https://www.apiloop.top/v1`，模型 `deepseek-v4.1-flash`（使用管理员现有模型凭据写入 Supabase Secrets）。
+- 已验证：未登录调用返回 `401 {"ok":false,"error":"AUTH_REQUIRED"}`；同一凭据直连上游 `/chat/completions` 返回正常。
+- 待验证：登录态下从两台设备各发起一次 AI 分析，确认前端自动回退且返回成功。
+
+更换模型或 Key 时重新执行 `supabase secrets set` 后无需改代码；如需换供应商，同时更新 `AI_BASE_URL` 与 `AI_MODEL`。
