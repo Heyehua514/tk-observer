@@ -80,3 +80,9 @@
 - 现象：`git push origin main` 连续 3 次失败（2 次 `Connection was reset`，1 次 `Failed to connect to github.com port 443`）。
 - 影响：本地提交 `268ec6c`（AI 云端通道上线文档与日志）未同步，`origin/main` 落后 1 个提交。**代码本身已生效：`ai-proxy` 已部署上线**。
 - 建议：检查网络代理/VPN 后执行 `git push origin main`。
+## 2026-11-02 推送阻塞定位（网络层）
+
+- 现象：`git push origin main` 再次 `Connection was reset`；`github.com` 解析到 `20.205.243.166`，该 IP 的 443 不可达；`140.82.113.3:443` 可建立 TCP 连接。本机未监听 7890/7897/1080/10809/8080 代理端口。
+- 结论：不是仓库或凭据问题，是到 GitHub 亚太节点的链路被阻断。
+- 影响：本地已提交 `268ec6c`、`fb1155b`、`fca129f`、`6046fae`，`origin/main` 落后 4 个提交。
+- 处置：按三击熔断停止重试。开启可用的代理/VPN 后执行一次 `git push origin main`；或用 `http.proxy` 指向本机代理。
