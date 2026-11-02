@@ -75,3 +75,8 @@
   3. `npx supabase functions deploy ai-proxy --project-ref mddldiwthvnaefwtlnme`。
   4. 两台设备登录同一账号，在工作台 AI 面板各发起一次分析，确认返回 `channel: "cloud"`。
 - 处置：按三击熔断记录后旁路，不将线上可用标记为已验收。部署文档见 `docs/ai-cloud-fallback.md`。
+## 2026-11-02 推送再次失败
+
+- 现象：`git push origin main` 连续 3 次失败（2 次 `Connection was reset`，1 次 `Failed to connect to github.com port 443`）。
+- 影响：本地提交 `268ec6c`（AI 云端通道上线文档与日志）未同步，`origin/main` 落后 1 个提交。**代码本身已生效：`ai-proxy` 已部署上线**。
+- 建议：检查网络代理/VPN 后执行 `git push origin main`。
