@@ -85,4 +85,6 @@
 - 现象：`git push origin main` 再次 `Connection was reset`；`github.com` 解析到 `20.205.243.166`，该 IP 的 443 不可达；`140.82.113.3:443` 可建立 TCP 连接。本机未监听 7890/7897/1080/10809/8080 代理端口。
 - 结论：不是仓库或凭据问题，是到 GitHub 亚太节点的链路被阻断。
 - 影响：本地已提交 `268ec6c`、`fb1155b`、`fca129f`、`6046fae`，`origin/main` 落后 4 个提交。
-- 处置：按三击熔断停止重试。开启可用的代理/VPN 后执行一次 `git push origin main`；或用 `http.proxy` 指向本机代理。
+- 处置：按三击熔断停止重试。开启可用的代理/VPN 后执行一次 `git push origin main`；或用 `http.proxy` 指向本机代理。### 2026-11-02 推送阻塞已解除
+
+- 处置：检测到本机代理端口 7897，使用 `git -c http.proxy=http://127.0.0.1:7897 -c https.proxy=...` 推送成功：`78e7676..a9d7921 main -> main`，5 个本地提交已全部同步。
