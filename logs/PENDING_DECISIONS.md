@@ -88,3 +88,10 @@
 - 处置：按三击熔断停止重试。开启可用的代理/VPN 后执行一次 `git push origin main`；或用 `http.proxy` 指向本机代理。### 2026-11-02 推送阻塞已解除
 
 - 处置：检测到本机代理端口 7897，使用 `git -c http.proxy=http://127.0.0.1:7897 -c https.proxy=...` 推送成功：`78e7676..a9d7921 main -> main`，5 个本地提交已全部同步。
+
+## 2026-11-05 [BLOCKED] 成片指标投影 pgTAP 无法实跑
+
+- 现象：本机仍无 Docker/WSL2，`127.0.0.1:54322` 不可连接，新增 `video_metrics_log_projection.test.sql` 的 10 条断言无法执行。
+- 影响：迁移 SQL 已静态审查，但数据库触发器行为尚未在真实 PostgreSQL 实例验证；不能把 pgTAP 标记为通过。
+- 建议：启用 Docker Desktop/WSL2 后执行 `pnpm supabase:start` 与 `pnpm supabase:test`，连同既有 pgTAP 一并补跑。
+- 处置：按三击熔断规则不重复死磕本机环境，今日通过类型检查、前端定向测试、schema/RLS 静态审计与迁移代码审查旁路继续。

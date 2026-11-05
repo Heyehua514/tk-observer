@@ -1,9 +1,15 @@
-﻿/** 成片表现数据回流查询与维护 Hook：支持 Supabase 实时时间线、软删除与 PocketBase 兼容回退。 */
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+/** 成片表现数据回流查询与维护 Hook：支持 Supabase 实时时间线、软删除与 PocketBase 兼容回退。 */
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { pb } from '@/lib/pocketbase'
 import { getSupabaseClient } from '@/lib/supabase'
 import type { VideoMetricsLog } from '../video-metrics-model'
+import { videoArchiveKeys } from './use-video-archive'
 import { mapVideoMetricsLog } from './video-metrics-mapper'
 
 export const videoMetricsKeys = {
@@ -86,6 +92,7 @@ export function useDeleteVideoMetricsLog() {
       void queryClient.invalidateQueries({
         queryKey: videoMetricsKeys.byVideo(videoId),
       })
+      void queryClient.invalidateQueries({ queryKey: videoArchiveKeys.all })
     },
   })
 }

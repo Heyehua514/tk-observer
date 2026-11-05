@@ -34,3 +34,4 @@
 25. **测试 Mock 必须覆盖间接依赖的全部导出**：`vi.mock('@/lib/data-provider')` 等模块级 Mock 必须包含被测链路间接 import 的所有函数（如 `getSupabaseEnvironment`），否则会出现与业务无关的导入失败；改动共享模块导出后必须扫一遍全部 Mock 工厂。
 26. **Agent 环境下的 Supabase CLI 登录**：`supabase login` 在 Codex/CI 环境会被判定为非交互并直接失败，必须加 `--agent no --no-browser`，再把浏览器给出的验证码回填；Edge Function 部署本身不依赖 Docker。
 27. **深链初始 Tab 与清除参数一致性**：深链页面必须用 `recordType/recordId` 初始化受控 Tab，并把受控值保留到用户主动切换；清除深链参数时不得把用户弹回默认 Tab，严禁只靠派生 `activeTab` 而不写入 `selectedTab` 初始值。
+28. **指标日志投影必须覆盖全生命周期**：明细日志驱动主实体指标时，数据库触发器必须同时处理 INSERT、UPDATE、软删除、硬删除与关联键迁移，并按最新有效日志重算或安全归零；前端严禁再直接补写主实体指标，删除后还必须失效归档等派生缓存，避免旧日志覆盖、永久脏投影与界面假态。

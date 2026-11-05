@@ -1,4 +1,4 @@
-﻿/** 成片表现数据打卡 mutation：写入 video_metrics_logs 并原子触发 videos 状态与指标更新。 */
+/** 成片表现数据打卡 mutation：写入 video_metrics_logs 并原子触发 videos 状态与指标更新。 */
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getDataProvider } from '@/lib/data-provider'
@@ -21,21 +21,7 @@ export function useCreateVideoMetricsLog() {
           .insert(payload)
         if (error) throw error
 
-        // 前端再次显式更新 videos，确保触发器之外的客户端缓存双重保险
-        await supabase
-          .from('videos')
-          .update({
-            views: payload.views,
-            likes: payload.likes,
-            comments: payload.comments,
-            shares: payload.shares,
-            completion_rate: payload.completion_rate,
-            conversion_gmv_cents: payload.conversion_gmv_cents,
-            order_count: payload.order_count,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', input.videoId)
-
+        // videos 指标由数据库按最新有效日志投影，客户端回写会污染历史日志场景。
         return
       }
 
