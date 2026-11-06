@@ -3,9 +3,14 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { IntelligencePage } from './intelligence-page'
 
-const { createIntelligenceItem, updateIntelligenceItem } = vi.hoisted(() => ({
+const {
+  createIntelligenceItem,
+  updateIntelligenceItem,
+  convertIntelligenceItemToTask,
+} = vi.hoisted(() => ({
   createIntelligenceItem: vi.fn(),
   updateIntelligenceItem: vi.fn(),
+  convertIntelligenceItemToTask: vi.fn(),
 }))
 
 const item = {
@@ -28,6 +33,19 @@ const item = {
   createdAt: '2026-08-24T01:00:00.000Z',
 }
 
+const convertedTask = {
+  id: 'task-1',
+  title: item.title,
+  assigneeName: '测试老板',
+  dueAt: '',
+  region: 'US',
+}
+
+vi.mock('@/stores/auth-store', () => ({
+  useAuthStore: (
+    selector: (state: { user: { name: string; role: string } }) => unknown
+  ) => selector({ user: { name: '测试老板', role: 'owner' } }),
+}))
 vi.mock('@/features/intelligence/hooks/use-intelligence-items', () => ({
   useIntelligenceItems: () => ({
     data: [item],
@@ -46,10 +64,20 @@ vi.mock('@/features/intelligence/hooks/use-create-intelligence-item', () => ({
     isPending: false,
   }),
 }))
+vi.mock(
+  '@/features/intelligence/hooks/use-convert-intelligence-item-to-task',
+  () => ({
+    useConvertIntelligenceItemToTask: () => ({
+      mutateAsync: convertIntelligenceItemToTask,
+      isPending: false,
+    }),
+  })
+)
 
 beforeEach(() => {
   createIntelligenceItem.mockResolvedValue(undefined)
   updateIntelligenceItem.mockResolvedValue(undefined)
+  convertIntelligenceItemToTask.mockResolvedValue(convertedTask)
   vi.clearAllMocks()
 })
 
@@ -80,7 +108,7 @@ it('shows required fields in the create dialog', async () => {
   await expect.element(screen.getByText('去重键')).toBeInTheDocument()
 })
 
-it('records confirmed task intent by marking the intelligence item as tasked', async () => {
+it('creates a real linked task through the conversion service', async () => {
   const screen = await render(
     <QueryClientProvider client={new QueryClient()}>
       <IntelligencePage />
@@ -90,13 +118,18 @@ it('records confirmed task intent by marking the intelligence item as tasked', a
   await screen.getByRole('button', { name: '转为任务' }).click()
   await expect
     .element(
-      screen.getByText('当前版本只记录转任务意图，不会自动创建业务任务。')
+      screen.getByText(
+        '将创建真实团队任务，并原子标记该情报为已转任务。重复提交不会创建第二项任务。'
+      )
     )
     .toBeInTheDocument()
-  await screen.getByRole('button', { name: '确认记录' }).click()
+  await screen.getByRole('button', { name: '创建任务' }).click()
 
-  expect(updateIntelligenceItem).toHaveBeenCalledWith({
+  expect(convertIntelligenceItemToTask).toHaveBeenCalledWith({
     id: 'item-1',
-    status: 'tasked',
+    assigneeName: '测试老板',
+    dueAt: '',
+    region: 'US',
   })
+  expect(updateIntelligenceItem).not.toHaveBeenCalled()
 })

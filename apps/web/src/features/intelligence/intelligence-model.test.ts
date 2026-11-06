@@ -4,6 +4,7 @@ import {
   isSafeExternalUrl,
   parseIntelligenceCsv,
   validateIntelligenceDraft,
+  validateIntelligenceTaskDraft,
   type IntelligenceItem,
 } from './intelligence-model'
 
@@ -54,21 +55,68 @@ describe('intelligence model', () => {
     ])
   })
 
+  it('accepts a normalized task draft and rejects invalid task fields', () => {
+    expect(
+      validateIntelligenceTaskDraft({
+        assigneeName: ' 测试老板 ',
+        dueAt: '2026-11-15T10:00',
+        region: 'US',
+      })
+    ).toEqual([])
+    expect(
+      validateIntelligenceTaskDraft({
+        assigneeName: 'A'.repeat(41),
+        dueAt: 'not-a-date',
+        region: 'XX' as never,
+      })
+    ).toEqual(['负责人不能超过 40 个字符', '任务区域无效', '截止时间格式无效'])
+  })
+
   it('filters by keyword, workspace and status', () => {
     expect(
       filterIntelligenceItems(
-        [base, { ...base, id: 'item-2', title: '市场趋势', workspaces: ['editing'], status: 'saved' }],
+        [
+          base,
+          {
+            ...base,
+            id: 'item-2',
+            title: '市场趋势',
+            workspaces: ['editing'],
+            status: 'saved',
+          },
+        ],
         { query: '市场', workspace: 'editing', status: 'saved' }
       ).map((item) => item.id)
     ).toEqual(['item-2'])
   })
 
   it('parses valid CSV rows and reports invalid rows without partial output', () => {
-    expect(parseIntelligenceCsv('标题,来源,链接,采集时间,去重键\n公告,官方,https://example.com/a,2026-08-24T01:00:00Z,key-a')).toEqual({
-      rows: [{ title: '公告', sourceName: '官方', sourceUrl: 'https://example.com/a', capturedAt: '2026-08-24T01:00:00Z', dedupeKey: 'key-a' }], errors: [],
+    expect(
+      parseIntelligenceCsv(
+        '标题,来源,链接,采集时间,去重键\n公告,官方,https://example.com/a,2026-08-24T01:00:00Z,key-a'
+      )
+    ).toEqual({
+      rows: [
+        {
+          title: '公告',
+          sourceName: '官方',
+          sourceUrl: 'https://example.com/a',
+          capturedAt: '2026-08-24T01:00:00Z',
+          dedupeKey: 'key-a',
+        },
+      ],
+      errors: [],
     })
-    expect(parseIntelligenceCsv('标题,来源,链接,采集时间,去重键\n坏数据,来源,javascript:bad,,key-b')).toEqual({
-      rows: [], errors: ['第 2 行：原文链接必须是 http 或 https 地址', '第 2 行：采集时间不能为空'],
+    expect(
+      parseIntelligenceCsv(
+        '标题,来源,链接,采集时间,去重键\n坏数据,来源,javascript:bad,,key-b'
+      )
+    ).toEqual({
+      rows: [],
+      errors: [
+        '第 2 行：原文链接必须是 http 或 https 地址',
+        '第 2 行：采集时间不能为空',
+      ],
     })
   })
 })

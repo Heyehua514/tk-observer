@@ -277,3 +277,5 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 - 严禁 `vi.mock` 工厂只实现被测组件直接使用的导出；共享模块被间接 import 的导出（如 `getSupabaseEnvironment`）必须一并补齐，避免导入失败掩盖真实回归。
 - 严禁在 PowerShell 用 bash heredoc 调用 `apply_patch`（`<<'EOF'` 会被解析为无效重定向）；改用逐行读取或 `.NET` 文件 API 定点修改。
 - 严禁让 AI 云端通道把模型 Key 下发浏览器；Key 只能存在于 Supabase Edge Function Secrets，且云端入口必须校验用户 JWT。
+
+- 严禁在 PowerShell 双引号字符串中直接处理含反引号的 Markdown 或 SQL 文本；反引号会被当作转义符，必须改用单引号字符串或字符构造后定点替换。

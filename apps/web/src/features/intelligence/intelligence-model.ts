@@ -1,3 +1,5 @@
+import Papa from 'papaparse'
+
 export const intelligenceSourceTypes = [
   'official',
   'rss',
@@ -53,6 +55,42 @@ export type IntelligenceDraft = Pick<
   | 'workspaces'
 >
 
+export const intelligenceTaskRegions = [
+  'US',
+  'UK',
+  'ID',
+  'TH',
+  'VN',
+  'MY',
+  'PH',
+  'SG',
+] as const
+export type IntelligenceTaskRegion = (typeof intelligenceTaskRegions)[number]
+
+export type IntelligenceTaskDraft = {
+  assigneeName: string
+  dueAt: string
+  region: IntelligenceTaskRegion
+}
+
+export function validateIntelligenceTaskDraft(
+  draft: Partial<IntelligenceTaskDraft>
+): string[] {
+  const errors: string[] = []
+  const assigneeName = draft.assigneeName?.trim() || ''
+  if (!assigneeName) errors.push('负责人不能为空')
+  else if (assigneeName.length > 40) errors.push('负责人不能超过 40 个字符')
+  if (
+    !draft.region ||
+    !(intelligenceTaskRegions as readonly string[]).includes(draft.region)
+  ) {
+    errors.push('任务区域无效')
+  }
+  if (draft.dueAt?.trim() && Number.isNaN(Date.parse(draft.dueAt))) {
+    errors.push('截止时间格式无效')
+  }
+  return errors
+}
 export function isSafeExternalUrl(value: string) {
   try {
     const url = new URL(value.trim())
@@ -96,7 +134,9 @@ export function filterIntelligenceItems(
       (!filters.workspace ||
         filters.workspace === 'all' ||
         item.workspaces.includes(filters.workspace)) &&
-      (!filters.status || filters.status === 'all' || item.status === filters.status)
+      (!filters.status ||
+        filters.status === 'all' ||
+        item.status === filters.status)
     )
   })
 }
@@ -114,7 +154,9 @@ export function parseIntelligenceCsv(csv: string): {
     header: true,
     skipEmptyLines: true,
   })
-  const errors = parsed.errors.map((error) => `CSV 第 ${(error.row ?? 0) + 2} 行：${error.message}`)
+  const errors = parsed.errors.map(
+    (error) => `CSV 第 ${(error.row ?? 0) + 2} 行：${error.message}`
+  )
   const rows: IntelligenceCsvRow[] = []
   for (const [index, raw] of parsed.data.entries()) {
     const row: IntelligenceCsvRow = {
@@ -124,10 +166,11 @@ export function parseIntelligenceCsv(csv: string): {
       capturedAt: String(raw['采集时间'] || raw.captured_at || '').trim(),
       dedupeKey: String(raw['去重键'] || raw.dedupe_key || '').trim(),
     }
-    const validation = validateIntelligenceDraft(row).map((message) => `第 ${index + 2} 行：${message}`)
+    const validation = validateIntelligenceDraft(row).map(
+      (message) => `第 ${index + 2} 行：${message}`
+    )
     if (validation.length) errors.push(...validation)
     else rows.push(row)
   }
   return errors.length ? { rows: [], errors } : { rows, errors: [] }
 }
-import Papa from 'papaparse'

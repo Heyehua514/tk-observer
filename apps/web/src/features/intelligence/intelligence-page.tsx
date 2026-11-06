@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { ExternalLink, Plus, Save, Star, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -16,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadStateError } from '@/components/shared/load-state-error'
 import { PageHeader } from '@/components/shared/page-header'
+import { useConvertIntelligenceItemToTask } from './hooks/use-convert-intelligence-item-to-task'
 import { useCreateIntelligenceItem } from './hooks/use-create-intelligence-item'
 import {
   useIntelligenceItems,
@@ -25,10 +27,13 @@ import {
   filterIntelligenceItems,
   intelligenceSourceTypes,
   intelligenceStatuses,
+  intelligenceTaskRegions,
   parseIntelligenceCsv,
   validateIntelligenceDraft,
+  validateIntelligenceTaskDraft,
   type IntelligenceDraft,
   type IntelligenceItem,
+  type IntelligenceTaskDraft,
 } from './intelligence-model'
 
 const workspaceOptions = [
@@ -72,6 +77,12 @@ const emptyDraft: IntelligenceDraft = {
   workspaces: [],
 }
 
+const emptyTaskDraft: IntelligenceTaskDraft = {
+  assigneeName: '',
+  dueAt: '',
+  region: 'US',
+}
+
 export function IntelligencePage() {
   const [query, setQuery] = useState('')
   const [workspace, setWorkspace] = useState('all')
@@ -81,10 +92,15 @@ export function IntelligencePage() {
   const [open, setOpen] = useState(false)
   const [taskItem, setTaskItem] = useState<IntelligenceItem | null>(null)
   const [draft, setDraft] = useState<IntelligenceDraft>(emptyDraft)
+  const [taskDraft, setTaskDraft] =
+    useState<IntelligenceTaskDraft>(emptyTaskDraft)
   const csvInput = useRef<HTMLInputElement>(null)
+  const user = useAuthStore((state) => state.user)
+  const canManageTeamTasks = user?.role === 'owner' || user?.role === 'boss'
   const items = useIntelligenceItems({ query, workspace, status })
   const createItem = useCreateIntelligenceItem()
   const updateItem = useUpdateIntelligenceItem()
+  const convertTask = useConvertIntelligenceItemToTask()
   const visible = useMemo(
     () =>
       filterIntelligenceItems(items.data || [], { query, workspace, status }),
@@ -116,14 +132,34 @@ export function IntelligencePage() {
     }
   }
 
-  const confirmTaskIntent = async () => {
+  const openTaskDialog = (item: IntelligenceItem) => {
+    setTaskItem(item)
+    setTaskDraft({
+      ...emptyTaskDraft,
+      assigneeName: user?.name || '',
+    })
+  }
+
+  const closeTaskDialog = () => {
+    setTaskItem(null)
+    setTaskDraft(emptyTaskDraft)
+  }
+
+  const confirmTask = async () => {
     if (!taskItem) return
+    const errors = validateIntelligenceTaskDraft(taskDraft)
+    if (errors.length) return toast.error(errors[0])
     try {
-      await updateItem.mutateAsync({ id: taskItem.id, status: 'tasked' })
-      setTaskItem(null)
-      toast.success('已记录转任务意图')
+      const task = await convertTask.mutateAsync({
+        id: taskItem.id,
+        assigneeName: taskDraft.assigneeName.trim(),
+        dueAt: taskDraft.dueAt ? new Date(taskDraft.dueAt).toISOString() : '',
+        region: taskDraft.region,
+      })
+      closeTaskDialog()
+      toast.success(`团队任务已创建：${task.title}`)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '转任务状态更新失败')
+      toast.error(error instanceof Error ? error.message : '团队任务创建失败')
     }
   }
 
@@ -288,8 +324,11 @@ export function IntelligencePage() {
                   <Button
                     size='sm'
                     variant='outline'
-                    disabled={item.status === 'tasked'}
-                    onClick={() => setTaskItem(item)}
+                    disabled={item.status === 'tasked' || !canManageTeamTasks}
+                    title={
+                      canManageTeamTasks ? undefined : '仅负责人可创建团队任务'
+                    }
+                    onClick={() => openTaskDialog(item)}
                   >
                     <Save className='size-4' />
                     {item.status === 'tasked' ? '已转任务' : '转为任务'}
@@ -430,27 +469,71 @@ export function IntelligencePage() {
       </Dialog>
       <Dialog
         open={Boolean(taskItem)}
-        onOpenChange={(next) => !next && setTaskItem(null)}
+        onOpenChange={(next) => !next && closeTaskDialog()}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>转为任务</DialogTitle>
             <DialogDescription>
-              当前版本只记录转任务意图，不会自动创建业务任务。
+              将创建真实团队任务，并原子标记该情报为已转任务。重复提交不会创建第二项任务。
             </DialogDescription>
           </DialogHeader>
           <p className='rounded-md border bg-muted/30 p-3 text-sm'>
             {taskItem?.title}
           </p>
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <label className='space-y-1 text-sm sm:col-span-2'>
+              负责人
+              <Input
+                value={taskDraft.assigneeName}
+                onChange={(event) =>
+                  setTaskDraft({
+                    ...taskDraft,
+                    assigneeName: event.target.value,
+                  })
+                }
+              />
+            </label>
+            <label className='space-y-1 text-sm'>
+              截止时间
+              <Input
+                type='datetime-local'
+                value={taskDraft.dueAt}
+                onChange={(event) =>
+                  setTaskDraft({ ...taskDraft, dueAt: event.target.value })
+                }
+              />
+            </label>
+            <label className='space-y-1 text-sm'>
+              任务区域
+              <select
+                className='mt-1 h-9 w-full rounded-md border bg-background px-3'
+                value={taskDraft.region}
+                onChange={(event) =>
+                  setTaskDraft({
+                    ...taskDraft,
+                    region: event.target
+                      .value as IntelligenceTaskDraft['region'],
+                  })
+                }
+              >
+                {intelligenceTaskRegions.map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <DialogFooter>
-            <Button variant='outline' onClick={() => setTaskItem(null)}>
+            <Button variant='outline' onClick={closeTaskDialog}>
               取消
             </Button>
             <Button
-              onClick={() => void confirmTaskIntent()}
-              disabled={updateItem.isPending}
+              onClick={() => void confirmTask()}
+              disabled={convertTask.isPending}
             >
-              确认记录
+              创建任务
             </Button>
           </DialogFooter>
         </DialogContent>

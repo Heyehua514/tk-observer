@@ -95,3 +95,17 @@
 - 影响：迁移 SQL 已静态审查，但数据库触发器行为尚未在真实 PostgreSQL 实例验证；不能把 pgTAP 标记为通过。
 - 建议：启用 Docker Desktop/WSL2 后执行 `pnpm supabase:start` 与 `pnpm supabase:test`，连同既有 pgTAP 一并补跑。
 - 处置：按三击熔断规则不重复死磕本机环境，今日通过类型检查、前端定向测试、schema/RLS 静态审计与迁移代码审查旁路继续。
+
+## 2026-11-06 [BLOCKED] 情报转任务 pgTAP 无法实跑
+
+- 现象：`pnpm supabase:test` 返回 `LegacyDbConnectError`，连接 `127.0.0.1:54322` 时 `ECONNREFUSED`，提示需先运行 `supabase start`。
+- 影响：新增 `intelligence_task_conversion.test.sql` 的 13 条断言无法在本地 PostgreSQL 实例验证；静态审查、类型检查、情报域浏览器测试、schema/RLS 审计均通过。
+- 建议：启用 Docker Desktop/WSL2 后执行 `pnpm supabase:start` 与 `pnpm supabase:test`，连同历史 pgTAP 一并补跑。
+- 处置：本轮仅尝试一次即按已知环境阻塞记录并旁路继续，不将数据库实跑标记为通过。
+
+## 2026-11-06 [BLOCKED] GitHub 推送失败
+
+- 现象：`git push origin main` 返回 `fatal: unable to access ... Failed to connect to github.com port 443 via 127.0.0.1`；本机 Git 配置的代理端口 7897 未监听。
+- 影响：本地提交 `0929ade` 已完成，`main` 领先 `origin/main` 2 个提交，远程尚未同步。
+- 建议：启动可用代理/VPN 或恢复 7897 端口后执行一次 `git push origin main`；无需改动代码。
+- 处置：首次失败即记录并停止重试，不重复推送。

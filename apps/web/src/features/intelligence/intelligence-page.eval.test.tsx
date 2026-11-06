@@ -3,11 +3,21 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { IntelligencePage } from './intelligence-page'
 
-const { createIntelligenceItem, updateIntelligenceItem } = vi.hoisted(() => ({
+const {
+  createIntelligenceItem,
+  updateIntelligenceItem,
+  convertIntelligenceItemToTask,
+} = vi.hoisted(() => ({
   createIntelligenceItem: vi.fn(),
   updateIntelligenceItem: vi.fn(),
+  convertIntelligenceItemToTask: vi.fn(),
 }))
 
+vi.mock('@/stores/auth-store', () => ({
+  useAuthStore: (
+    selector: (state: { user: { name: string; role: string } }) => unknown
+  ) => selector({ user: { name: '测试老板', role: 'owner' } }),
+}))
 vi.mock('@/features/intelligence/hooks/use-intelligence-items', () => ({
   useIntelligenceItems: () => ({
     data: [
@@ -47,14 +57,30 @@ vi.mock('@/features/intelligence/hooks/use-create-intelligence-item', () => ({
     isPending: false,
   }),
 }))
+vi.mock(
+  '@/features/intelligence/hooks/use-convert-intelligence-item-to-task',
+  () => ({
+    useConvertIntelligenceItemToTask: () => ({
+      mutateAsync: convertIntelligenceItemToTask,
+      isPending: false,
+    }),
+  })
+)
 
 beforeEach(() => {
   createIntelligenceItem.mockResolvedValue(undefined)
   updateIntelligenceItem.mockResolvedValue(undefined)
+  convertIntelligenceItemToTask.mockResolvedValue({
+    id: 'eval-task-1',
+    title: '平台规则更新',
+    assigneeName: '测试老板',
+    dueAt: '',
+    region: 'US',
+  })
   vi.clearAllMocks()
 })
 
-it('records task intent without pretending to create a business task', async () => {
+it('creates a real task and leaves intelligence status writes to the RPC', async () => {
   const screen = await render(
     <QueryClientProvider client={new QueryClient()}>
       <IntelligencePage />
@@ -64,14 +90,19 @@ it('records task intent without pretending to create a business task', async () 
   await screen.getByRole('button', { name: '转为任务' }).click()
   await expect
     .element(
-      screen.getByText('当前版本只记录转任务意图，不会自动创建业务任务。')
+      screen.getByText(
+        '将创建真实团队任务，并原子标记该情报为已转任务。重复提交不会创建第二项任务。'
+      )
     )
     .toBeInTheDocument()
-  await screen.getByRole('button', { name: '确认记录' }).click()
+  await screen.getByRole('button', { name: '创建任务' }).click()
 
-  expect(updateIntelligenceItem).toHaveBeenCalledWith({
+  expect(convertIntelligenceItemToTask).toHaveBeenCalledWith({
     id: 'eval-item-1',
-    status: 'tasked',
+    assigneeName: '测试老板',
+    dueAt: '',
+    region: 'US',
   })
+  expect(updateIntelligenceItem).not.toHaveBeenCalled()
   expect(createIntelligenceItem).not.toHaveBeenCalled()
 })

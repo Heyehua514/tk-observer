@@ -693,13 +693,13 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'creator_follow_ups_creator_id_fkey',
-            columns: ['creator_id'],
-            isOneToOne: false,
-            referencedRelation: 'creators',
-            referencedColumns: ['id'],
+            foreignKeyName: 'creator_follow_ups_creator_id_fkey'
+            columns: ['creator_id']
+            isOneToOne: false
+            referencedRelation: 'creators'
+            referencedColumns: ['id']
           },
-        ],
+        ]
       }
       creators: {
         Row: {
@@ -1918,6 +1918,13 @@ export type Database = {
             referencedRelation: 'profiles'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'team_tasks_source_intelligence_id_fkey'
+            columns: ['id']
+            isOneToOne: false
+            referencedRelation: 'team_tasks'
+            referencedColumns: ['source_intelligence_id']
+          },
         ]
       }
       member_invitations: {
@@ -2449,6 +2456,7 @@ export type Database = {
           legacy_id: string | null
           progress: number
           region: string
+          source_intelligence_id: string | null
           title: string
           updated_at: string
         }
@@ -2461,6 +2469,7 @@ export type Database = {
           legacy_id?: string | null
           progress?: number
           region?: string
+          source_intelligence_id?: string | null
           title: string
           updated_at?: string
         }
@@ -2473,10 +2482,19 @@ export type Database = {
           legacy_id?: string | null
           progress?: number
           region?: string
+          source_intelligence_id?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'team_tasks_source_intelligence_id_fkey'
+            columns: ['source_intelligence_id']
+            isOneToOne: false
+            referencedRelation: 'intelligence_items'
+            referencedColumns: ['id']
+          },
+        ]
       }
       trending_topics: {
         Row: {
@@ -2784,11 +2802,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'video_metrics_logs_video_id_fkey',
-            columns: ['video_id'],
-            isOneToOne: false,
-            referencedRelation: 'videos',
-            referencedColumns: ['id'],
+            foreignKeyName: 'video_metrics_logs_video_id_fkey'
+            columns: ['video_id']
+            isOneToOne: false
+            referencedRelation: 'videos'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2970,6 +2988,27 @@ export type Database = {
       }
     }
     Functions: {
+      convert_intelligence_item_to_task: {
+        Args: {
+          p_assignee_name: string
+          p_due_at?: string | null
+          p_intelligence_item_id: string
+          p_region?: string
+        }
+        Returns: {
+          assignee_name: string
+          created_at: string
+          deleted_at: string | null
+          due_at: string | null
+          id: string
+          legacy_id: string | null
+          progress: number
+          region: string
+          source_intelligence_id: string | null
+          title: string
+          updated_at: string
+        }
+      }
       current_user_role: { Args: never; Returns: string }
       current_user_status: { Args: never; Returns: string }
       generate_daily_report: { Args: { target_date: string }; Returns: string }
