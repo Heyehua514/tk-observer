@@ -3013,6 +3013,18 @@ export type Database = {
       current_user_status: { Args: never; Returns: string }
       generate_daily_report: { Args: { target_date: string }; Returns: string }
       generate_weekly_report: { Args: { target_date: string }; Returns: string }
+      get_overview_action_items: {
+        Args: { p_limit?: number }
+        Returns: {
+          assignee_name: string | null
+          due_at: string | null
+          record_id: string
+          source_intelligence_id: string | null
+          status: string
+          title: string
+          workspace: string
+        }[]
+      }
       get_my_feishu_connection: {
         Args: never
         Returns: {

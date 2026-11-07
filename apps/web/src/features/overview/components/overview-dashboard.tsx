@@ -32,6 +32,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { MetricDeck } from '@/components/shared/metric-deck'
 import { PageHeader } from '@/components/shared/page-header'
 import { RoleAvatar } from '@/components/shared/role-avatar'
+import { CrossDomainPipelineCard } from '@/features/cross-domain'
 import { useEvents } from '@/features/market/hooks/use-market-records'
 import {
   AiAssistantPanel,
@@ -40,8 +41,10 @@ import {
   TaskAiEntry,
 } from '@/features/shared-ai'
 import { buildTaskAnalysisRequest } from '@/features/shared-ai/ai-context'
+import { overviewQueryKeys } from '../query-keys'
 import { TeamMemory } from '../team-memory'
 import { ActivityStatusChart } from './activity-status-chart'
+import { CrossWorkspaceTasks } from './cross-workspace-tasks'
 import { GmvEntryDialog } from './gmv-entry-dialog'
 import {
   mapSupabaseAuditLog,
@@ -51,15 +54,13 @@ import {
   type OverviewGmvMetric,
   type OverviewTeamTask,
 } from './overview-dashboard-supabase-mapper'
+import { OverviewIntelligenceDigest } from './overview-intelligence-digest'
 import {
   CNY_ACCOUNTING_NOTE,
   filterGmvMetricsByRange,
   type OverviewMetricRange,
 } from './overview-metrics'
 import { UpcomingActivities } from './upcoming-activities'
-import { OverviewIntelligenceDigest } from './overview-intelligence-digest'
-import { CrossWorkspaceTasks } from './cross-workspace-tasks'
-import { CrossDomainPipelineCard } from '@/features/cross-domain'
 
 const rangeLabels: Record<OverviewMetricRange, string> = {
   '7d': '近 7 天',
@@ -84,7 +85,7 @@ export function OverviewDashboard() {
   const [taskPrompt, setTaskPrompt] = useState('')
   const events = useEvents()
   const data = useQuery({
-    queryKey: ['overview-dashboard'],
+    queryKey: overviewQueryKeys.dashboard,
     queryFn: async (): Promise<OverviewDashboardData> => {
       if (getDataProvider() === 'supabase') {
         const [gmv, creators, tasks, videos, logs, teamTasks] =

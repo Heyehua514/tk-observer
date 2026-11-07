@@ -109,3 +109,15 @@
 - 影响：本地提交 `0929ade` 已完成，`main` 领先 `origin/main` 2 个提交，远程尚未同步。
 - 建议：启动可用代理/VPN 或恢复 7897 端口后执行一次 `git push origin main`；无需改动代码。
 - 处置：首次失败即记录并停止重试，不重复推送。
+## 2026-11-07 [BLOCKED] 总览四工作台待办 pgTAP 无法实跑
+
+- 现象：`pnpm supabase:test` 返回 `LegacyDbConnectError`，连接 `127.0.0.1:54322` 时 `ECONNREFUSED`，提示需先运行 `supabase start`；本机无可用 Docker/WSL2。
+- 影响：`supabase/tests/overview_action_items.test.sql` 的 13 条断言未在真实 PostgreSQL 实例执行，四工作台聚合、排序、limit 与底层 RLS 行为不能标记为数据库验收通过。
+- 建议：启用 Docker Desktop/WSL2 后执行 `pnpm supabase:start`、`pnpm supabase:test`、`pnpm supabase:types`，补跑历史 pgTAP 并核对生成类型。
+- 处置：按三击熔断记录环境阻塞并旁路继续；类型检查、Web 全量测试、schema/RLS 静态审计与 PocketBase freeze 检查已完成。
+## 2026-11-07 [BLOCKED] GitHub 推送失败
+
+- 现象：`git push origin main` 返回 `Failed to connect to github.com port 443 via 127.0.0.1 after 2062 ms: Could not connect to server`。
+- 影响：本地提交已完成，`main` 领先 `origin/main` 3 个提交，远程尚未同步；代码与日志均已保留在本地。
+- 建议：启动可用代理/VPN 或恢复 127.0.0.1 代理端口后执行一次 `git push origin main`，无需改动代码。
+- 处置：首次失败即记录并停止重试，不重复推送。

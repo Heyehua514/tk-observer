@@ -1,122 +1,85 @@
-﻿/**
+/**
  * 跨工作台未结任务与风险聚合 Hook
- * 实时汇聚：设计工作台、剪辑工作台、商务工作台未完成事项
+ * 通过单一只读 RPC 汇聚设计、剪辑、商务与团队任务，过滤口径与 RLS 由数据库统一保证。
  */
 import { useQuery } from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { getSupabaseClient } from '@/lib/supabase'
 import type { CrossWorkspaceTask } from '../components/cross-workspace-tasks-model'
+import { overviewQueryKeys } from '../query-keys'
 
-export type RawDesignTaskRow = {
-  id: string
+export type RawOverviewActionItemRow = {
+  workspace: string
+  record_id: string
   title: string
   status: string
   due_at?: string | null
+  assignee_name?: string | null
+  source_intelligence_id?: string | null
 }
 
-export type RawVideoTaskRow = {
-  id: string
-  title: string
-  status: string
-  due_at?: string | null
-  owner_name?: string | null
-}
+const supportedWorkspaces = new Set<CrossWorkspaceTask['workspace']>([
+  'design',
+  'editing',
+  'business',
+  'team',
+])
 
-export type RawOpportunityRow = {
-  id: string
-  title: string
-  stage: string
-  expected_close?: string | null
+function isWorkspace(value: string): value is CrossWorkspaceTask['workspace'] {
+  return supportedWorkspaces.has(value as CrossWorkspaceTask['workspace'])
 }
 
 export function mapAndSortCrossWorkspaceTasks(
-  designRows: RawDesignTaskRow[] = [],
-  videoRows: RawVideoTaskRow[] = [],
-  oppRows: RawOpportunityRow[] = []
+  rows: RawOverviewActionItemRow[] = []
 ): CrossWorkspaceTask[] {
-  const result: CrossWorkspaceTask[] = []
-
-  for (const r of designRows) {
-    if (r.status === 'done') continue
-    result.push({
-      id: `design-${r.id}`,
-      title: r.title,
-      workspace: 'design',
-      status: r.status,
-      dueAt: r.due_at || undefined,
-    })
-  }
-
-  for (const r of videoRows) {
-    if (r.status === 'done') continue
-    result.push({
-      id: `editing-${r.id}`,
-      title: r.title,
-      workspace: 'editing',
-      status: r.status,
-      dueAt: r.due_at || undefined,
-      assigneeName: r.owner_name || undefined,
-    })
-  }
-
-  for (const r of oppRows) {
-    if (r.stage === 'won' || r.stage === 'lost') continue
-    result.push({
-      id: `business-${r.id}`,
-      title: r.title,
-      workspace: 'business',
-      status: r.stage,
-      dueAt: r.expected_close || undefined,
-    })
-  }
+  const result = rows
+    .filter((row) => isWorkspace(row.workspace))
+    .map((row): CrossWorkspaceTask => ({
+      id: `${row.workspace}-${row.record_id}`,
+      title: row.title,
+      workspace: row.workspace as CrossWorkspaceTask['workspace'],
+      status: row.status,
+      dueAt: row.due_at || undefined,
+      assigneeName: row.assignee_name || undefined,
+      sourceIntelligenceId: row.source_intelligence_id || undefined,
+    }))
 
   // 排序：有明确截止时间的排前面，按截止时间由早到晚；无截止时间的沉底
   return result.sort((a, b) => {
     if (a.dueAt && b.dueAt) {
-      return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
+      const dueDelta = new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
+      if (dueDelta !== 0) return dueDelta
+    } else if (a.dueAt) {
+      return -1
+    } else if (b.dueAt) {
+      return 1
     }
-    if (a.dueAt) return -1
-    if (b.dueAt) return 1
-    return 0
+
+    return (
+      a.workspace.localeCompare(b.workspace) ||
+      a.title.localeCompare(b.title, 'zh-CN') ||
+      a.id.localeCompare(b.id)
+    )
   })
 }
 
 export function useCrossWorkspaceTasks() {
   return useQuery<CrossWorkspaceTask[]>({
-    queryKey: ['cross-workspace-tasks'],
+    queryKey: overviewQueryKeys.crossWorkspaceTasks,
     queryFn: async (): Promise<CrossWorkspaceTask[]> => {
       if (getDataProvider() !== 'supabase') {
         return []
       }
 
-      try {
-        const client = getSupabaseClient()
-        const [designRes, videoRes, oppRes] = await Promise.all([
-          client
-            .from('design_tasks')
-            .select('id, title, status, due_at')
-            .is('deleted_at', null)
-            .limit(20),
-          client
-            .from('video_tasks')
-            .select('id, title, status, due_at, owner_name')
-            .is('deleted_at', null)
-            .limit(20),
-          client
-            .from('opportunities')
-            .select('id, title, stage, expected_close')
-            .is('deleted_at', null)
-            .limit(20),
-        ])
+      const { data, error } = await getSupabaseClient().rpc(
+        'get_overview_action_items',
+        { p_limit: 50 }
+      )
+      if (error) throw error
 
-        return mapAndSortCrossWorkspaceTasks(
-          (designRes.data || []) as RawDesignTaskRow[],
-          (videoRes.data || []) as RawVideoTaskRow[],
-          (oppRes.data || []) as RawOpportunityRow[]
-        )
-      } catch {
-        return []
-      }
+      return mapAndSortCrossWorkspaceTasks(
+        (data || []) as RawOverviewActionItemRow[]
+      )
     },
     staleTime: 60 * 1000,
   })

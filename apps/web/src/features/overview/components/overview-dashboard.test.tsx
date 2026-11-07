@@ -18,6 +18,7 @@ vi.mock('@/lib/data-provider', () => ({
 
 vi.mock('@/lib/supabase', () => ({
   getSupabaseClient: () => ({
+    rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
     channel: () => ({
       on: () => ({ subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })) }),
     }),

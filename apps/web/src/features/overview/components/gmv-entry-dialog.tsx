@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/date-picker'
+import { overviewQueryKeys } from '../query-keys'
 import { createGmvMetric } from './gmv-mutation'
 
 const gmvSchema = z.object({
@@ -59,7 +60,9 @@ export function GmvEntryDialog() {
   const mutation = useMutation({
     mutationFn: createGmvMetric,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['overview-dashboard'] })
+      void queryClient.invalidateQueries({
+        queryKey: overviewQueryKeys.dashboard,
+      })
       toast.success('GMV 已录入')
       setOpen(false)
       form.reset()

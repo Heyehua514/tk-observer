@@ -1,10 +1,11 @@
 export type CrossWorkspaceTask = {
   id: string
   title: string
-  workspace: 'design' | 'editing' | 'business'
+  workspace: 'design' | 'editing' | 'business' | 'team'
   status: string
   dueAt?: string
   assigneeName?: string
+  sourceIntelligenceId?: string
 }
 
 export function isTaskOverdue(dueAt?: string, now = new Date()): boolean {

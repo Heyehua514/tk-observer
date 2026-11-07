@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { getDataProvider } from '@/lib/data-provider'
 import { getSupabaseClient } from '@/lib/supabase'
+import { overviewQueryKeys } from '@/features/overview/query-keys'
 import type { IntelligenceTaskDraft } from '../intelligence-model'
 import { intelligenceKeys } from './use-intelligence-items'
 
@@ -53,7 +54,12 @@ export function useConvertIntelligenceItemToTask() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: intelligenceKeys.all }),
-        queryClient.invalidateQueries({ queryKey: ['overview-dashboard'] }),
+        queryClient.invalidateQueries({
+          queryKey: overviewQueryKeys.dashboard,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: overviewQueryKeys.crossWorkspaceTasks,
+        }),
       ])
     },
   })

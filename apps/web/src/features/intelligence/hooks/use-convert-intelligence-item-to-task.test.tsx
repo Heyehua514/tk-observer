@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
+import { overviewQueryKeys } from '@/features/overview/query-keys'
 import { useConvertIntelligenceItemToTask } from './use-convert-intelligence-item-to-task'
 import { intelligenceKeys } from './use-intelligence-items'
 
@@ -82,7 +83,10 @@ it('calls the atomic conversion RPC and invalidates affected views', async () =>
       queryKey: intelligenceKeys.all,
     })
     expect(invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['overview-dashboard'],
+      queryKey: overviewQueryKeys.dashboard,
+    })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: overviewQueryKeys.crossWorkspaceTasks,
     })
   })
   await expect.element(screen.getByText('公开行业公告')).toBeInTheDocument()
