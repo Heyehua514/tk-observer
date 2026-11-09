@@ -25,7 +25,7 @@ supabase functions deploy ai-proxy
 - `AI_MODEL` 默认 `deepseek-chat`。
 - `AI_BASE_URL` 默认 `https://api.deepseek.com/v1`，必须是 HTTPS，末尾斜杠会自动去除。
 - 兼容别名：`DEEPSEEK_API_KEY`、`DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL`。
-- 未设置 `AI_API_KEY` 时函数返回 `AI_NOT_CONFIGURED`，前端回落到统一的 `GATEWAY_UNAVAILABLE` 提示。
+- 未设置 `AI_API_KEY` 时函数返回 `AI_NOT_CONFIGURED`，前端明确提示管理员检查模型服务；登录失效、网络失败、上游失败和空结果各自提供不同提示。
 
 ## 请求契约
 
@@ -67,7 +67,10 @@ Content-Type: application/json
 ## 安全边界
 
 - 只有持有有效 Supabase 用户 JWT 的请求才会调用模型。
-- 单次上游请求超时 120 秒，前端整体超时 125 秒。
+- 单次上游请求超时 120 秒。前端本机与云端请求各有 125 秒期限，涵盖读取响应体；本机失败后才开始云端请求，因此不能把 125 秒称为整个流程的总超时。
+- 工作台各数据源最多等待 8 秒，部分数据源超时后保留其他结果并显示缺失提示；云端会话读取最多等待 8 秒。期限通过 Promise race 强制结束等待，同时发送 abort，避免只取消请求却继续卡住。
+- 云端令牌来自当前项目 Supabase 客户端的 `auth.getSession()`，由 SDK 处理过期会话刷新，禁止遍历其他项目的 localStorage 会话。
+- 面板依次显示读取工作台、检索知识库、调用模型三个阶段；失败后页面保留错误提示并重新开放执行按钮，重试时清除旧错误。
 - 不在日志中输出 prompt 全文与 API Key；上游失败只记录状态码与截断后的响应片段。
 - CORS 当前允许任意来源，若后续绑定固定生产域名应收紧 `Access-Control-Allow-Origin`。
 
@@ -88,3 +91,7 @@ Content-Type: application/json
 - 待验证：登录态下从两台设备各发起一次 AI 分析，确认前端自动回退且返回成功。
 
 更换模型或 Key 时重新执行 `supabase secrets set` 后无需改代码；如需换供应商，同时更新 `AI_BASE_URL` 与 `AI_MODEL`。
+
+## 2026-11-09 本地修复验证范围
+
+本轮修改前端会话读取、超时和错误展示，不修改线上函数、Secrets 或权限。自动化测试使用模拟通道，验证缺失登录、跨项目陈旧令牌、上游异常、空输出、忽略 abort 的请求以及错误后的重试；不能替代真实登录后的模型调用和第二台设备验收。旧桌面安装包需要重新构建发布后才会包含修复。

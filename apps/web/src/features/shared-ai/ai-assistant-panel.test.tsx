@@ -36,10 +36,10 @@ it('renders scope and options', async () => {
     </QueryClientProvider>
   )
   await expect
-    .element(screen.getByText('AI 助手（WorkBuddy）'))
+    .element(screen.getByText('AI 助手（WorkBuddy / DeepSeek）'))
     .toBeInTheDocument()
   await expect
-    .element(screen.getByText(/由你本机的 WorkBuddy 执行/))
+    .element(screen.getByText(/优先使用本机 WorkBuddy/))
     .toBeInTheDocument()
   await expect.element(screen.getByText('商务助手')).toBeInTheDocument()
   await expect.element(screen.getByText(/客户跟进/)).toBeInTheDocument()
@@ -80,6 +80,36 @@ it('loads workspace data only after the user requests analysis', async () => {
   )
 })
 
+it('shows which stage is running while preparing an AI request', async () => {
+  let resolveLoad:
+    | ((value: { available: boolean; items: []; missingSources: [] }) => void)
+    | undefined
+  mocks.load.mockReturnValue(
+    new Promise((resolve) => {
+      resolveLoad = resolve
+    })
+  )
+  mocks.callWorkBuddyGateway.mockReturnValue(new Promise(() => {}))
+  const screen = await render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AiAssistantPanel scope='商务工作台' />
+    </QueryClientProvider>
+  )
+
+  await screen
+    .getByPlaceholder(
+      '例如：调研 TikTok 美区美妆类目 7 月畅销品，给出 Top 5 与共性。'
+    )
+    .fill('分析我的商机')
+  await screen.getByRole('button', { name: /让 WorkBuddy 执行/ }).click()
+  await expect
+    .element(screen.getByText('正在读取工作台数据…'))
+    .toBeInTheDocument()
+
+  resolveLoad?.({ available: true, items: [], missingSources: [] })
+  await expect.element(screen.getByText('正在调用 AI…')).toBeInTheDocument()
+})
+
 it('directs unavailable users to the desktop client', async () => {
   mocks.load.mockResolvedValue({
     available: true,
@@ -102,7 +132,7 @@ it('directs unavailable users to the desktop client', async () => {
 
   await vi.waitFor(() =>
     expect(toast.error).toHaveBeenCalledWith(
-      '本机 WorkBuddy 与云端 AI 通道均不可用：请确认桌面客户端已登录，或联系管理员配置 ai-proxy'
+      '本机 WorkBuddy 与云端 AI 均不可用，请检查客户端登录和网络。'
     )
   )
 })

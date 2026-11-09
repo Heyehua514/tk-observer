@@ -56,7 +56,7 @@ it('never describes unconfirmed suggestions as completed system actions', async 
   )
 })
 
-it('keeps gateway recovery inside the installed client experience', async () => {
+it('explains channel failure without exposing developer commands', async () => {
   mocks.load.mockResolvedValue({
     available: true,
     items: [],
@@ -78,6 +78,41 @@ it('keeps gateway recovery inside the installed client experience', async () => 
 
   await vi.waitFor(() => expect(toast.error).toHaveBeenCalledOnce())
   const message = vi.mocked(toast.error).mock.calls[0]?.[0]
-  expect(message).toContain('桌面客户端')
+  expect(message).toContain('WorkBuddy')
   expect(message).not.toContain('.command')
+})
+
+it('shows a recoverable login error and preserves partial-context warnings on retry', async () => {
+  mocks.load.mockResolvedValue({
+    available: true,
+    items: [],
+    missingSources: ['商机'],
+  })
+  mocks.callWorkBuddyGateway
+    .mockRejectedValueOnce(new Error('AI_AUTH_REQUIRED'))
+    .mockResolvedValueOnce('请先补充商机数据，再制定跟进计划。')
+  const screen = await render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AiAssistantPanel scope='商务工作台' initialPrompt='分析我的商机' />
+    </QueryClientProvider>
+  )
+
+  await screen.getByRole('button', { name: /让 WorkBuddy 执行/ }).click()
+  await expect
+    .element(screen.getByRole('alert'))
+    .toHaveTextContent('登录状态已失效')
+  await expect
+    .element(screen.getByRole('button', { name: /让 WorkBuddy 执行/ }))
+    .toBeEnabled()
+  await expect
+    .element(screen.getByText(/数据暂不可用，本次建议不会把缺失数据视为零/))
+    .toBeInTheDocument()
+  await screen.getByRole('button', { name: /让 WorkBuddy 执行/ }).click()
+
+  await expect
+    .element(screen.getByText('请先补充商机数据，再制定跟进计划。'))
+    .toBeInTheDocument()
+  await expect.element(screen.getByRole('alert')).not.toBeInTheDocument()
+  expect(mocks.callWorkBuddyGateway).toHaveBeenCalledTimes(2)
+  expect(mocks.callWorkBuddyGateway.mock.calls[1][0]).toContain('商机')
 })

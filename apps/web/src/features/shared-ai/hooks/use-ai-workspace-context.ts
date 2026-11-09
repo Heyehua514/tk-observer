@@ -24,34 +24,138 @@ type ContextSource = {
 }
 
 type ContextRow = Record<string, unknown>
-type ContextQuery = (source: string, definition: ContextSource) => Promise<ContextRow[]>
+type ContextQuery = (
+  source: string,
+  definition: ContextSource,
+  signal: AbortSignal
+) => Promise<ContextRow[]>
+const CONTEXT_SOURCE_TIMEOUT_MS = 8_000
 
 const sourcesByScope: Record<string, ContextSource[]> = {
   总览工作台: [
-    { source: '团队任务', kind: '团队任务', table: 'team_tasks', columns: 'title,progress,due_at,updated_at', title: 'title', status: 'progress', dueAt: 'due_at', metric: 'progress' },
-    { source: '活动', kind: '活动', table: 'events', columns: 'name,status,start_date,total_budget,updated_at', title: 'name', status: 'status', dueAt: 'start_date', metric: 'total_budget' },
+    {
+      source: '团队任务',
+      kind: '团队任务',
+      table: 'team_tasks',
+      columns: 'title,progress,due_at,updated_at',
+      title: 'title',
+      status: 'progress',
+      dueAt: 'due_at',
+      metric: 'progress',
+    },
+    {
+      source: '活动',
+      kind: '活动',
+      table: 'events',
+      columns: 'name,status,start_date,total_budget,updated_at',
+      title: 'name',
+      status: 'status',
+      dueAt: 'start_date',
+      metric: 'total_budget',
+    },
   ],
   商务工作台: [
-    { source: '商机', kind: '商机', table: 'opportunities', columns: 'title,stage,expected_close,amount,updated_at', title: 'title', status: 'stage', dueAt: 'expected_close', metric: 'amount' },
-    { source: '渠道商单', kind: '渠道商单', table: 'channel_orders', columns: 'title,status,publish_date,amount,updated_at', title: 'title', status: 'status', dueAt: 'publish_date', metric: 'amount' },
+    {
+      source: '商机',
+      kind: '商机',
+      table: 'opportunities',
+      columns: 'title,stage,expected_close,amount,updated_at',
+      title: 'title',
+      status: 'stage',
+      dueAt: 'expected_close',
+      metric: 'amount',
+    },
+    {
+      source: '渠道商单',
+      kind: '渠道商单',
+      table: 'channel_orders',
+      columns: 'title,status,publish_date,amount,updated_at',
+      title: 'title',
+      status: 'status',
+      dueAt: 'publish_date',
+      metric: 'amount',
+    },
   ],
   市场工作台: [
-    { source: '活动', kind: '活动', table: 'events', columns: 'name,status,start_date,total_budget,updated_at', title: 'name', status: 'status', dueAt: 'start_date', metric: 'total_budget' },
-    { source: '活动任务', kind: '活动任务', table: 'event_tasks', columns: 'title,status,due_date,priority,updated_at', title: 'title', status: 'status', dueAt: 'due_date', metric: 'priority' },
+    {
+      source: '活动',
+      kind: '活动',
+      table: 'events',
+      columns: 'name,status,start_date,total_budget,updated_at',
+      title: 'name',
+      status: 'status',
+      dueAt: 'start_date',
+      metric: 'total_budget',
+    },
+    {
+      source: '活动任务',
+      kind: '活动任务',
+      table: 'event_tasks',
+      columns: 'title,status,due_date,priority,updated_at',
+      title: 'title',
+      status: 'status',
+      dueAt: 'due_date',
+      metric: 'priority',
+    },
   ],
   设计工作台: [
-    { source: '设计需求', kind: '设计需求', table: 'design_requirements', columns: 'title,status,due_date,priority,updated_at', title: 'title', status: 'status', dueAt: 'due_date', metric: 'priority' },
-    { source: '设计任务', kind: '设计任务', table: 'design_tasks', columns: 'title,status,due_at,region,updated_at', title: 'title', status: 'status', dueAt: 'due_at', metric: 'region' },
+    {
+      source: '设计需求',
+      kind: '设计需求',
+      table: 'design_requirements',
+      columns: 'title,status,due_date,priority,updated_at',
+      title: 'title',
+      status: 'status',
+      dueAt: 'due_date',
+      metric: 'priority',
+    },
+    {
+      source: '设计任务',
+      kind: '设计任务',
+      table: 'design_tasks',
+      columns: 'title,status,due_at,region,updated_at',
+      title: 'title',
+      status: 'status',
+      dueAt: 'due_at',
+      metric: 'region',
+    },
   ],
   剪辑工作台: [
-    { source: '选题', kind: '选题', table: 'video_ideas', columns: 'title,video_type,publish_date,views,is_viral,updated_at', title: 'title', status: 'video_type', dueAt: 'publish_date', metric: 'views' },
-    { source: '视频任务', kind: '视频任务', table: 'video_tasks', columns: 'title,status,due_at,region,updated_at', title: 'title', status: 'status', dueAt: 'due_at', metric: 'region' },
-    { source: '热点', kind: '热点', table: 'trending_topics', columns: 'topic,heat_level,discovered_at,updated_at', title: 'topic', status: 'heat_level', dueAt: 'discovered_at' },
+    {
+      source: '选题',
+      kind: '选题',
+      table: 'video_ideas',
+      columns: 'title,video_type,publish_date,views,is_viral,updated_at',
+      title: 'title',
+      status: 'video_type',
+      dueAt: 'publish_date',
+      metric: 'views',
+    },
+    {
+      source: '视频任务',
+      kind: '视频任务',
+      table: 'video_tasks',
+      columns: 'title,status,due_at,region,updated_at',
+      title: 'title',
+      status: 'status',
+      dueAt: 'due_at',
+      metric: 'region',
+    },
+    {
+      source: '热点',
+      kind: '热点',
+      table: 'trending_topics',
+      columns: 'topic,heat_level,discovered_at,updated_at',
+      title: 'topic',
+      status: 'heat_level',
+      dueAt: 'discovered_at',
+    },
   ],
 }
 
 function toItem(row: ContextRow, source: ContextSource): AiWorkspaceItem {
-  const value = (key: string | undefined) => (key && row[key] != null ? String(row[key]) : '')
+  const value = (key: string | undefined) =>
+    key && row[key] != null ? String(row[key]) : ''
   return {
     kind: source.kind,
     title: value(source.title) || '未命名记录',
@@ -62,33 +166,74 @@ function toItem(row: ContextRow, source: ContextSource): AiWorkspaceItem {
   }
 }
 
-export function createAiWorkspaceContextLoader(scope: string, query: ContextQuery) {
+export function createAiWorkspaceContextLoader(
+  scope: string,
+  query: ContextQuery,
+  timeoutMs = CONTEXT_SOURCE_TIMEOUT_MS
+) {
   return async (): Promise<AiWorkspaceContextResult> => {
     const sources = sourcesByScope[scope] || []
-    if (!sources.length) return { available: false, items: [], missingSources: ['当前工作台'] }
-    const results = await Promise.allSettled(sources.map(async (source) => ({ source, rows: await query(source.source, source) })))
+    if (!sources.length)
+      return { available: false, items: [], missingSources: ['当前工作台'] }
+    const results = await Promise.all(
+      sources.map(async (source) => {
+        const controller = new AbortController()
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        const deadline = new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => {
+            reject(new Error('AI_CONTEXT_TIMEOUT'))
+            controller.abort()
+          }, timeoutMs)
+        })
+        try {
+          const rows = await Promise.race([
+            query(source.source, source, controller.signal),
+            deadline,
+          ])
+          return { source, rows }
+        } catch {
+          return { source, rows: null }
+        } finally {
+          clearTimeout(timeout)
+        }
+      })
+    )
     const missingSources: string[] = []
     const items: AiWorkspaceItem[] = []
     for (const result of results) {
-      if (result.status === 'rejected') {
-        const source = sources[results.indexOf(result)]
-        missingSources.push(source.source)
+      if (result.rows === null) {
+        missingSources.push(result.source.source)
       } else {
-        items.push(...result.value.rows.map((row) => toItem(row, result.value.source)))
+        items.push(...result.rows.map((row) => toItem(row, result.source)))
       }
     }
-    return { available: true, items: normalizeAiWorkspaceItems(items), missingSources }
+    return {
+      available: true,
+      items: normalizeAiWorkspaceItems(items),
+      missingSources,
+    }
   }
 }
 
 function createSupabaseContextQuery(): ContextQuery {
-  return async (_source, definition) => {
+  return async (_source, definition, signal) => {
     const client = getSupabaseClient() as unknown as {
       from: (table: string) => {
         select: (columns: string) => {
-          is: (column: string, value: null) => {
-            order: (column: string, options: { ascending: boolean }) => {
-              limit: (count: number) => Promise<{ data: ContextRow[] | null; error: Error | null }>
+          is: (
+            column: string,
+            value: null
+          ) => {
+            order: (
+              column: string,
+              options: { ascending: boolean }
+            ) => {
+              limit: (count: number) => {
+                abortSignal: (signal: AbortSignal) => Promise<{
+                  data: ContextRow[] | null
+                  error: Error | null
+                }>
+              }
             }
           }
         }
@@ -100,6 +245,7 @@ function createSupabaseContextQuery(): ContextQuery {
       .is('deleted_at', null)
       .order('updated_at', { ascending: false })
       .limit(8)
+      .abortSignal(signal)
     if (error) throw error
     return data || []
   }

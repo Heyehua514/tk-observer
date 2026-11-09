@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { searchDifyKnowledge } from '@/lib/dify-client'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,14 +34,30 @@ import {
 } from '@/components/ui/select'
 import { useAiWorkspaceContext } from '@/features/shared-ai/hooks/use-ai-workspace-context'
 import { callWorkBuddyGateway } from '@/features/shared-ai/workbuddy-gateway'
-import { searchDifyKnowledge } from '@/lib/dify-client'
 import { rankAiMemories } from './ai-memory-ranking'
 import { getAiProfile } from './ai-profile'
 import { buildWorkspaceAiPrompt } from './ai-workspace-context'
 import { useAiMemory } from './hooks/use-ai-memory'
 
 export type AiTaskType = '调研' | '文案' | '总结复盘' | '分析' | '自定义'
+type AiRequestPhase = 'idle' | 'workspace' | 'knowledge' | 'model'
 const TASK_TYPES: AiTaskType[] = ['调研', '文案', '总结复盘', '分析', '自定义']
+
+function getAiErrorMessage(error: unknown): string {
+  const code = error instanceof Error ? error.message : ''
+  if (code === 'AI_AUTH_REQUIRED')
+    return '登录状态已失效，请刷新页面并重新登录后再试。'
+  if (code === 'AI_NOT_CONFIGURED')
+    return '云端 AI 尚未配置，请联系管理员检查模型服务。'
+  if (code === 'AI_UPSTREAM_FAILED') return '云端模型暂时不可用，请稍后重试。'
+  if (code === 'AI_TIMEOUT') return 'AI 请求超时。可缩短问题或稍后重试。'
+  if (code === 'AI_INVALID_RESPONSE') return 'AI 服务返回了空结果，请重试。'
+  if (code === 'AI_CLOUD_UNAVAILABLE')
+    return '云端 AI 暂不可达，且本机 WorkBuddy 不可用。'
+  if (code === 'GATEWAY_UNAVAILABLE')
+    return '本机 WorkBuddy 与云端 AI 均不可用，请检查客户端登录和网络。'
+  return 'AI 请求失败，请检查网络和 WorkBuddy/云端 AI 服务。'
+}
 
 export function AiAssistantPanel({
   scope,
@@ -63,17 +80,22 @@ export function AiAssistantPanel({
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
   const [missingSources, setMissingSources] = useState<string[]>([])
+  const [phase, setPhase] = useState<AiRequestPhase>('idle')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const inFlight = useRef(false)
 
   const run = async () => {
     if (inFlight.current) return
     inFlight.current = true
     setBusy(true)
+    setPhase('workspace')
     setResult(null)
     setMissingSources([])
+    setErrorMessage(null)
     try {
       const workspace = await workspaceContext.load()
       setMissingSources(workspace.missingSources)
+      setPhase('knowledge')
       const difyKnowledge = await searchDifyKnowledge({
         query: `${taskType} ${prompt}`,
         topK: 3,
@@ -101,18 +123,18 @@ export function AiAssistantPanel({
         ],
         missingSources: workspace.missingSources,
       })
+      setPhase('model')
       const text = await callWorkBuddyGateway(fullPrompt)
       setResult(text)
       toast.success('AI 已完成，请确认是否采用')
     } catch (e) {
-      toast.error(
-        e instanceof Error && e.message === 'GATEWAY_UNAVAILABLE'
-          ? '本机 WorkBuddy 与云端 AI 通道均不可用：请确认桌面客户端已登录，或联系管理员配置 ai-proxy'
-          : 'AI 调用失败，请检查 WorkBuddy 状态'
-      )
+      const message = getAiErrorMessage(e)
+      setErrorMessage(message)
+      toast.error(message)
     } finally {
       inFlight.current = false
       setBusy(false)
+      setPhase('idle')
     }
   }
 
@@ -177,13 +199,14 @@ export function AiAssistantPanel({
       <CardHeader>
         <CardTitle className='flex items-center gap-2 text-base'>
           <Sparkles className='size-4 text-primary' />
-          <span>AI 助手（WorkBuddy）</span>
+          <span>AI 助手（WorkBuddy / DeepSeek）</span>
           <span className='rounded-full border px-2 py-0.5 text-xs font-normal text-muted-foreground'>
             {profile.assistantName}
           </span>
         </CardTitle>
         <CardDescription>
-          由你本机的 WorkBuddy 执行，会消耗你的额度；结果需你人工确认后再采用。
+          优先使用本机 WorkBuddy；本机不可用时切换云端
+          DeepSeek。云端调用可能产生模型费用，结果需人工确认后采用。
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-4'>
@@ -232,7 +255,11 @@ export function AiAssistantPanel({
           {busy ? (
             <>
               <LoaderCircle className='size-4 animate-spin' />
-              WorkBuddy 执行中…
+              {phase === 'workspace'
+                ? '正在读取工作台数据…'
+                : phase === 'knowledge'
+                  ? '正在检索企业知识库…'
+                  : '正在调用 AI…'}
             </>
           ) : (
             <>
@@ -240,6 +267,11 @@ export function AiAssistantPanel({
             </>
           )}
         </Button>
+        {errorMessage && (
+          <p role='alert' className='text-sm text-destructive'>
+            {errorMessage}
+          </p>
+        )}
         {result && (
           <div className='space-y-2'>
             <div className='flex justify-end gap-2'>
