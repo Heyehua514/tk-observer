@@ -127,3 +127,10 @@
 - 影响：本地提交已完成，`main` 领先 `origin/main` 3 个提交，远程尚未同步；代码与日志均已保留在本地。
 - 建议：启动可用代理/VPN 或恢复 127.0.0.1 代理端口后执行一次 `git push origin main`，无需改动代码。
 - 处置：首次失败即记录并停止重试，不重复推送。
+
+## 2026-11-10 [BLOCKED] AI 记忆生命周期 pgTAP 本地实例不可连接
+
+- 现场：今日执行一次 `pnpm supabase:test`，返回 `LegacyDbConnectError` / `ECONNREFUSED 127.0.0.1:54322`。属于已有环境阻塞，未重复启动或重试。
+- 影响：新增 `ai_memory_lifecycle.test.sql` 19 条及 `ai_memory_lifecycle.eval.test.sql` 15 条断言无法实跑；未新增迁移，复用既有唯一约束与 owner RLS。不能将 SQL 静态检查视为数据库验收。
+- 选项 A（建议）：恢复 Docker Desktop/WSL2 与本地 Supabase，执行 `pnpm supabase:start`、`pnpm supabase:test` 补跑全部 pgTAP。选项 B：在隔离 CI PostgreSQL/Supabase 环境执行，禁止改用生产库试验。
+- 旁路：继续服务层、浏览器回归、类型检查与文档归档。

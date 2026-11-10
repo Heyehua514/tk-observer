@@ -280,3 +280,5 @@ Use the lowest `terra` effort that can meet the task's difficulty and risk. Incr
 
 - 严禁在 PowerShell 双引号字符串中直接处理含反引号的 Markdown 或 SQL 文本；反引号会被当作转义符，必须改用单引号字符串或字符构造后定点替换。
 - 严禁仅调用 AbortController.abort 就宣称 AI 等待已限时；必须以拒绝期限竞速覆盖忽略取消的适配器，并测试失败后的提示与重试恢复。
+
+- 严禁把未指定自然冲突键的 AI 记忆 upsert 或零行回写视为成功；必须显式恢复软删除、验证返回记录，并使用 mutation 状态与生成时上下文驱动保存反馈。

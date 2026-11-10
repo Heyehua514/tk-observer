@@ -77,6 +77,17 @@ export function AiAssistantPanel({
   const workspaceContext = useAiWorkspaceContext(scope)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<string | null>(null)
+  const [resultContext, setResultContext] = useState<{
+    scope: string
+    taskType: AiTaskType
+    prompt: string
+  } | null>(null)
+  const [remembering, setRemembering] = useState(false)
+  const [memoryFeedback, setMemoryFeedback] = useState<{
+    error: boolean
+    message: string
+  } | null>(null)
+  const memoryInFlight = useRef(false)
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
   const [missingSources, setMissingSources] = useState<string[]>([])
@@ -85,11 +96,13 @@ export function AiAssistantPanel({
   const inFlight = useRef(false)
 
   const run = async () => {
-    if (inFlight.current) return
+    if (inFlight.current || memoryInFlight.current) return
     inFlight.current = true
     setBusy(true)
     setPhase('workspace')
     setResult(null)
+    setResultContext(null)
+    setMemoryFeedback(null)
     setMissingSources([])
     setErrorMessage(null)
     try {
@@ -126,6 +139,7 @@ export function AiAssistantPanel({
       setPhase('model')
       const text = await callWorkBuddyGateway(fullPrompt)
       setResult(text)
+      setResultContext({ scope, taskType, prompt })
       toast.success('AI 已完成，请确认是否采用')
     } catch (e) {
       const message = getAiErrorMessage(e)
@@ -139,7 +153,7 @@ export function AiAssistantPanel({
   }
 
   const saveNote = async () => {
-    if (!result || saving) return
+    if (!result || !resultContext || saving) return
     setSaving(true)
     try {
       const user = useAuthStore.getState().user
@@ -152,9 +166,9 @@ export function AiAssistantPanel({
         ): Promise<{ error: { message: string } | null }>
       }
       const { error } = await insertFn('ai_notes').insert({
-        scope,
-        task_type: taskType,
-        prompt,
+        scope: resultContext.scope,
+        task_type: resultContext.taskType,
+        prompt: resultContext.prompt,
         result,
         owner_id: user?.id ?? null,
       })
@@ -168,18 +182,32 @@ export function AiAssistantPanel({
   }
 
   const rememberResult = async () => {
-    if (!result || memories.isPending) return
+    if (!result || !resultContext || memoryInFlight.current) return
+    memoryInFlight.current = true
+    setRemembering(true)
+    setMemoryFeedback(null)
     try {
       await memories.save({
         memoryType: 'accepted_ai',
-        memoryKey: `${scope}:${taskType}`,
-        memoryValue: result.slice(0, 2000),
+        memoryKey: `${resultContext.scope}:${resultContext.taskType}`,
+        memoryValue: Array.from(result).slice(0, 2000).join(''),
         confidence: 0.7,
         source: 'accepted_ai',
       })
       toast.success('已记住这条建议')
+      setMemoryFeedback({
+        error: false,
+        message: '已记住这条建议，同类记忆已更新。',
+      })
     } catch {
       toast.error('记忆保存失败')
+      setMemoryFeedback({
+        error: true,
+        message: '记忆保存失败，分析结果已保留，请重试。',
+      })
+    } finally {
+      memoryInFlight.current = false
+      setRemembering(false)
     }
   }
 
@@ -249,7 +277,7 @@ export function AiAssistantPanel({
         ) : null}
         <Button
           onClick={() => void run()}
-          disabled={busy || !prompt.trim()}
+          disabled={busy || remembering || !prompt.trim()}
           className='w-full'
         >
           {busy ? (
@@ -288,16 +316,28 @@ export function AiAssistantPanel({
                 size='sm'
                 variant='outline'
                 onClick={() => void rememberResult()}
-                disabled={memories.isPending}
+                disabled={remembering || memories.isSaving}
               >
                 <Sparkles />
-                记住这条
+                {remembering ? '正在记住…' : '记住这条'}
               </Button>
               <Button size='sm' variant='outline' onClick={() => void copy()}>
                 {copied ? <Check /> : <ClipboardCopy />}
                 {copied ? '已复制' : '复制结果'}
               </Button>
             </div>
+            {memoryFeedback && (
+              <p
+                role={memoryFeedback.error ? 'alert' : 'status'}
+                className={
+                  memoryFeedback.error
+                    ? 'text-sm text-destructive'
+                    : 'text-sm text-muted-foreground'
+                }
+              >
+                {memoryFeedback.message}
+              </p>
+            )}
             <pre className='max-h-80 overflow-auto rounded-md border bg-muted/40 p-3 text-sm whitespace-pre-wrap'>
               {result}
             </pre>
